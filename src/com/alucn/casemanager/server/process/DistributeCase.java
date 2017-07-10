@@ -44,6 +44,7 @@ public class DistributeCase implements Runnable{
 				
 				//check the lab status, remove the distributed case list
 				if(count > 10){
+				    DbOperation.SyncDailyCaseFromDftTag();
 				    logger.info("check machine status.");
 				    JSONArray unneedServers = new JSONArray();
 				    JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
