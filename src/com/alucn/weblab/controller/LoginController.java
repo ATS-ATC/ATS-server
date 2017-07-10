@@ -23,12 +23,6 @@ public class LoginController {
 	@Autowired
 	private LoginService loginService;
 	
-	@RequestMapping(path = "/")
-    public String root(Model model) {
-		model.addAttribute("loginResult", "login");
-        return "login";
-    }
-	
 	@RequestMapping(path = "/userLogin")
     public String login(Model model) {
 		model.addAttribute("loginResult", "login");

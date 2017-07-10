@@ -22,7 +22,6 @@
 					action="./userLoginCheckOut.do" method="post">
 					<div class="form-group login-title">
 						<strong>Please Login</strong>
-						<strong>${loginResult}</strong>
 					</div>
 					<c:if test="${loginResult != 'success' && loginResult != 'login'}">
 						<div class="alert alert-dismissable alert-danger text-center" id="warning">

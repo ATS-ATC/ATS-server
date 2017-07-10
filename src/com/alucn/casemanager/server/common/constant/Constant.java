@@ -68,4 +68,5 @@ public class Constant {
 	public static final String CASECLIENTSFTPPASSWORD = "case.client.sftp.password";
 	public static final String CASECLIENTSFTPPORT = "case.client.sftp.port";
 	public static final String  AUTHSUCCESS = "SLLAUTHSUCCESS";
+	public static final String  PROJECTNAME = "weblab";
 }
