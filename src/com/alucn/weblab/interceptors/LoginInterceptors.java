@@ -13,7 +13,7 @@ import com.alucn.weblab.exception.WebAuthException;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ5ÈÕ ÉÏÎç10:16:05
+ * 2017ï¿½ï¿½6ï¿½ï¿½5ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½10:16:05
  * desc:Interceptor
  */
 public class LoginInterceptors implements HandlerInterceptor{
@@ -47,7 +47,7 @@ public class LoginInterceptors implements HandlerInterceptor{
 			}
 		}
 		HttpSession session = request.getSession();
-		if (session.getAttribute("login")==null) {
+		if (session.getAttribute("login")==null || "".equals(session.getAttribute("login"))) {
 			throw new WebAuthException();
 		} else {
 			return true;

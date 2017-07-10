@@ -3,6 +3,8 @@ package com.alucn.weblab.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alucn.casemanager.server.common.LdapAuthentication;
+import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.User;
 
@@ -16,14 +18,11 @@ public class LoginService {
 	
 	@Autowired(required=true)
 	private UserDaoImpl userDaoImpl;
-	private static String  AuthSuccess = "SLLAUTHSUCCESS";
 	
 	public boolean getUser(User user){
-	    
 	    LdapAuthentication ldapAuth = new LdapAuthentication(user.getUserName(),user.getPassWord());
-        String AuthResult = ldapAuth.getAuth();
-        if(AuthResult.equals(AuthSuccess))
-        {
+        String authResult = ldapAuth.getAuth();
+        if(authResult.equals(Constant.AUTHSUCCESS)){
             return true;
         }
         return false;

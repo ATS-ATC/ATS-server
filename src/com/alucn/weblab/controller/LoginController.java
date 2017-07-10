@@ -23,26 +23,42 @@ public class LoginController {
 	@Autowired
 	private LoginService loginService;
 	
+	@RequestMapping(path = "/")
+    public String root(Model model) {
+		model.addAttribute("loginResult", "login");
+        return "login";
+    }
+	
 	@RequestMapping(path = "/userLogin")
-    public String login() {
+    public String login(Model model) {
+		model.addAttribute("loginResult", "login");
         return "login";
     }
 	
 	@RequestMapping(path = "/userLogout")
-    public String logout(HttpSession session) {
+    public String logout(HttpSession session, Model model) {
+		model.addAttribute("loginResult", "login");
 		String useName = session.getAttribute("login").toString();
 		 if(null != useName && !"".equals(useName)){ 
-			 session.removeAttribute("login"); 
+			 session.removeAttribute("login");
+			 session.invalidate();
 	     }
         return "login";
     }
 	
 	@RequestMapping(path = "/userLoginCheckOut", method = RequestMethod.POST)
     public String loginCheckOut(User user, HttpSession session, Model model) {
-		loginService.getUser(user);
-		
-		session.setAttribute("login", user.getUserName());
-        return "forward:/getStatistics.do";
+		boolean authResult = loginService.getUser(user);
+		String returnDec = "";
+		if(authResult){
+			model.addAttribute("loginResult", "success");
+			session.setAttribute("login", user.getUserName());
+			returnDec =  "forward:/getStatistics.do";
+		}else{
+			model.addAttribute("loginResult", "failed");
+			returnDec = "login";
+		}
+        return returnDec;
     }
 	
 	@RequestMapping(path = "/userLoginBackHome", method = RequestMethod.GET)
