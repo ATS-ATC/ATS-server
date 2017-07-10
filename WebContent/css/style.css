@@ -1,0 +1,67 @@
+@CHARSET "UTF-8";
+
+
+
+.aServer a{ 
+	border: 3px solid #ddd;
+	margin:30px auto;
+	text-decoration: none;
+	text-align: center;
+	color: #000040;
+	font-size: 20px;
+	border-radius: 10px;
+	}
+
+.server{
+	width: 180px;
+    height: auto;
+    border-width: 2px;
+    border-style: solid;
+    border-color: rgba(158, 158, 158, 0.34);
+    float: left;
+    display: flex;
+    padding: 5px 10px 5px 10px;
+    margin: 20px;
+    background-color: rgba(224, 224, 224, 0);
+    border-radius: 10px;
+    font-size: 20px;
+    text-align: center;
+    line-height: 0.5;
+}
+
+#Running{
+	color:#FFC107;
+}
+
+#Idle{
+	color:#58b53e;
+}
+
+#Dead{
+	color:#ff0000;
+}
+
+#add{
+	font-size:30px;
+    color: #009688;
+}
+
+#addlink{
+	height: 161px;
+	display: flex;
+    justify-content:center;
+    align-items:Center;
+}
+
+.login{
+	margin:10% auto;
+	border-radius: 10px;
+	border-style: solid;
+    border-color: rgba(158, 158, 158, 0.34);
+    border-width: 2px;
+    padding: 10px;    
+}
+.login-title{
+	text-align: center;
+	font-size:1.3em;
+}

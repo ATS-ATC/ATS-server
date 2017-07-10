@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+ 	xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <context:component-scan base-package="com.alucn.weblab" resource-pattern="controller/*.class" />
+    <context:component-scan base-package="com.alucn.weblab" resource-pattern="service/*.class" />
+    <context:component-scan base-package="com.alucn.weblab" resource-pattern="dao/impl/*.class" />
+
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/jsp/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+<!-- 	<bean id="handlerMapping" -->
+<!--             class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"> -->
+<!--         <property name="interceptors"> -->
+<!--             <list> -->
+<!--                 <ref bean="loginInterceptors"/> -->
+<!--             </list> -->
+<!--         </property> -->
+<!--     </bean> -->
+
+<!--     <bean id="loginInterceptors" -->
+<!--             class="com.alucn.weblab.interceptors.LoginInterceptors"> -->
+<!--         <property name="openingTime" value="9"/> -->
+<!--         <property name="closingTime" value="18"/> -->
+<!--     </bean> -->
+
+
+	<bean id="handlerExceptionResolver"
+          class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <prop key="com.alucn.weblab.exception.WebAuthException">redirect:userLogin.do</prop>
+            </props>
+        </property>    
+    </bean>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- 某一模块的拦截：/myPath/**, 拦截所有的请求/**-->
+			<mvc:mapping path="/**"/>
+			<bean id="loginInterceptors" class="com.alucn.weblab.interceptors.LoginInterceptors">
+				<property name="excludeUrls">
+                     <list>
+                         <value>/userLogin.do</value>
+                         <value>/userLoginCheckOut.do</value>
+                    </list>
+                </property>
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+</beans>
