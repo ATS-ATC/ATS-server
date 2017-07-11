@@ -35,7 +35,7 @@ public class ReceiveAndSendRun implements Runnable {
 	private Socket socket;
 	private static Logger logger = Logger.getLogger(ReceiveAndSendRun.class);
 	private final BlockingQueue<String> sendMessageBlockingQueue = new ArrayBlockingQueue<String>(20, false);
-	public static String serverName;
+	public static String serverName = "";
 	
 	public void run() {
 		Thread sendThread = new Thread(new SendMessage());
@@ -80,7 +80,7 @@ public class ReceiveAndSendRun implements Runnable {
 				if(countNum >= Integer.parseInt(ConfigProperites.getInstance().getCaseClientRetryTime())){
                     JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
                     for(int i=0; i<currKeyStatus.size();i++){
-                        JSONObject tmpJsonObject = (JSONObject) currKeyStatus.get(i);
+                        JSONObject tmpJsonObject = currKeyStatus.getJSONObject(i);
                         if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
                         	tmpJsonObject.getJSONObject(Constant.TASKSTATUS).put(Constant.STATUS, Constant.CASESTATUSDEAD);
                         	tmpJsonObject.getJSONObject(Constant.TASKSTATUS).put(Constant.RUNNINGCASE, "");

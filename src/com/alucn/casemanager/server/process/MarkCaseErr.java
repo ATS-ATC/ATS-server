@@ -32,10 +32,40 @@ public class MarkCaseErr {
         	logger.info("[MarkCaseErr Time''s Up!]");  
             try {
 				JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-				String errorCaseSql = "select casename, fature, err_reason, owner, insert_date, mark_date, email_date from errorcaseinfo where email_date='' and mark_date='';";
+				String errorCaseSql = "select fature,owner from errorcaseinfo where email_date='' and mark_date='' group by fature,owner";
 				List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(errorCaseSql, null);
+				String feature = "";
+				String owner = "";
+				if(null != list_dc && list_dc.size()!=0){
+					for(int i=0; i<list_dc.size(); i++){
+						StringBuffer errCaseString = new StringBuffer();
+						feature = list_dc.get(i).get("fature").toString();
+						String errCaseListSql = "select e.casename, e.fature, e.owner, e.servername, u.UserName, u.ShowName from errorcaseinfo e left join UserInfo u on u.UserName = e.owner where where fature='"+feature+"' and owner='"+owner+"'";
+						List<Map<String, Object>> errCaseList = jdbc_cf.findModeResult(errCaseListSql, null);
+						JSONObject errCaseInfo = new JSONObject();
+						errCaseInfo.put("feature", feature);
+						errCaseInfo.put("author", errCaseList.get(0).get("ShowName").toString());
+						for(int j=0; j<errCaseList.size(); j++){
+							errCaseString.append(errCaseList.get(j).get("casename"));
+							if(j != errCaseList.size()-1){
+								errCaseString.append(",");
+							}
+						}
+						errCaseInfo.put("case", errCaseString.toString());
+						errCaseInfo.put("srcPath", "");
+						errCaseInfo.put("logPath", "");
+					}
+				}
 				
-//				genReport(JSONArray cc_list, JSONArray to_list, JSONArray report, JSONObject buildInfo);
+				
+				JSONArray cc_list = new JSONArray();
+				cc_list.add("lei.k.huang@alcatel-lucent.com");
+				
+				JSONObject buildInfo = new JSONObject();
+				buildInfo.put("SrcPath", "aaaaaa");
+				buildInfo.put("LogPath", "bbbbbb");
+				
+//				SendMail.genReport(cc_list, JSONArray to_list, JSONArray report, buildInfo);
             } catch (Exception e) {
 				e.printStackTrace();
 				logger.error("[MarkCaseErr Timer Is Error:]", e);

@@ -10,9 +10,14 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.apache.log4j.Logger;
 
+import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
+import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.process.ReceiveAndSendRun;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * socket listener
@@ -98,17 +103,33 @@ public class SocketListener implements ServletContextListener {
 								logger.debug("threadPoolExecutor.getActiveCount()  = " +threadPoolExecutor.getActiveCount());
 								 
 								socket.setSoTimeout(readTimeout);
-								executorService.execute(new ReceiveAndSendRun(socket));
+								if("".equals(ReceiveAndSendRun.serverName) || Constant.CASESTATUSDEAD.equals(getClientStatus(ReceiveAndSendRun.serverName))){
+									executorService.execute(new ReceiveAndSendRun(socket));
+								}else{
+									socket.close();
+								}
 							}
 						} catch (Exception e) {
 							logger.error("[Failed to monitor master thread socket processing]");
 							if(null!=socket){
 								//Request host address
-								logger.error("[Socket request host address锛� " +socket.getInetAddress()+"]");
+								logger.error("[Socket request host address" +socket.getInetAddress()+"]");
 							}
 							logger.error(ParamUtil.getErrMsgStrOfOriginalException(e));
 						}
 					}
+				}
+				
+				public String getClientStatus(String serverName){
+					String serverStatus = "";
+					JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+                    for(int i=0; i<currKeyStatus.size();i++){
+                        JSONObject tmpJsonObject = currKeyStatus.getJSONObject(i);
+                        if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
+                        	serverStatus = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
+                        }
+                    }
+					return serverStatus;
 				}
 
 			}).start();
