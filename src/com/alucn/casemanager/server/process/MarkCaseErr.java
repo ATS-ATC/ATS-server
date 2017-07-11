@@ -32,15 +32,17 @@ public class MarkCaseErr {
         	logger.info("[MarkCaseErr Time''s Up!]");  
             try {
 				JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-				String errorCaseSql = "select fature,owner from errorcaseinfo where email_date='' and mark_date='' group by fature,owner";
+				String errorCaseSql = "select fature,owner,servername from errorcaseinfo where email_date='' and mark_date='' group by fature,owner";
 				List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(errorCaseSql, null);
 				String feature = "";
 				String owner = "";
+				String serverName = "";
 				if(null != list_dc && list_dc.size()!=0){
 					for(int i=0; i<list_dc.size(); i++){
 						StringBuffer errCaseString = new StringBuffer();
 						feature = list_dc.get(i).get("fature").toString();
-						String errCaseListSql = "select e.casename, e.fature, e.owner, e.servername, u.UserName, u.ShowName from errorcaseinfo e left join UserInfo u on u.UserName = e.owner where where fature='"+feature+"' and owner='"+owner+"'";
+						serverName = list_dc.get(i).get("servername").toString();
+						String errCaseListSql = "select e.casename, e.fature, e.owner, e.servername, u.UserName, u.ShowName from errorcaseinfo e left join UserInfo u on u.UserName = e.owner where e.fature='"+feature+"' and e.owner='"+owner+"' and e.servername='"+serverName+"'";
 						List<Map<String, Object>> errCaseList = jdbc_cf.findModeResult(errCaseListSql, null);
 						JSONObject errCaseInfo = new JSONObject();
 						errCaseInfo.put("feature", feature);
@@ -51,9 +53,9 @@ public class MarkCaseErr {
 								errCaseString.append(",");
 							}
 						}
-						errCaseInfo.put("case", errCaseString.toString());
-						errCaseInfo.put("srcPath", "");
-						errCaseInfo.put("logPath", "");
+						errCaseInfo.put("case", errCaseString.toString().replace(feature+"/", ""));
+						errCaseInfo.put("srcPath", serverName);
+						errCaseInfo.put("logPath", serverName);
 					}
 				}
 				
@@ -61,9 +63,6 @@ public class MarkCaseErr {
 				JSONArray cc_list = new JSONArray();
 				cc_list.add("lei.k.huang@alcatel-lucent.com");
 				
-				JSONObject buildInfo = new JSONObject();
-				buildInfo.put("SrcPath", "aaaaaa");
-				buildInfo.put("LogPath", "bbbbbb");
 				
 //				SendMail.genReport(cc_list, JSONArray to_list, JSONArray report, buildInfo);
             } catch (Exception e) {

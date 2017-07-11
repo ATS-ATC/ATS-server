@@ -30,13 +30,16 @@ public class ErrorCaseInfoService {
 		errroCases = new HashMap<String, String>();
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getFeatureOfUser = "SELECT DISTINCT feature_number FROM DailyCase WHERE author='"+userName+"'";
+		String getFeatureOfUser = "SELECT DISTINCT feature_number FROM DailyCase WHERE 1=1";
+		if(!userName.equals("Administrator")){
+			getFeatureOfUser = getFeatureOfUser+"and author='"+userName+"'";
+		}
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getFeatureOfUser);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
 			for(String key: obj.keySet()){
 				String featureNum = (String)obj.get(key);
-				String getCaseName = "SELECT case_name FROM DailyCase WHERE author='"+userName+"' AND feature_number='" + featureNum+"' AND case_status='F';";
+				String getCaseName = "SELECT case_name FROM DailyCase WHERE feature_number='" + featureNum+"' AND case_status='F'";
 				ArrayList<HashMap<String, Object>> resultCaseName = errorCaseDaoImpl.query(jdbc, getCaseName);
 				if(resultCaseName.size()>0){
 					errroCases.put(featureNum, String.valueOf(resultCaseName.size()));
@@ -49,7 +52,10 @@ public class ErrorCaseInfoService {
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE fature='"+featureName+"' and owner='"+author+"';";
+		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE 1=1 and fature='"+featureName+"'";
+		if(!author.equals("Administrator")){
+			getErrorCase = getErrorCase+" and owner='"+author+"'";
+		}
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}
@@ -76,7 +82,8 @@ public class ErrorCaseInfoService {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String curDate= dateFormat.format(now);
 		for(String acase : errorcases.split(",")){
-			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND fature='"+featureName.trim()+"';";
+//			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND fature='"+featureName.trim()+"'";
+			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND fature='"+featureName.trim()+"'";
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
 		}
 	}
