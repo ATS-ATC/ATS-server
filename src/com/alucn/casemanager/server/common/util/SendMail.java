@@ -157,11 +157,11 @@ public class SendMail {
 		sb.append("<p><span style=\"background:#cccc33;\">@All testers,</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below cases are failed when auto tested by certified servers.</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log, find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
-		sb.append("<span>" + "<a href=\"" + buildInfo.get("SrcPath") + "\">" + buildInfo.get("SrcPath") + "</a></span>");
-		sb.append("<span>&nbsp;&nbsp;Log Path: </span>");
-		sb.append("<span>" + "<a href=\"" + buildInfo.get("LogPath") + "\">" + buildInfo.get("LogPath")
-				+ "</a></span></p>");
+//		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
+//		sb.append("<span>" + "<a href=\"" + buildInfo.get("SrcPath") + "\">" + buildInfo.get("SrcPath") + "</a></span>");
+//		sb.append("<span>&nbsp;&nbsp;Log Path: </span>");
+//		sb.append("<span>" + "<a href=\"" + buildInfo.get("LogPath") + "\">" + buildInfo.get("LogPath")
+//				+ "</a></span></p>");
 		sb.append("<div align=\"left\">");
 		sb.append("<br/>");
 		sb.append("<br/>");
@@ -173,17 +173,21 @@ public class SendMail {
 		sb.append("<th>feature</th>");
 		sb.append("<th>owner</th>");
 		sb.append("<th>case id</th>");
+		sb.append("<th>srcPath</th>");
+		sb.append("<th>logPath</th>");
 		sb.append("</tr>");
 		sb.append("</thead>");
 		sb.append("<tbody>");
 
 		for (int i = 0; i < report.size(); i++) {
 			sb.append("<tr>");
-			sb.append("<td style=\"width:10%\">" + report.getJSONObject(i).getString("feature") + "</td>");
-			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("author") + "</td>");
-			sb.append("<td style=\"text-align:left; width:70%; word-break:break-all; word-wrap:break-word;\">"
-					+ report.getJSONObject(i).getString("case").replace("[", "").replace("]", "").replace("\"", "")
+			sb.append("<td style=\"width:5%\">" + report.getJSONObject(i).getString("feature") + "</td>");
+			sb.append("<td style=\"width:5%\"> " + report.getJSONObject(i).getString("author") + "</td>");
+			sb.append("<td style=\"text-align:left; width:50%; word-break:break-all; word-wrap:break-word;\">"
+					+ report.getJSONObject(i).getString("case")
 					+ "</td>");
+			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("srcPath") + "</td>");
+			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("logPath") + "</td>");
 			sb.append("</tr>");
 
 		}

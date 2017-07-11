@@ -35,7 +35,7 @@ public class ReceiveAndSendRun implements Runnable {
 	private Socket socket;
 	private static Logger logger = Logger.getLogger(ReceiveAndSendRun.class);
 	private final BlockingQueue<String> sendMessageBlockingQueue = new ArrayBlockingQueue<String>(20, false);
-	public static String serverName = "";
+	private String serverName = "";
 	
 	public void run() {
 		Thread sendThread = new Thread(new SendMessage());
@@ -56,14 +56,17 @@ public class ReceiveAndSendRun implements Runnable {
 					logger.info("[Health monitoring in progress...]");
 					countNum =0;
 					rspResult = Constant.EMBEDDED_MESSAGE_RSP;
-				}
-				//b.Get response message
-				else{
+				}else{//b.Get response message
 				    countNum =0;
 					MainProcess mainProcess = new MainProcess();
 					long start=0L,end=0L;
 					start = System.currentTimeMillis();
-					rspResult = mainProcess.process(reqJson, socket, sendMessageBlockingQueue);
+					//get head
+					JSONObject reqHead = ParamUtil.getReqHead(reqJson);
+					//get body
+					JSONObject reqBody = ParamUtil.getReqBody(reqJson);
+					serverName = reqBody.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
+					rspResult = mainProcess.process(reqJson, socket, sendMessageBlockingQueue, reqHead, reqBody, serverName);
 					end = System.currentTimeMillis();
 					logger.info("Request processing time"+(end-start));
 				}

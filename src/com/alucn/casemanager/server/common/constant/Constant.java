@@ -60,6 +60,9 @@ public class Constant {
 	public static final String CASECLIENTRETRYTIME = "case.client.retry.time";
 	public static final String CASEDFTAGTIMERDELAY = "case.dftag.timer.delay";
 	public static final String CASEDFTAGTIMERPERIOD = "case.dftag.timer.period";
+	public static final String CASEMCASETIMERDELAY = "case.mcase.timer.delay";
+	public static final String CASEMCASETIMERPERIOD = "case.mcase.timer.period";
+	public static final String CASECHECKMAILPERIOD = "case.check.mail.period";
 	public static final String MAXCASESIZEFORONELAB = "max_case_size_for_one_lab";
 	public static final String CASECLIENTSFTPSENDSHELLNAME = "case.client.sftp.sendshellname";
 	public static final String CASECLIENTSFTPSOURCEPATH = "case.client.sftp.sourcepath";
@@ -67,6 +70,7 @@ public class Constant {
 	public static final String CASECLIENTSFTPUSERNAME = "case.client.sftp.username";
 	public static final String CASECLIENTSFTPPASSWORD = "case.client.sftp.password";
 	public static final String CASECLIENTSFTPPORT = "case.client.sftp.port";
+	public static final String CASESERVERWEBIP = "case.server.web.ip";
 	public static final String  AUTHSUCCESS = "SLLAUTHSUCCESS";
 	public static final String  PROJECTNAME = "weblab";
 }

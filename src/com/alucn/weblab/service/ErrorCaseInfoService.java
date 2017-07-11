@@ -1,8 +1,6 @@
 package com.alucn.weblab.service;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alucn.casemanager.server.common.constant.Constant;
+import com.alucn.casemanager.server.common.util.DateUtil;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ErrorCaseDaoImpl;
@@ -78,12 +77,9 @@ public class ErrorCaseInfoService {
 	public void setMarkCase(String userName, String featureName, String errorcases, String failedreasons) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		Date now = new Date(); 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String curDate= dateFormat.format(now);
 		for(String acase : errorcases.split(",")){
 //			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND fature='"+featureName.trim()+"'";
-			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND fature='"+featureName.trim()+"'";
+			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND fature='"+featureName.trim()+"'";
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
 		}
 	}

@@ -13,6 +13,7 @@ import com.alucn.casemanager.server.common.exception.SysException;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.process.DistributeCase;
+import com.alucn.casemanager.server.process.MarkCaseErr;
 
 /**
  * Program start listener
@@ -64,7 +65,8 @@ public class MainListener {
 					
 					//start distribute case listener
 					new Thread(new DistributeCase()).start();
-					
+					//start markCaseErr
+					new MarkCaseErr(Integer.parseInt(ConfigProperites.getInstance().getCaseMcaseTimerDelay()),Integer.parseInt(ConfigProperites.getInstance().getCaseMcaseTimerPeriod()));
 					//start distribute command listener
 //					new Thread(new DistributeCommand()).start();
 				}else{

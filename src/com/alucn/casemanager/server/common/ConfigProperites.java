@@ -36,6 +36,9 @@ public class ConfigProperites {
 	private String caseClientRetryTime;
 	private String caseDftagTimerDelay;
 	private String caseDftagTimerPeriod;
+	private String caseMcaseTimerDelay;
+	private String caseMcaseTimerPeriod;
+	private String caseCheckMailPeriod;
 	private String maxCaseSizeForOneLab;
 	private String caseClientSftpSendShellName;
 	private String caseClientSftpSourcePath;
@@ -43,6 +46,7 @@ public class ConfigProperites {
 	private String caseClientSftpUserName;
 	private String caseClientSftpPassword;
 	private String caseClientSftpPort;
+	private String caseServerWebIp;
 	
 	public String getListenerPort() {
 		return listenerPort;
@@ -124,6 +128,30 @@ public class ConfigProperites {
 		this.caseClientRetryTime = caseClientRetryTime;
 	}
 
+	public String getCaseMcaseTimerDelay() {
+		return caseMcaseTimerDelay;
+	}
+
+	public void setCaseMcaseTimerDelay(String caseMcaseTimerDelay) {
+		this.caseMcaseTimerDelay = caseMcaseTimerDelay;
+	}
+
+	public String getCaseMcaseTimerPeriod() {
+		return caseMcaseTimerPeriod;
+	}
+
+	public void setCaseMcaseTimerPeriod(String caseMcaseTimerPeriod) {
+		this.caseMcaseTimerPeriod = caseMcaseTimerPeriod;
+	}
+
+	public String getCaseCheckMailPeriod() {
+		return caseCheckMailPeriod;
+	}
+
+	public void setCaseCheckMailPeriod(String caseCheckMailPeriod) {
+		this.caseCheckMailPeriod = caseCheckMailPeriod;
+	}
+
 	public String getCaseDftagTimerDelay() {
 		return caseDftagTimerDelay;
 	}
@@ -197,6 +225,14 @@ public class ConfigProperites {
 	}
 	
 	
+	public String getCaseServerWebIp() {
+		return caseServerWebIp;
+	}
+
+	public void setCaseServerWebIp(String caseServerWebIp) {
+		this.caseServerWebIp = caseServerWebIp;
+	}
+
 	public void refreshConfiguration(Map<String, String> configs){
 		final ReentrantLock lock = tlock;
 		lock.lock();
@@ -215,12 +251,16 @@ public class ConfigProperites {
 			singletonConfigProperite.setCaseClientStatusTime(configs.get(Constant.CASECLIENTSTATUSTIME));
 			singletonConfigProperite.setCaseDftagTimerDelay(configs.get(Constant.CASEDFTAGTIMERDELAY));
 			singletonConfigProperite.setCaseDftagTimerPeriod(configs.get(Constant.CASEDFTAGTIMERPERIOD));
+			singletonConfigProperite.setCaseMcaseTimerDelay(configs.get(Constant.CASEMCASETIMERDELAY));
+			singletonConfigProperite.setCaseMcaseTimerPeriod(configs.get(Constant.CASEMCASETIMERPERIOD));
+			singletonConfigProperite.setCaseCheckMailPeriod(configs.get(Constant.CASECHECKMAILPERIOD));
 			singletonConfigProperite.setListenerPort(configs.get(Constant.LISTENERPORT));
 			singletonConfigProperite.setMaxCaseSizeForOneLab(configs.get(Constant.MAXCASESIZEFORONELAB));
 			singletonConfigProperite.setQueueMaxSize(configs.get(Constant.QUEUEMAXSIZE));
 			singletonConfigProperite.setReadPeriodTimeout(configs.get(Constant.READPERIODTIMEOUT));
 			singletonConfigProperite.setThreadMaxNumber(configs.get(Constant.THREADMAXNUMBER));
 			singletonConfigProperite.setReadTimeout(configs.get(Constant.READTIMEOUT));
+			singletonConfigProperite.setCaseServerWebIp(configs.get(Constant.CASESERVERWEBIP));
 			singletonConfigProperites = singletonConfigProperite;
 		}finally{
 			lock.unlock();

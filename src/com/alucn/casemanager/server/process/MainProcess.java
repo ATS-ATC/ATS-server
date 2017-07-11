@@ -23,20 +23,10 @@ public class MainProcess {
 	 * @return
 	 */
 	
-	public String process(String reqJson, Socket socket, BlockingQueue<String> queue){
+	public synchronized String process(String reqJson, Socket socket, BlockingQueue<String> queue, JSONObject reqHead, JSONObject reqBody, String serverName){
 		String rspJson = "";//response message
-		JSONObject reqHead = new JSONObject();//head
-		JSONObject reqBody = new JSONObject();//body
-		
 		try {
 			logger.debug("[Request processing start...]");
-			//get head
-			reqHead = ParamUtil.getReqHead(reqJson);
-			//get body
-			reqBody = ParamUtil.getReqBody(reqJson);
-			
-			String serverName = reqBody.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
-			ReceiveAndSendRun.serverName = serverName;
 			CaseConfigurationCache.queueOfClient.put(serverName, queue);
 			
 			// type
