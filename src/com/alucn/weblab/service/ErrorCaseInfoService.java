@@ -25,13 +25,13 @@ public class ErrorCaseInfoService {
 	private Map<String, String> errroCases;
 	private Map<String, String>failedReason;
 	 
-	public Map<String, String> getErrorCaseInfo(String userName) throws Exception{
+	public Map<String, String> getErrorCaseInfo(String userName, String auth) throws Exception{
 		errroCases = new HashMap<String, String>();
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getFeatureOfUser = "SELECT DISTINCT feature_number FROM DailyCase WHERE 1=1";
-		if(!userName.equals("Administrator")){
-			getFeatureOfUser = getFeatureOfUser+"and author='"+userName+"'";
+		if(!auth.equals(Constant.AUTH)){
+			getFeatureOfUser = getFeatureOfUser+" and author='"+userName+"'";
 		}
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getFeatureOfUser);
 		for(int i=0; i<result.size();i++){
@@ -48,11 +48,11 @@ public class ErrorCaseInfoService {
 		return errroCases;
 	}
 	
-	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author) throws Exception{
+	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, String auth) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE 1=1 and fature='"+featureName+"'";
-		if(!author.equals("Administrator")){
+		if(!auth.equals(Constant.AUTH)){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);

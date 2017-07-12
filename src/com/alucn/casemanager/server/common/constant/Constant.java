@@ -73,4 +73,5 @@ public class Constant {
 	public static final String CASESERVERWEBIP = "case.server.web.ip";
 	public static final String  AUTHSUCCESS = "SLLAUTHSUCCESS";
 	public static final String  PROJECTNAME = "weblab";
+	public static final String  AUTH = "all";
 }

@@ -29,14 +29,14 @@ public class ErrorCaseInfoController {
 	@RequestMapping(path = "/getErrorCaseInfo")
 	public String getErrorCaseInfo(HttpSession session, Model model) throws Exception{
 		String userName = session.getAttribute("login").toString();
-		Map<String,String> failCaseList = errorCaseInfoService.getErrorCaseInfo(userName);
+		Map<String,String> failCaseList = errorCaseInfoService.getErrorCaseInfo(userName, session.getAttribute("auth").toString());
 		model.addAttribute("failCaseList",failCaseList);
 		return "errorCaseInfo";
 	}
 	
 	@RequestMapping(path = "/getErrorCaseInfoDetails")
 	public String getServerInfoDetails(HttpSession session, String featureName, Model model) throws Exception{
-		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, session.getAttribute("login").toString());
+		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, session.getAttribute("login").toString(), session.getAttribute("auth").toString());
 		ArrayList<HashMap<String, Object>> errorReasonList = errorCaseInfoService.getErrorCaseReason();
 		model.addAttribute("featureName",featureName);
 		model.addAttribute("errorCaseList",errorCaseList);

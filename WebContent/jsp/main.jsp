@@ -16,6 +16,9 @@
 <title>Home</title>
 </head>
 <body>
+	<%
+		String auth = session.getAttribute("auth").toString();
+	%>
 	<div class="container">
 		<div class="row clearfix">
 			<div class="col-md-12 column">
@@ -31,6 +34,9 @@
 				<div class="collapse navbar-collapse"
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
+					<%
+					if(auth.equals("all")){
+					%>
 						<li><a href="./getServerInfo.do">Servers</a></li>
 						<li><a href="./getErrorCaseInfo.do">Error
 								Cases</a></li>
@@ -42,6 +48,14 @@
 								<li><a href="./config.do">Config Manage</a></li>
 								<li class="divider"></li>
 							</ul></li>
+					<%
+					}else if(auth.equals("errorCases")){
+					%>
+						<li><a href="./getErrorCaseInfo.do">Error
+								Cases</a></li>
+					<%
+					}
+					%>
 					</ul>
 					<form class="navbar-form navbar-left">
 						<div class="form-group">

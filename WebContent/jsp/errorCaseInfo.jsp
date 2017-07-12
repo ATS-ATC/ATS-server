@@ -14,6 +14,10 @@
 
 <title>Features</title>
 </head>
+<body>
+<%
+		String auth = session.getAttribute("auth").toString();
+%>
 <div class="container">
 	<div class="row clearfix">
 		<div class="col-md-12 column">
@@ -30,16 +34,28 @@
 			<div class="collapse navbar-collapse"
 				id="bs-example-navbar-collapse-1">
 				<ul class="nav navbar-nav">
-					<li><a href="./getServerInfo.do">Servers</a></li>
-					<li class="active"><a href="./getErrorCaseInfo.do">Error Cases</a></li>
-					<li class="dropdown"><a href="#" class="dropdown-toggle"
-						data-toggle="dropdown">Admin<strong class="caret"></strong></a>
-						<ul class="dropdown-menu">
-							<li><a href="./getSpaAndRtdbInfo.do">SPA
+					<%
+					if(auth.equals("all")){
+					%>
+						<li><a href="./getServerInfo.do">Servers</a></li>
+						<li><a href="./getErrorCaseInfo.do">Error
+								Cases</a></li>
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown">Admin<strong class="caret"></strong></a>
+							<ul class="dropdown-menu">
+								<li><a href="./getSpaAndRtdbInfo.do">SPA
 										and RTDB</a></li>
-										<li><a href="./config.do">Config Manage</a></li>
-							<li class="divider"></li>
-						</ul></li>
+								<li><a href="./config.do">Config Manage</a></li>
+								<li class="divider"></li>
+							</ul></li>
+					<%
+					}else if(auth.equals("errorCases")){
+					%>
+						<li><a href="./getErrorCaseInfo.do">Error
+								Cases</a></li>
+					<%
+					}
+					%>
 				</ul>
 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">

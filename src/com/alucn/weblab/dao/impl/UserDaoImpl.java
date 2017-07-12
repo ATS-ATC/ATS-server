@@ -9,7 +9,7 @@ import com.alucn.weblab.dao.DataAccessInterface;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ6ÈÕ ÏÂÎç5:17:55
+ * 2017ï¿½ï¿½6ï¿½ï¿½6ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½5:17:55
  * desc:UserDaoImpl
  */
 @Repository("userDaoImpl")
@@ -36,7 +36,7 @@ public class UserDaoImpl implements DataAccessInterface{
 	@Override
 	public ArrayList<HashMap<String, Object>> query(JdbcUtil jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		return jdbc.query(sql);
 	}
 	
 }

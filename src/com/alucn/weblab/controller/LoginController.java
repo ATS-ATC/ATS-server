@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.model.User;
 import com.alucn.weblab.service.LoginService;
 
@@ -41,16 +42,25 @@ public class LoginController {
     }
 	
 	@RequestMapping(path = "/userLoginCheckOut", method = RequestMethod.POST)
-    public String loginCheckOut(User user, HttpSession session, Model model) {
-		boolean authResult = loginService.getUser(user);
+    public String loginCheckOut(User user, HttpSession session, Model model) throws Exception {
+		boolean authResult = loginService.authUser(user);
 		String returnDec = "";
 		if(authResult){
 			model.addAttribute("loginResult", "success");
 			session.setAttribute("login", user.getUserName());
+			session.setAttribute("auth", "errorCases");
 			returnDec =  "forward:/getStatistics.do";
 		}else{
-			model.addAttribute("loginResult", "failed");
-			returnDec = "login";
+			authResult = loginService.getUser(user);
+			if(authResult){
+				model.addAttribute("loginResult", "success");
+				session.setAttribute("login", user.getUserName());
+				session.setAttribute("auth", Constant.AUTH);
+				returnDec =  "forward:/getStatistics.do";
+			}else{
+				model.addAttribute("loginResult", "failed");
+				returnDec = "login";
+			}
 		}
         return returnDec;
     }
