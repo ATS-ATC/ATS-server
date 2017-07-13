@@ -154,7 +154,7 @@ public class SendMail {
 		sb.append("tbody tr.odd td {background:#bcd9e1;}");
 		sb.append("</style></head>");
 		sb.append("<body>");
-		sb.append("<p><span style=\"background:#cccc33;\">@All testers,</span></p>");
+		sb.append("<p><span style=\"background:#cccc33;\">@All testers:</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below cases are failed when auto tested by certified servers.</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log, find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
@@ -207,6 +207,7 @@ public class SendMail {
 
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		String dateTime = df.format(new Date());
+//		logger.info(sb.toString());
 		SendMail.Send("Daily certified case failure check " + dateTime, sb.toString(), to_list, cc_list);
 	}
 

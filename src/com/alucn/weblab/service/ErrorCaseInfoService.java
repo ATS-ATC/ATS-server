@@ -51,7 +51,7 @@ public class ErrorCaseInfoService {
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, String auth) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE 1=1 and fature='"+featureName+"'";
+		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
 		if(!auth.equals(Constant.AUTH)){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
@@ -78,8 +78,8 @@ public class ErrorCaseInfoService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		for(String acase : errorcases.split(",")){
-//			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND fature='"+featureName.trim()+"'";
-			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND fature='"+featureName.trim()+"'";
+//			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND feature='"+featureName.trim()+"'";
+			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND feature='"+featureName.trim()+"'";
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
 		}
 	}

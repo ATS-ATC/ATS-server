@@ -14,7 +14,9 @@ import com.alucn.weblab.xmlconfig.AppConfig;
 import com.alucn.weblab.xmlconfig.WebConfig;
 
 /**
- * @author haiqiw 2017骞�6鏈�21鏃� 涓婂崍10:32:50 desc:Initializer
+ * @author haiqiw
+ * 2017年7月13日 上午9:18:35
+ * desc:WebLabApplicationInitializer
  */
 public class WebLabApplicationInitializer implements WebApplicationInitializer {
 

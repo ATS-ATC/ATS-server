@@ -114,7 +114,7 @@ public class CaseConfigurationCache {
 			
 			dfttag_sql = "select * from DailyCase where case_name='"+caseName+"'";
 			List<Map<String, Object>> list_dc = jdbc_dc.findModeResult(dfttag_sql, null);
-			String caseerr_sql = "replace into errorcaseinfo (casename, fature, err_reason, owner, insert_date, mark_date, email_date, servername) values('"+caseName+"', '"+list_dc.get(0).get("feature_number")+"', '', '"+list_dc.get(0).get("author")+"', '"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"', '', '', '"+body.getJSONObject(Constant.LAB).getJSONArray(Constant.SERVERNAME)+"')";
+			String caseerr_sql = "replace into errorcaseinfo (casename, feature, err_reason, owner, insert_date, mark_date, email_date, servername) values('"+caseName+"', '"+list_dc.get(0).get("feature_number")+"', '', '"+list_dc.get(0).get("author")+"', '"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"', '', '', '"+body.getJSONObject(Constant.LAB).getJSONArray(Constant.SERVERNAME)+"')";
 			jdbc_cf.executeSql(caseerr_sql);
 		}
 		
