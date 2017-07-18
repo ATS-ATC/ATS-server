@@ -26,6 +26,7 @@ public class Constant {
 	public static final String TASKRESULT = "taskResult";
 	public static final String SUCCESS = "success";
 	public static final String NAME = "name";
+	public static final String TIME = "time";
 	public static final String FAIL = "fail";
 	public static final String CHARACTER_SET_ENCODING_UTF8 = "UTF-8";
 	public static final String EMBEDDED_MESSAGE_REQ = "PREREQUESTHEALTH"; 

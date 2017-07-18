@@ -120,7 +120,8 @@ public class CaseConfigurationCache {
 		
 		for(int i=0; i<caseSuccessList.size(); i++){
 		    String caseName = caseSuccessList.getJSONObject(i).getString(Constant.NAME).replace("dft_server/", "");
-			String dfttag_sql = "update DftTag set case_status='S',status_owner='ATS' where case_name='"+caseName+"'";
+		    String caseTime = caseSuccessList.getJSONObject(i).getString(Constant.TIME);
+			String dfttag_sql = "update DftTag set case_status='S', status_owner='ATS', case_cost="+caseTime+" where case_name='"+caseName+"'";
 			jdbc_df.executeSql(dfttag_sql);
 			String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
 			jdbc_dc.executeSql(dfttagdaily_sql);
