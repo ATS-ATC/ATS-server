@@ -23,7 +23,7 @@ public class MainProcess {
 	 * @return
 	 */
 	
-	public synchronized String process(String reqJson, Socket socket, BlockingQueue<String> queue, JSONObject reqHead, JSONObject reqBody, String serverName){
+	public String process(String reqJson, Socket socket, BlockingQueue<String> queue, JSONObject reqHead, JSONObject reqBody, String serverName){
 		String rspJson = "";//response message
 		try {
 			logger.debug("[Request processing start...]");
