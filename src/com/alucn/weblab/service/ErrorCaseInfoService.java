@@ -27,7 +27,7 @@ public class ErrorCaseInfoService {
 	 
 	public Map<String, String> getErrorCaseInfo(String userName, String auth) throws Exception{
 		errroCases = new HashMap<String, String>();
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB");
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getFeatureOfUser = "SELECT DISTINCT feature_number FROM DailyCase WHERE 1=1";
 		if(!auth.equals(Constant.AUTH)){

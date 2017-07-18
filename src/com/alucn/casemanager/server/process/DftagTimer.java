@@ -25,15 +25,15 @@ public class DftagTimer {
         public void run(){  
         	logger.info("Time''s up!");  
             try {
-				JdbcUtil jdbc_dc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB"));
+//				JdbcUtil jdbc_dc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB"));
 				JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-				JdbcUtil jdbc_dp = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("PortingCaseDB"));
+//				JdbcUtil jdbc_dp = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("PortingCaseDB"));
 				String dfttag_sql = "select * from DftTag where porting_release != 'NA' group by feature_number";
-				List<Map<String, Object>> list_dc = jdbc_dc.findModeResult(dfttag_sql, null);
+				List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(dfttag_sql, null);
 				for(int i=0; i<list_dc.size(); i++){
 					if(!list_dc.get(i).get("porting_release").toString().startsWith(list_dc.get(i).get("release").toString())){
 						String dftporting_sql = "select distinct(porting_release) from DftPorting where feature_number='"+list_dc.get(i).get("feature_number").toString()+"'";
-						List<Map<String, Object>> list_dftp = jdbc_dp.findModeResult(dftporting_sql, null);
+						List<Map<String, Object>> list_dftp = jdbc_cf.findModeResult(dftporting_sql, null);
 						if(list_dftp.size()==0 || !list_dc.get(i).get("porting_release").toString().contains(list_dftp.get(0).get("porting_release").toString())){
 							String featureinfo_sql = "select distinct(ftc_date) from FeatureInfo where feature_id = '"+list_dc.get(i).get("feature_number").toString()+"' and case_num>0";
 							List<Map<String, Object>> list_fi = jdbc_cf.findModeResult(featureinfo_sql, null);

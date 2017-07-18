@@ -103,17 +103,17 @@ public class CaseConfigurationCache {
 		JSONArray caseFailList = body.getJSONObject(Constant.TASKRESULT).getJSONArray(Constant.FAIL);
 		JSONArray caseSuccessList = body.getJSONObject(Constant.TASKRESULT).getJSONArray(Constant.SUCCESS);
 		JdbcUtil jdbc_df = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-		JdbcUtil jdbc_dc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB"));
+//		JdbcUtil jdbc_dc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DailyCaseDB"));
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		for(int i=0; i<caseFailList.size(); i++){
 		    String caseName = caseFailList.getString(i).replace("dft_server/", "");
 			String dfttag_sql = "update DftTag set case_status='F',status_owner='ATS' where case_name='"+caseName+"'";
 			jdbc_df.executeSql(dfttag_sql);
 			String dfttagdaily_sql = "update DailyCase set case_status='F',status_owner='ATS' where case_name='"+caseName+"'";
-			jdbc_dc.executeSql(dfttagdaily_sql);
+			jdbc_cf.executeSql(dfttagdaily_sql);
 			
 			dfttag_sql = "select * from DailyCase where case_name='"+caseName+"'";
-			List<Map<String, Object>> list_dc = jdbc_dc.findModeResult(dfttag_sql, null);
+			List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(dfttag_sql, null);
 			String caseerr_sql = "replace into errorcaseinfo (casename, feature, err_reason, owner, insert_date, mark_date, email_date, servername) values('"+caseName+"', '"+list_dc.get(0).get("feature_number")+"', '', '"+list_dc.get(0).get("author")+"', '"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"', '', '', '"+body.getJSONObject(Constant.LAB).getJSONArray(Constant.SERVERNAME)+"')";
 			jdbc_cf.executeSql(caseerr_sql);
 		}
@@ -124,7 +124,7 @@ public class CaseConfigurationCache {
 			String dfttag_sql = "update DftTag set case_status='S', status_owner='ATS', case_cost="+caseTime+" where case_name='"+caseName+"'";
 			jdbc_df.executeSql(dfttag_sql);
 			String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
-			jdbc_dc.executeSql(dfttagdaily_sql);
+			jdbc_cf.executeSql(dfttagdaily_sql);
 		}
 	}
 }
