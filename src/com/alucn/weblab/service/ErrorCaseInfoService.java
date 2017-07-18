@@ -29,16 +29,16 @@ public class ErrorCaseInfoService {
 		errroCases = new HashMap<String, String>();
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getFeatureOfUser = "SELECT DISTINCT feature_number FROM DailyCase WHERE 1=1";
+		String getFeatureOfUser = "SELECT DISTINCT feature FROM errorcaseinfo WHERE 1=1";
 		if(!auth.equals(Constant.AUTH)){
-			getFeatureOfUser = getFeatureOfUser+" and author='"+userName+"'";
+			getFeatureOfUser = getFeatureOfUser+" and owner='"+userName+"'";
 		}
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getFeatureOfUser);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
 			for(String key: obj.keySet()){
 				String featureNum = (String)obj.get(key);
-				String getCaseName = "SELECT case_name FROM DailyCase WHERE feature_number='" + featureNum+"' AND case_status='F'";
+				String getCaseName = "SELECT casename FROM errorcaseinfo WHERE feature='"+ featureNum+"'";
 				ArrayList<HashMap<String, Object>> resultCaseName = errorCaseDaoImpl.query(jdbc, getCaseName);
 				if(resultCaseName.size()>0){
 					errroCases.put(featureNum, String.valueOf(resultCaseName.size()));
