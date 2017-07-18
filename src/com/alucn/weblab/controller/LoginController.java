@@ -46,21 +46,18 @@ public class LoginController {
 		boolean authResult = loginService.authUser(user);
 		String returnDec = "";
 		if(authResult){
-			model.addAttribute("loginResult", "success");
-			session.setAttribute("login", user.getUserName());
-			session.setAttribute("auth", "errorCases");
-			returnDec =  "forward:/getStatistics.do";
-		}else{
 			authResult = loginService.getUser(user);
 			if(authResult){
-				model.addAttribute("loginResult", "success");
-				session.setAttribute("login", user.getUserName());
 				session.setAttribute("auth", Constant.AUTH);
-				returnDec =  "forward:/getStatistics.do";
 			}else{
-				model.addAttribute("loginResult", "failed");
-				returnDec = "login";
+				session.setAttribute("auth", "errorCases");
 			}
+			model.addAttribute("loginResult", "success");
+			session.setAttribute("login", user.getUserName());
+			returnDec =  "forward:/getStatistics.do";
+		}else{
+			model.addAttribute("loginResult", "failed");
+			returnDec = "login";
 		}
         return returnDec;
     }
