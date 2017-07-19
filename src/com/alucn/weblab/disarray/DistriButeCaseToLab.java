@@ -17,6 +17,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import org.apache.log4j.Logger;
+import org.apache.taglibs.standard.tag.common.core.RemoveTag;
+
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
@@ -96,8 +98,8 @@ public class DistriButeCaseToLab {
 
 	private boolean IsInJSONArrayWithoutCase(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
-			String A_value = String.valueOf(list.get(i)).toUpperCase();
-			if (A_value.startsWith(String.valueOf(value))) {
+			String A_value = String.valueOf(list.get(i));
+			if (A_value.equalsIgnoreCase(String.valueOf(value))) {
 				return true;
 			}
 		}
@@ -106,7 +108,7 @@ public class DistriButeCaseToLab {
 
 	private boolean isLabListContainsCaseList(JSONArray A, JSONArray B) {
 		for (int i = 0; i < B.size(); i++) {
-			if (!IsInJSONArrayWithoutCase(B.getString(i).toUpperCase(), A)) {
+			if (!IsInJSONArrayWithoutCase(B.getString(i), A)) {
 				return false;
 			}
 		}
@@ -115,8 +117,8 @@ public class DistriButeCaseToLab {
 
 	private int postionInJSONArray(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
-			String A_value = String.valueOf(list.get(i)).toUpperCase();
-			if (A_value.startsWith(String.valueOf(value))) {
+			String A_value = String.valueOf(list.get(i));
+			if (A_value.equalsIgnoreCase(String.valueOf(value))) {
 				return i;
 			}
 		}
@@ -283,6 +285,7 @@ public class DistriButeCaseToLab {
 				for (int i = 0; i < SingleList.size(); i++) {
 					if (SingleList.getJSONObject(i).getString("name").equals("release")) {
 						releaseArray = SingleList.getJSONObject(i).getJSONArray("value");
+						break;
 					}
 				}
 
@@ -299,6 +302,17 @@ public class DistriButeCaseToLab {
 		}
 
 		return releaseArray;
+	}
+	
+	private JSONArray RemoveRelease(JSONArray list)
+	{
+	    JSONArray jsonList = new JSONArray();
+	    for(int i = 0; i < list.size(); i++)
+	    {
+	        jsonList.add(String.valueOf(list.get(i)).replaceAll("\\d\\w+$", ""));
+	    }
+	    
+	    return jsonList;
 	}
 
 	private void UpdateCaseStatusDB(JSONArray caseList) {
@@ -350,6 +364,7 @@ public class DistriButeCaseToLab {
 			boolean IsSame = true;
 			
 			JSONArray releaseList = GetReleaseList();
+			logger.debug("releaseList: " +  releaseList.toString());
 
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
 					true, null);
@@ -378,24 +393,24 @@ public class DistriButeCaseToLab {
 				for (int i = 0; i < Servers.size(); i++) {
 					ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 					String serverName = ServerMem.getString(Constant.SERVERNAME);
-					JSONArray spaList = ServerMem.getJSONArray(Constant.SERVERSPA);
-					JSONArray rtdbList = ServerMem.getJSONArray(Constant.SERVERRTDB);
+					JSONArray spaList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
+					JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
 					String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
 					String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
 					// logger.error("Server: " + spaList.toString() + " ---- " +
 					// rtdbList.toString());
+					//logger.error(" ---------------------------- " + serverName + " ------------------------------");
 					if (!isLabListContainsCaseList(spaList, spaArray)) {
-						// logger.error("Server: " + spaList.toString() + "
-						// case: " + spaArray.toString());
+						 //logger.error("Server: " + spaList.toString() + "case: " + spaArray.toString());
 						continue;
 					}
 					if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
-						// logger.error("Server: " + rtdbList.toString() + "
-						// case: " + rtdbArray.toString());
+						 //logger.error("Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
 						continue;
 					}
-					if ((serverProtocol.equals("ANSI") && !customer.equals("VZW"))
-							|| (serverProtocol.equals("ITU") && customer.equals("VZW"))) {
+					if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
+							|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
+					    //logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
 						continue;
 					}
 					boolean isReleaseMath = false;
@@ -409,6 +424,7 @@ public class DistriButeCaseToLab {
 						} else {
 							if (porting_release.endsWith("+")) {
 								int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
+								
 								if (serverReleasePostion != -1) {
 									int LastReleasePostion = postionInJSONArray(
 											porting_release.substring(porting_release.lastIndexOf(",") + 1,
@@ -424,6 +440,7 @@ public class DistriButeCaseToLab {
 					}
 
 					if (!isReleaseMath) {
+					    //logger.debug("case_name: " + caseName + " Server: " + serverName);
 						continue;
 					}
 					kvmList.add(serverName);
