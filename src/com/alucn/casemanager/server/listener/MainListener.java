@@ -57,7 +57,7 @@ public class MainListener {
 				
 				File file = new File(configFilesPath);
 				if(file.isDirectory()){
-					logger.info("[Profile path：]"+configFilesPath);
+					logger.info("[ Profile path ]"+configFilesPath);
 					
 					//start socket listener
 					SocketListener socketListener = new SocketListener();

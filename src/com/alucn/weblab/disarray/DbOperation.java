@@ -73,7 +73,7 @@ public class DbOperation {
 			stat_df = connection_df.createStatement();
 			String Query_df = "select case_name from DftTag where case_name in "
 					+ caseList_dc.toString().replace("[", "(").replace("]", ")").replace("\"", "'");
-			ResultSet result_df = stat_dc.executeQuery(Query_df);
+			ResultSet result_df = stat_df.executeQuery(Query_df);
 			JSONArray caseList_df = new JSONArray();
 			while (result_df.next()) {
 				caseList_df.add(result_df.getString("case_name"));

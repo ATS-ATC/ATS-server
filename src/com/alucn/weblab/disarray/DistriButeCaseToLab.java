@@ -256,7 +256,6 @@ public class DistriButeCaseToLab {
 	 * Pattern.compile("[0-9]*"); return pattern.matcher(str).matches(); }
 	 */
 
-	@SuppressWarnings("unused")
 	private JSONArray GetReleaseList() {
 		JSONArray releaseArray = new JSONArray();
 		URL url;
@@ -349,6 +348,8 @@ public class DistriButeCaseToLab {
 			String customer, release, porting_release;
 			JSONArray spaArray, rtdbArray;
 			boolean IsSame = true;
+			
+			JSONArray releaseList = GetReleaseList();
 
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
 					true, null);
@@ -407,12 +408,12 @@ public class DistriButeCaseToLab {
 							isReleaseMath = true;
 						} else {
 							if (porting_release.endsWith("+")) {
-								int serverReleasePostion = postionInJSONArray(serverRelease, portingReleaseList);
+								int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
 								if (serverReleasePostion != -1) {
 									int LastReleasePostion = postionInJSONArray(
 											porting_release.substring(porting_release.lastIndexOf(",") + 1,
 													porting_release.length() - 1),
-											portingReleaseList);
+											releaseList);
 									if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
 										isReleaseMath = true;
 									}
@@ -584,7 +585,6 @@ public class DistriButeCaseToLab {
 					+ "%' and case_name not in "
 					+ case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]", ")")
 					+ " order by group_id";
-			logger.info(query_sql);
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {
