@@ -86,23 +86,27 @@ public class MarkCaseErr {
 				errCaseInfo.put("logPath", serverName);
 				report.add(errCaseInfo);
 			}
-			JSONArray cc_list = new JSONArray();
-			cc_list.add("lei.k.huang@alcatel-lucent.com");
-			to_list.add("Haiqi.Wang@alcatel-lucent.com");
-//			for (String key : to_list_map.keySet()) {
-//				to_list.add(key);
-//			}
-			JSONObject buildInfo = new JSONObject();
-			buildInfo.put("webSite", "http://" + ConfigProperites.getInstance().getCaseServerWebIp() + ":8080/weblab");
-			SendMail.genReport(cc_list, to_list, report, buildInfo);
-			for (int i = 0; i < list_dc.size(); i++) {
-				String updateMail = "update errorcaseinfo set email_date='"
-						+ DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss") + "' where feature='"
-						+ list_dc.get(i).get("feature").toString() + "' and owner='"
-						+ list_dc.get(i).get("owner").toString() + "' and servername='" + serverName + "'";
-				jdbc_cf.executeSql(updateMail);
+			if(report.size()!=0){
+				JSONArray cc_list = new JSONArray();
+				cc_list.add("lei.k.huang@alcatel-lucent.com");
+				to_list.add("Haiqi.Wang@alcatel-lucent.com");
+//				for (String key : to_list_map.keySet()) {
+//					to_list.add(key);
+//				}
+				JSONObject buildInfo = new JSONObject();
+				buildInfo.put("webSite", "http://" + ConfigProperites.getInstance().getCaseServerWebIp() + ":8080/weblab");
+				SendMail.genReport(cc_list, to_list, report, buildInfo);
+				for (int i = 0; i < list_dc.size(); i++) {
+					String updateMail = "update errorcaseinfo set email_date='"
+							+ DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss") + "' where feature='"
+							+ list_dc.get(i).get("feature").toString() + "' and owner='"
+							+ list_dc.get(i).get("owner").toString() + "' and servername='" + serverName + "'";
+					jdbc_cf.executeSql(updateMail);
+				}
+				return true;
+			}else{
+				return false;
 			}
-			return true;
 		} else {
 			return false;
 		}
