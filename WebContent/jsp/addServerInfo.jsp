@@ -169,6 +169,7 @@
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="./getServerInfo.do">Servers</a></li>
+						<li><a href="./searchInfo.do">Case Search</a></li>
 						<li><a href="./getErrorCaseInfo.do">Error Cases</a></li>
 						<li class="dropdown"><a href="#" class="dropdown-toggle"
 							data-toggle="dropdown">Admin<strong class="caret"></strong></a>
