@@ -57,17 +57,18 @@
 		$("#search")
 				.click(
 						function() {
-							var ds = $('input[type="checkbox"][name="ds"]:checked');
+							var ds = $('input[type="radio"][name="ds"]:checked');
 							var r = $('input[type="checkbox"][name="r"]:checked');
 							var c = $('input[type="checkbox"][name="c"]:checked');
 							var bd = $('input[type="checkbox"][name="bd"]:checked');
-							var m = $('input[type="checkbox"][name="m"]:checked');
-							var ln = $('input[type="checkbox"][name="ln"]:checked');
-							var sd = $('input[type="checkbox"][name="sd"]:checked');
+							var m = $('input[type="radio"][name="m"]:checked');
+							var ln = $('input[type="radio"][name="ln"]:checked');
+							var sd = $('input[type="radio"][name="sd"]:checked');
 							var pr = $('input[type="checkbox"][name="pr"]:checked');
 							var cs = $('input[type="checkbox"][name="cs"]:checked');
 							var fi = document.getElementById("featureid").value;
 							var author = document.getElementById("author").value;
+							var server = document.getElementById("server").options[document.getElementById("server").selectedIndex].value;
 							var condition = "";
 							if (ds.length == 0 && r.length == 0 && c.length == 0 && bd.length == 0 && m.length == 0
 									&& ln.length == 0 && sd.length == 0	&& pr.length == 0 && cs.length == 0 && fi == "" && author == "") {
@@ -83,81 +84,129 @@
 												});
 								return;
 							}
-							for (var i = 0; i < ds.length; i++) {
-								condition += ds.get(i).value;
-								if(i == ds.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							if(ds.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < ds.length; i++) {
+									condition += ds.get(i).value;
+									if(i == ds.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
 							}
-							for (var i = 0; i < r.length; i++) {
-								condition += r.get(i).value;
-								if(i == r.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							
+							if(r.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < r.length; i++) {
+									condition += r.get(i).value;
+									if(i == r.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
 							}
-							for (var i = 0; i < c.length; i++) {
-								condition += c.get(i).value;
-								if(i == c.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							
+							if(c.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < c.length; i++) {
+									condition += c.get(i).value;
+									if(i == c.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
+								}
+							}	
+								
+							if(bd.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < bd.length; i++) {
+									condition += bd.get(i).value;
+									if(i == bd.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
 							}
-							for (var i = 0; i < bd.length; i++) {
-								condition += bd.get(i).value;
-								if(i == bd.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							
+							if(m.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < m.length; i++) {
+									condition += m.get(i).value;
+									if(i == m.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
 							}
-							for (var i = 0; i < m.length; i++) {
-								condition += m.get(i).value;
-								if(i == m.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							
+							if(ln.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < ln.length; i++) {
+									condition += ln.get(i).value;
+									if(i == ln.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
+								}
+							}	
+								
+							
+							if(sd.length == 0){
+								condition += ";";
+							}else{
+								for (var i = 0; i < sd.length; i++) {
+									condition += sd.get(i).value;
+									if(i == sd.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
 							}
-							for (var i = 0; i < ln.length; i++) {
-								condition += ln.get(i).value;
-								if(i == ln.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							
+							if(pr.length == 0){
+								condition += ";";
+							}else{	
+								for (var i = 0; i < pr.length; i++) {
+									condition += pr.get(i).value;
+									if(i == pr.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
-							}
-							for (var i = 0; i < sd.length; i++) {
-								condition += sd.get(i).value;
-								if(i == sd.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
+							}	
+								
+							if(cs.length == 0){
+								condition += ";";
+							}else{	
+								for (var i = 0; i < cs.length; i++) {
+									condition += cs.get(i).value;
+									if(i == cs.length-1){
+										condition += ";";
+									}else{
+										condition += ",";
+									}
 								}
-							}
-							for (var i = 0; i < pr.length; i++) {
-								condition += pr.get(i).value;
-								if(i == pr.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
-								}
-							}
-							for (var i = 0; i < cs.length; i++) {
-								condition += cs.get(i).value;
-								if(i == cs.length-1){
-									condition += ";";
-								}else{
-									condition += ",";
-								}
-							}
+							}	
+								
 							condition += fi;
 							condition += ";";
-							condition += quthor;
+							condition += author;
+							condition += ";";
+							condition += server;
 							condition += "";
 							
 							confirm(condition, "Confirm to search this condition ?");
@@ -166,6 +215,9 @@
 </script>
 </head>
 <body>
+<%
+		String auth = session.getAttribute("auth").toString();
+%>
 	<div class="container">
 		<div class="row clearfix">
 			<div class="col-md-12 column">
@@ -225,7 +277,7 @@
 							<c:if test="${data_source!=null && fn:length(data_source) > 0}">
 								<c:forEach items="${data_source}" var="ds">
 									<div class="col-xs-6 col-sm-3 column">
-										<label class="checkbox-inline"> <input type="checkbox"
+										<label class="checkbox-inline"> <input type="radio"
 											name="ds" value="${ds}">${ds}
 										</label>
 									</div>
@@ -285,7 +337,7 @@
 							<c:if test="${mate!=null && fn:length(mate) > 0}">
 								<c:forEach items="${mate}" var="m">
 									<div class="col-xs-6 col-sm-3 column">
-										<label class="checkbox-inline"> <input type="checkbox"
+										<label class="checkbox-inline"> <input type="radio"
 											name="m" value="${m}">${m}
 										</label>
 									</div>
@@ -300,7 +352,7 @@
 							<c:if test="${lab_number!=null && fn:length(lab_number) > 0}">
 								<c:forEach items="${lab_number}" var="ln">
 									<div class="col-xs-6 col-sm-3 column">
-										<label class="checkbox-inline"> <input type="checkbox"
+										<label class="checkbox-inline"> <input type="radio"
 											name="ln" value="${ln}">${ln}
 										</label>
 									</div>
@@ -315,7 +367,7 @@
 							<c:if test="${special_data!=null && fn:length(special_data) > 0}">
 								<c:forEach items="${special_data}" var="sd">
 									<div class="col-xs-6 col-sm-3 column">
-										<label class="checkbox-inline"> <input type="checkbox"
+										<label class="checkbox-inline"> <input type="radio"
 											name="sd" value="${sd}">${sd}
 										</label>
 									</div>
@@ -379,6 +431,40 @@
 						</div>
 					</div>
 					
+					<br/><br/>
+					
+					<div class="row clearfix">
+						<div class="col-md-12 column">
+							<div class="col-xs-6 col-sm-3 column">
+								<label class="checkbox-inline">
+									Server:  
+								</label>
+							</div>
+							<div class="col-xs-6 col-sm-3 column">
+								&nbsp;&nbsp;&nbsp;&nbsp;
+								<select class="checkbox-inline" style="width:174px;height:25px" id="server" name="server"> 
+									<c:if test="${servers!=null && fn:length(servers) > 0}">
+										<%
+										if(auth.equals("errorCases")){
+										%>
+										<c:forEach items="${servers}" var="s">
+											<option value="${s}">${s}</option>
+										</c:forEach>
+										<%
+										} else{
+										%>
+										<option value="0">--Please Select--</option>
+										<%
+										}
+										%>
+									</c:if>
+									<c:if test="${servers==null || fn:length(servers) == 0}">
+										<option value="0">--Please Select--</option>
+									</c:if>
+								</select> 
+							</div>
+						</div>
+					</div>
 					<br/><br/>
 					
 					<div class="row clearfix">

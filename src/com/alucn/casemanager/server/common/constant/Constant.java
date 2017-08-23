@@ -75,4 +75,6 @@ public class Constant {
 	public static final String  AUTHSUCCESS = "SLLAUTHSUCCESS";
 	public static final String  PROJECTNAME = "weblab";
 	public static final String  AUTH = "all";
+	public static final String  DAILYCASE = "DailyCase";
+	public static final String  DFTTAG = "DftTag";
 }

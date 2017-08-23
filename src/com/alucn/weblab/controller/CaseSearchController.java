@@ -2,6 +2,8 @@ package com.alucn.weblab.controller;
 
 import java.io.PrintWriter;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +29,7 @@ public class CaseSearchController {
 	}
 	
 	@RequestMapping(path = "/searchCaseInfo")
-	public void searchCaseInfo(Model model, String condition,  PrintWriter out) throws Exception{
-		System.out.println(condition);
-		out.write(caseSearchService.searchCaseInfo(condition));
+	public void searchCaseInfo(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
+		out.write(caseSearchService.searchCaseInfo(condition, session.getAttribute("auth").toString()));
 	}
 }

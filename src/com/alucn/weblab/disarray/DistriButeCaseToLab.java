@@ -21,6 +21,8 @@ import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.ParamUtil;
+import com.alucn.weblab.service.CaseSearchService;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -325,7 +327,7 @@ public class DistriButeCaseToLab {
 
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 			state = connection.createStatement();
-
+			
 			QuerySql = "select max(group_id) from toDistributeCases where case_name not in " + caseListStr;
 			try {
 				ResultSet result = state.executeQuery(QuerySql);
@@ -542,16 +544,31 @@ public class DistriButeCaseToLab {
 				}
 			}
 
-			query_sql = "select case_name from DailyCase where case_status = 'I';";
-			// query_sql = "select case_name from DailyCase where case_name not
-			// in (select case_name from toDistributeCases);";
-			ResultSet result2 = state.executeQuery(query_sql);
-			while (result2.next()) {
-				caseList.add(result2.getString("case_name"));
-			}
+			if(CaseSearchService.sqlAdmin.equals("")){
+				query_sql = "select case_name from DailyCase where case_status = 'I';";
+				// query_sql = "select case_name from DailyCase where case_name not
+				// in (select case_name from toDistributeCases);";
+				ResultSet result2 = state.executeQuery(query_sql);
+				while (result2.next()) {
+					caseList.add(result2.getString("case_name"));
+				}
 
-			query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
-			state.executeUpdate(query_sql);
+				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
+				state.executeUpdate(query_sql);
+			}else{
+				query_sql = CaseSearchService.sqlAdmin;
+				// query_sql = "select case_name from DailyCase where case_name not
+				// in (select case_name from toDistributeCases);";
+				ResultSet result2 = state.executeQuery(query_sql);
+				while (result2.next()) {
+					caseList.add(result2.getString("case_name"));
+				}
+
+				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+CaseSearchService.sqlAdmin+"));";
+				state.executeUpdate(query_sql);
+			}
+			
+			//caselist里面放的是曾经跑过的case但是现在serverinfo改动了，和一直没有跑的case
 			if (caseList.size() > 0) {
 				UpdateCaseStatusDB(caseList);
 			}
@@ -644,8 +661,8 @@ public class DistriButeCaseToLab {
 	public JSONObject GetDistributeCases() {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
-		JSONArray changedKvmList = updateKvmDB();
-		UpdatedistributeDB(changedKvmList);
+		JSONArray changedKvmList = updateKvmDB();//更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
+		UpdatedistributeDB(changedKvmList);//找到曾经跑过，但是server信息更新了的case和没有跑过的case
 
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
 				null);
