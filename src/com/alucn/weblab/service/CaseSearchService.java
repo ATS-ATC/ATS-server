@@ -141,7 +141,7 @@ public class CaseSearchService {
 			String [] case_status = conds[8].split(",");
 			sql += "and case_status in (";
 			for(int i=0; i<case_status.length; i++){
-				sql += "'"+case_status[i]+"'";
+				sql += "'"+case_status[i].toUpperCase().charAt(0)+"'";
 				if(i==(case_status.length-1)){
 					sql += ") ";
 				}else{

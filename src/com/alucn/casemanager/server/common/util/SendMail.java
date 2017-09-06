@@ -156,7 +156,8 @@ public class SendMail {
 		sb.append("<body>");
 		sb.append("<p><span style=\"background:#cccc33;\">@All testers:</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below cases are failed when auto tested by certified servers.</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log, find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log through the <a href=\"ftp://135.242.16.160/CertifyLog/\">logPath</a>, find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a>.</span></p>");
+//		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log , find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
 //		sb.append("<span>" + "<a href=\"" + buildInfo.get("SrcPath") + "\">" + buildInfo.get("SrcPath") + "</a></span>");
 //		sb.append("<span>&nbsp;&nbsp;Log Path: </span>");
@@ -173,8 +174,9 @@ public class SendMail {
 		sb.append("<th>feature</th>");
 		sb.append("<th>owner</th>");
 		sb.append("<th>case id</th>");
-		sb.append("<th>srcPath</th>");
-		sb.append("<th>logPath</th>");
+		sb.append("<th>serverName</th>");
+//		sb.append("<th>srcPath</th>");
+//		sb.append("<th>logPath</th>");
 		sb.append("</tr>");
 		sb.append("</thead>");
 		sb.append("<tbody>");
@@ -186,8 +188,9 @@ public class SendMail {
 			sb.append("<td style=\"text-align:left; width:50%; word-break:break-all; word-wrap:break-word;\">"
 					+ report.getJSONObject(i).getString("case")
 					+ "</td>");
-			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("srcPath") + "</td>");
-			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("logPath") + "</td>");
+			sb.append("<td style=\"width:40%\"> " + report.getJSONObject(i).getString("serverName") + "</td>");
+//			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("srcPath") + "</td>");
+//			sb.append("<td style=\"width:20%\"> " + report.getJSONObject(i).getString("logPath") + "</td>");
 			sb.append("</tr>");
 
 		}

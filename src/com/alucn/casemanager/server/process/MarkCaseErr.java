@@ -82,8 +82,9 @@ public class MarkCaseErr {
 					}
 				}
 				errCaseInfo.put("case", errCaseString.toString().replace(feature + "/", ""));
-				errCaseInfo.put("srcPath", serverName);
-				errCaseInfo.put("logPath", serverName);
+				errCaseInfo.put("serverName", serverName);
+//				errCaseInfo.put("srcPath", serverName);
+//				errCaseInfo.put("logPath", serverName);
 				report.add(errCaseInfo);
 			}
 			if(report.size()!=0){

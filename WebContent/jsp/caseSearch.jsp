@@ -469,7 +469,7 @@
 					
 					<div class="row clearfix">
 						<div class="col-md-12 column text-right">
-							<button type="button" class="btn btn-default" id="add">update DB</button>
+<!-- 							<button type="button" class="btn btn-default" id="add">update DB</button> -->
 							<button type="button" class="btn btn-default" id="search">search</button>
 						</div>
 					</div>
