@@ -15,12 +15,18 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.log4j.Logger;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
+import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
+import com.alucn.casemanager.server.common.util.SendMail;
 import com.alucn.weblab.service.CaseSearchService;
 
 import net.sf.json.JSONArray;
@@ -347,7 +353,7 @@ public class DistriButeCaseToLab {
 			}
 
 			QuerySql = "select D.case_name, D.base_data, D.special_data, D.lab_number, D.mate, D.customer, D.release, D.porting_release, C.SPA, C.DB as RTDB, C.SecData as second_data "
-					+ "from DailyCase as D, CaseDepends as C where D.case_name = C.case_name and D.case_name in "
+					+ "from "+CaseSearchService.dataBase+" as D, CaseDepends as C where D.case_name = C.case_name and D.case_name in "
 					+ caseListStr
 					+ " order by D.lab_number, D.mate, D.special_data,  D.base_data, C.SecData, D.case_name;";
 			// int change_num = state.executeUpdate(UpdateSql);
@@ -658,7 +664,7 @@ public class DistriButeCaseToLab {
 		return caseList;
 	}
 
-	public JSONObject GetDistributeCases() {
+	public JSONObject GetDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
 		JSONArray changedKvmList = updateKvmDB();//更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
@@ -667,21 +673,68 @@ public class DistriButeCaseToLab {
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
 				null);
 		JSONObject ServerMem;
+		int idleServerNum=1;
+		int caseListNull=1;
 		for (int i = 0; i < Servers.size(); i++) {
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
-
+				idleServerNum++;
 				ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = ServerMem.getString(Constant.SERVERNAME);
 
 				logger.debug("idle server: " + serverName);
 				JSONArray caseList = genCaseListToLab(serverName);
+				if(caseList.size()==0){
+					caseListNull++;
+				}
 				JSONObject labInfo = new JSONObject();
 				labInfo.put("uuid", UUID.randomUUID().toString());
 				labInfo.put("case_list", caseList);
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
+		}
+		if(idleServerNum==Servers.size() && caseListNull==Servers.size()){
+			Map<String,String> rtdbMap = new HashMap<String,String>();
+			Map<String,String> spaMap = new HashMap<String,String>();
+			List<String> unInstallRtdb=new ArrayList<String>();
+			List<String> unInstallSpa=new ArrayList<String>();
+			for (int i = 0; i < Servers.size(); i++) {
+				JSONObject serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+				JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
+				for (int m=0; m<serverSpa.size(); m++) {
+					spaMap.put(serverSpa.getString(m), "");
+				}
+				JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
+				for (int n=0; n<serverRtdb.size(); n++) {
+					rtdbMap.put(serverRtdb.getString(n), "");
+				}
+			}
+			String sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'";
+			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+			ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
+			for (int i = 0; i < list.size(); i++) {
+				JSONArray serverSpa = JSONArray.fromObject(list.get(i).get("SPA"));
+				for (int m=0; m<serverSpa.size(); m++) {
+					if(!spaMap.containsKey(serverSpa.getString(m))){
+						unInstallSpa.add(serverSpa.getString(m));
+					}
+				}
+				
+				JSONArray serverRtdb = JSONArray.fromObject(list.get(i).get("RTDB"));
+				for (int n=0; n<serverRtdb.size(); n++) {
+					if(!rtdbMap.containsKey(serverRtdb.getString(n))){
+						unInstallRtdb.add(serverRtdb.getString(n));
+					}
+				}
+				
+			}
+			//send mail
+			JSONArray cc_list = new JSONArray();
+			JSONArray to_list = new JSONArray();
+			cc_list.add("lei.k.huang@alcatel-lucent.com");
+			to_list.add("Haiqi.Wang@alcatel-lucent.com");
+			SendMail.genReport(cc_list, to_list, unInstallRtdb, unInstallSpa);
 		}
 		AvailableCases.put("availableCase", Cases);
 		return AvailableCases;

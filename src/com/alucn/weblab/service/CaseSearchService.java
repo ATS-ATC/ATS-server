@@ -40,6 +40,7 @@ public class CaseSearchService {
 	private CaseSearchDaoImpl caseSearchDaoImpl;
 	private Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
 	public static volatile String sqlAdmin = "";
+	public static volatile String dataBase = "DailyCase";
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
@@ -79,6 +80,7 @@ public class CaseSearchService {
 		if("".equals(conds[0])){
 			return "Please select a data source !";
 		}
+		dataBase = conds[0];
 		String sql = "select case_name from "+conds[0]+" where 1=1 ";
 		if(!"".equals(conds[1])){
 			String [] release = conds[1].split(",");

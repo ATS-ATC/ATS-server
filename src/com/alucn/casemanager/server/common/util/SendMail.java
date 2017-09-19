@@ -12,6 +12,8 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -212,6 +214,29 @@ public class SendMail {
 		String dateTime = df.format(new Date());
 //		logger.info(sb.toString());
 		SendMail.Send("Daily certified case failure check " + dateTime, sb.toString(), to_list, cc_list);
+	}
+	
+	public static void genReport(JSONArray cc_list, JSONArray to_list, List<String> unInstallRtdb, List<String> unInstallSpa){
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+		String dateTime = df.format(new Date());
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("<head>");
+		sb.append("<title>Report</title>");
+		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
+		sb.append("<style type=\"text/css\">");
+		sb.append("body { margin:0 auto; padding:20px; font:13px;}");
+		sb.append("p, table, caption, td, tr, th {margin:0 auto; padding:0; font-weight:normal;}");
+		sb.append("p {margin-bottom:15px;}");
+		sb.append("</style></head>");
+		sb.append("<body>");
+		sb.append("<p><span style=\"background:#cccc33;\">Hi Wangchen!</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below SPA and RTDB are uninstalled when auto tested by certified servers.</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPA: "+unInstallSpa.toString()+".</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RTDB: "+unInstallRtdb.toString()+".</span></p>");
+		sb.append("<br/><br/>");
+		sb.append("</body></html>");
+		SendMail.Send("Uninstalled RTDB and SPA " + dateTime, sb.toString(), to_list, cc_list);
 	}
 
 	public static void main(String[] args) throws UnsupportedEncodingException, MessagingException {
