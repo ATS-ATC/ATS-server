@@ -23,7 +23,7 @@ public class ErrorCaseInfoService {
 	@Autowired(required=true)
 	private ErrorCaseDaoImpl errorCaseDaoImpl;
 	private Map<String, String> errroCases;
-	private Map<String, String>failedReason;
+//	private Map<String, String>failedReason;
 	 
 	public Map<String, String> getErrorCaseInfo(String userName, String auth) throws Exception{
 		errroCases = new HashMap<String, String>();
@@ -51,7 +51,7 @@ public class ErrorCaseInfoService {
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, String auth) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getErrorCase = "SELECT casename, err_reason FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
+		String getErrorCase = "SELECT casename, err_reason, err_desc FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
 		if(!auth.equals(Constant.AUTH)){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
@@ -60,17 +60,17 @@ public class ErrorCaseInfoService {
 	}
 	
 	public ArrayList<HashMap<String, Object>> getErrorCaseReason() throws Exception{
-		failedReason = new HashMap<String, String>();
+//		failedReason = new HashMap<String, String>();
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getErrorType = "SELECT error_tpye, err_mark FROM caseerrortype;";
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorType);
-		for(int i=0; i<result.size();i++){
-			Map<String, Object> obj = result.get(i);
-			for(String key: obj.keySet()){
-				failedReason.put((String)obj.get(key), null);
-			}
-		}
+//		for(int i=0; i<result.size();i++){
+//			Map<String, Object> obj = result.get(i);
+//			for(String key: obj.keySet()){
+//				failedReason.put((String)obj.get(key), null);
+//			}
+//		}
 		return result;
 	}
 	
@@ -79,7 +79,7 @@ public class ErrorCaseInfoService {
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		for(String acase : errorcases.split(",")){
 //			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND feature='"+featureName.trim()+"'";
-			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND feature='"+featureName.trim()+"'";
+			String markCaseSql = "UPDATE  errorcaseinfo SET err_desc='"+failedreasons.split("@")[1]+"', err_reason='"+failedreasons.split("@")[0]+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND feature='"+featureName.trim()+"'";
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
 		}
 	}

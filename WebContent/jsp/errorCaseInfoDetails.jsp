@@ -102,6 +102,7 @@
 											event.preventDefault();
 											var failed = $('input[type="radio"][name="failedreasons"]:checked');
 											var checkedcase = $('input[type="checkbox"][name="errorcases"]:checked');
+											var err_desc = document.getElementById("desc").value;
 											if (checkedcase.length == 0) {
 												submitConfirm(
 														"Please check a case?",
@@ -110,7 +111,14 @@
 											}
 											if (failed.length == 0) {
 												submitConfirm(
-														"Please check a failed error?",
+														"Please check a failed reason?",
+														3);
+												return;
+											}
+											
+											if (err_desc.trim() == "") {
+												submitConfirm(
+														"Please input a failed describe?",
 														3);
 												return;
 											}
@@ -118,7 +126,9 @@
 											var f = "";
 											var c = "";
 											for (var i = 0; i < failed.length; i++) {
-												f = failed.get(i).value
+												f = failed.get(i).value;
+												f+="@";
+												f+=err_desc;
 											}
 											for (var i = 0; i < checkedcase.length; i++) {
 												c += checkedcase.get(i).value
@@ -205,7 +215,7 @@
 									<label class="checkbox-inline">
 									<c:choose>
 									   <c:when test="${errorCaseMap.err_reason!=null && errorCaseMap.err_reason!=\"\"}">  
-									   		<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>" disabled> <span style="color: green"><c:out value="${errorCaseMap.casename}"/>-<c:out value="${errorCaseMap.err_reason}"/></span>     
+									   		<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>" disabled> <span style="color: green"><c:out value="${errorCaseMap.casename}"/>-Reason:<c:out value="${errorCaseMap.err_reason}"/>-Desc:<c:out value="${errorCaseMap.err_desc}"/></span>     
 									  	</c:when>
 									   	<c:otherwise> 
 									  		<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>"><span style="color: red"><c:out value="${errorCaseMap.casename}"/></span>     
@@ -228,6 +238,18 @@
 							</c:forEach>
 						</div>
 					</div>
+					<div class="row clearfix">
+						<div class="col-md-12 column">
+							<h4 class="col-md-12 column">Failed Describe</h4>
+							<div class="col-xs-6 col-sm-3 column">
+								<label class="radio-inline">
+								<textarea rows="3" cols="135" id="desc" name="desc"></textarea>
+								</label>
+							</div>
+						</div>
+					</div>
+					
+					
 					<div class="row clearfix">
 						<div class="col-md-12 column text-right">
 							<input type="hidden" name="featureName" id="featureName" value=" ${featureName}">
