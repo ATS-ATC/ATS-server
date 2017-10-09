@@ -162,12 +162,12 @@ public class MarkCaseErr {
 		public void run() {
 			try {
 				logger.info("[MarkCaseErrAgain Time''s Up!]");
-				String errorCaseSql = "select feature,owner,servername from errorcaseinfo where email_date>'"
+				String errorCaseSql = "select feature,owner,servername from errorcaseinfo where email_date<'"
 						+ DateUtil.convert2String(
 								DateUtil.addDays(
 										DateUtil.convert2Date(DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"),
 												"yyyy-MM-dd HH:mm:ss"),
-										Integer.parseInt(ConfigProperites.getInstance().getCaseCheckMailPeriod())),
+										-Integer.parseInt(ConfigProperites.getInstance().getCaseCheckMailPeriod())),
 								"yyyy-MM-dd HH:mm:ss")
 						+ "' and mark_date='' group by feature,owner";
 				if (getSendMail(errorCaseSql)) {

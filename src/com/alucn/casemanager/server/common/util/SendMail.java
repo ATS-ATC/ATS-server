@@ -2,6 +2,7 @@ package com.alucn.casemanager.server.common.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
@@ -12,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import net.sf.json.JSONArray;
@@ -216,7 +217,7 @@ public class SendMail {
 		SendMail.Send("Daily certified case failure check " + dateTime, sb.toString(), to_list, cc_list);
 	}
 	
-	public static void genReport(JSONArray cc_list, JSONArray to_list, List<String> unInstallRtdb, List<String> unInstallSpa){
+	public static void genReport(JSONArray cc_list, JSONArray to_list, Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI, Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSITU){
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		String dateTime = df.format(new Date());
 		StringBuilder sb = new StringBuilder();
@@ -232,8 +233,22 @@ public class SendMail {
 		sb.append("<body>");
 		sb.append("<p><span style=\"background:#cccc33;\">Hi Wangchen!</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below SPA and RTDB are uninstalled when auto tested by certified servers.</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPA: "+unInstallSpa.toString()+".</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RTDB: "+unInstallRtdb.toString()+".</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>ANSI-SPA:</Strong></span></p>");
+		for(String serverName : unInstallRSANSI.get("SPA").keySet()){
+			sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+serverName+":"+unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet().toString()+"</span></p>");
+		}
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>ANSI-RTDB:</Strong></span></p>");
+		for(String serverName : unInstallRSANSI.get("RTDB").keySet()){
+			sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+serverName+":"+unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet().toString()+"</span></p>");
+		}
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>ITU-SPA:</Strong></span></p>");
+		for(String serverName : unInstallRSITU.get("SPA").keySet()){
+			sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+serverName+":"+unInstallRSITU.get("SPA").get(serverName).get("SPA").keySet().toString()+"</span></p>");
+		}
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>ITU-RTDB:</Strong></span></p>");
+		for(String serverName : unInstallRSITU.get("RTDB").keySet()){
+			sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+serverName+":"+unInstallRSITU.get("RTDB").get(serverName).get("RTDB").keySet().toString()+"</span></p>");
+		}
 		sb.append("<br/><br/>");
 		sb.append("</body></html>");
 		SendMail.Send("Uninstalled RTDB and SPA " + dateTime, sb.toString(), to_list, cc_list);

@@ -34,8 +34,8 @@ public class DistributeCase implements Runnable{
 				Thread.sleep(10000);
 				logger.info("[DistributeCase...]");
 				//distribute case
-				DistriButeCaseToLab disarrayCase = new DistriButeCaseToLab();
-                JSONObject caseList = disarrayCase.GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
+//				DistriButeCaseToLab disarrayCase = new DistriButeCaseToLab();
+                JSONObject caseList = DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
 				if(0 != caseList.size()){
 					logger.info("[case  list :]"+caseList.toString());
 				}
