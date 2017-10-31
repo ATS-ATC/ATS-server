@@ -44,6 +44,13 @@ public class LoginService {
         return false;
 	}
 	
+	public boolean authAdministrator(User user){
+		if(user.getUserName().equals("Administrator") && user.getPassWord().equals("Admin")){
+			return true;
+		}
+		return false;
+	}
+	
 	public UserDaoImpl getUserDaoImpl() {
 		return userDaoImpl;
 	}

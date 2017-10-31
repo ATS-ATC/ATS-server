@@ -44,6 +44,7 @@ public class LdapAuthentication {
 			log.debug("LdapAuthentication sucess");
 			return AuthSuccess;
 		} catch (javax.naming.AuthenticationException e) {
+			e.printStackTrace();
 			log.error(User + "LdapAuthentication fail");
 			log.debug("LdapAuthentication fail");
 			return AuthFail;
@@ -67,4 +68,8 @@ public class LdapAuthentication {
 
 	}
 
+	public static void main(String[] args) {
+		LdapAuthentication test = new LdapAuthentication("haiqiw", "#EDC3edc");
+		System.out.println(test.getAuth());
+	}
 }

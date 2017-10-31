@@ -209,7 +209,7 @@
 							condition += server;
 							condition += "";
 							
-							confirm(condition, "Confirm to search this condition ?");
+							confirm(condition, "The lib will run case according to this condition, please submit it carefully !");
 						});
 		});
 </script>

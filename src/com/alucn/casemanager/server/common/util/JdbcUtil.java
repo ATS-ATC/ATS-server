@@ -33,6 +33,9 @@ public class JdbcUtil {
 		InputStream in =null;
 		try {
 			String confFile=MainListener.configFilesPath+File.separator+"dbconfig.properties";
+			
+//			String confFile="/home/huanglei/ATS/DB/conf/"+"dbconfig.properties";
+//			String confFile="D:/workspace/javaworkspace/work/ATS-server/WebContent/conf/dbconfig.properties";
 			in = new FileInputStream(confFile); 
 			prop.load(in);  
 		} catch (Exception e) {

@@ -159,7 +159,7 @@ public class SendMail {
 		sb.append("<body>");
 		sb.append("<p><span style=\"background:#cccc33;\">@All testers:</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below cases are failed when auto tested by certified servers.</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log through the <a href=\"ftp://135.242.16.160/CertifyLog/\">logPath</a>, find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a>.</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log through the <a href=\"ftp://135.242.16.160/CertifyLog/\">logPath</a>, find out the failure reason and fill the reason through the "+buildInfo.get("webSite")+" (Please login with Google).</span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log , find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
 //		sb.append("<span>" + "<a href=\"" + buildInfo.get("SrcPath") + "\">" + buildInfo.get("SrcPath") + "</a></span>");
@@ -231,8 +231,8 @@ public class SendMail {
 		sb.append("p {margin-bottom:15px;}");
 		sb.append("</style></head>");
 		sb.append("<body>");
-		sb.append("<p><span style=\"background:#cccc33;\">Hi Wangchen!</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below SPA and RTDB are uninstalled when auto tested by certified servers.</span></p>");
+		sb.append("<p><span style=\"background:#cccc33;\">@Administrator!</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPA and RTDB below are missing when automatically certified by certification servers.Please install them ASAP.</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>ANSI-SPA:</Strong></span></p>");
 		for(String serverName : unInstallRSANSI.get("SPA").keySet()){
 			sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+serverName+":"+unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet().toString()+"</span></p>");

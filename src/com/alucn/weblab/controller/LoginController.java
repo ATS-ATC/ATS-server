@@ -41,24 +41,32 @@ public class LoginController {
         return "login";
     }
 	
-	@RequestMapping(path = "/userLoginCheckOut", method = RequestMethod.POST)
+	@RequestMapping(value = "/userLoginCheckOut", method = RequestMethod.POST)
     public String loginCheckOut(User user, HttpSession session, Model model) throws Exception {
-		boolean authResult = loginService.authUser(user);
 		String returnDec = "";
-		if(authResult){
-			authResult = loginService.getUser(user);
-			if(authResult){
-				session.setAttribute("auth", Constant.AUTH);
-			}else{
-				session.setAttribute("auth", "errorCases");
-			}
+		if(loginService.authAdministrator(user)){
+			session.setAttribute("auth", Constant.AUTH);
 			model.addAttribute("loginResult", "success");
 			session.setAttribute("login", user.getUserName());
 			returnDec =  "forward:/getStatistics.do";
 		}else{
-			model.addAttribute("loginResult", "failed");
-			returnDec = "login";
+			boolean authResult = loginService.authUser(user);
+			if(authResult){
+				authResult = loginService.getUser(user);
+				if(authResult){
+					session.setAttribute("auth", Constant.AUTH);
+				}else{
+					session.setAttribute("auth", "errorCases");
+				}
+				model.addAttribute("loginResult", "success");
+				session.setAttribute("login", user.getUserName());
+				returnDec =  "forward:/getStatistics.do";
+			}else{
+				model.addAttribute("loginResult", "failed");
+				returnDec = "login";
+			}
 		}
+		
         return returnDec;
     }
 	

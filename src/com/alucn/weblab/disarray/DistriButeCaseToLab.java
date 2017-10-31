@@ -124,7 +124,7 @@ public class DistriButeCaseToLab {
 	private boolean IsInJSONArrayWithoutCase(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
 			String A_value = String.valueOf(list.get(i));
-			if (A_value.equalsIgnoreCase(String.valueOf(value))) {
+			if (A_value.equalsIgnoreCase(String.valueOf(value)) || A_value.equalsIgnoreCase(String.valueOf(value)+"DB")|| A_value.equalsIgnoreCase(String.valueOf(value)+"RTDB")) {
 				return true;
 			}
 		}
@@ -343,15 +343,22 @@ public class DistriButeCaseToLab {
 	private void UpdateCaseStatusDB(JSONArray caseList) {
 		Connection connection = null;
 		Statement state = null;
+		
+		Connection connection_DftCaseDB = null;
+		Statement state_DftCaseDB = null;
+		
 		String QuerySql = null;
 		String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		String DftCaseDB = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		String caseListStr = caseList.toString().replace("\"", "'").replace("[", "(").replace("]", ")");
 		int GroupId = 0;
 		try {
 			Class.forName("org.sqlite.JDBC");
 
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+			connection_DftCaseDB = DriverManager.getConnection("jdbc:sqlite:" + DftCaseDB);
 			state = connection.createStatement();
+			state_DftCaseDB = connection_DftCaseDB.createStatement();
 			
 			QuerySql = "select max(group_id) from toDistributeCases where case_name not in " + caseListStr;
 			try {
@@ -394,7 +401,13 @@ public class DistriButeCaseToLab {
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
 					true, null);
 			JSONObject ServerMem;
-			ResultSet result2 = state.executeQuery(QuerySql);
+			ResultSet result2 = null;
+			if(CaseSearchService.dataBase.equals("DailyCase")){
+				result2 = state.executeQuery(QuerySql);
+			}else{
+				result2 = state_DftCaseDB.executeQuery(QuerySql);
+			}
+			
 			PreparedStatement prep = connection
 					.prepareStatement("replace into toDistributeCases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 
@@ -422,7 +435,7 @@ public class DistriButeCaseToLab {
 					JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
 					String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
 					String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
-					// logger.error("Server: " + spaList.toString() + " ---- " +
+//					 logger.error("Server: " + spaList.toString() + " ---- " +
 					// rtdbList.toString());
 					//logger.error(" ---------------------------- " + serverName + " ------------------------------");
 					if (!isLabListContainsCaseList(spaList, spaArray)) {
@@ -439,17 +452,19 @@ public class DistriButeCaseToLab {
 						continue;
 					}
 					boolean isReleaseMath = false;
+//					logger.error(serverRelease + " --- " + release);
 					if (serverRelease.equals(release)) {
 						isReleaseMath = true;
 					} else {
 						JSONArray portingReleaseList = JSONArray
 								.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
+//						logger.error(serverRelease + " --- " + portingReleaseList);
 						if (IsInJSONArray(serverRelease, portingReleaseList)) {
 							isReleaseMath = true;
 						} else {
 							if (porting_release.endsWith("+")) {
 								int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
-								
+//								logger.error(serverRelease + " --- " + releaseList);
 								if (serverReleasePostion != -1) {
 									int LastReleasePostion = postionInJSONArray(
 											porting_release.substring(porting_release.lastIndexOf(",") + 1,
@@ -544,17 +559,53 @@ public class DistriButeCaseToLab {
 
 		}
 	}
+	
+	public static void main(String[] args) {
+		DistriButeCaseToLab test = new DistriButeCaseToLab();
+		JSONArray releaseList = test.GetReleaseList();
+		String porting_release = "SP17.9+";
+		String serverRelease = "SP17.9";
+		boolean isReleaseMath=false;
+		JSONArray portingReleaseList = JSONArray
+				.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
+		if (test.IsInJSONArray("SP31.2", portingReleaseList)) {
+			isReleaseMath = true;
+		} else {
+			if (porting_release.endsWith("+")) {
+				int serverReleasePostion = test.postionInJSONArray(serverRelease, releaseList);
+//				logger.error(serverRelease + " --- " + releaseList);
+				if (serverReleasePostion != -1) {
+					int LastReleasePostion = test.postionInJSONArray(
+							porting_release.substring(porting_release.lastIndexOf(",") + 1,
+									porting_release.length() - 1),
+							releaseList);
+					if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
+						isReleaseMath = true;
+					}
+				}
+			}
+		}
+		System.out.println(isReleaseMath);
+	}
 
 	private void UpdatedistributeDB(JSONArray KVMList) {
 		JSONArray caseList = new JSONArray();
 
 		Connection connection = null;
 		Statement state = null;
+		
+		
+		Connection connection_DftCaseDB = null;
+		Statement state_DftCaseDB = null;
+		
 		try {
 			Class.forName("org.sqlite.JDBC");
 			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			String DftCaseDB = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+			connection_DftCaseDB = DriverManager.getConnection("jdbc:sqlite:" + DftCaseDB);
 			state = connection.createStatement();
+			state_DftCaseDB = connection_DftCaseDB.createStatement();
 			String query_sql;
 			if (KVMList.size() > 0) {
 				query_sql = "select case_name from toDistributeCases where ";
@@ -582,15 +633,30 @@ public class DistriButeCaseToLab {
 				state.executeUpdate(query_sql);
 			}else{
 				query_sql = CaseSearchService.sqlAdmin;
-				// query_sql = "select case_name from DailyCase where case_name not
-				// in (select case_name from toDistributeCases);";
-				ResultSet result2 = state.executeQuery(query_sql);
-				while (result2.next()) {
-					caseList.add(result2.getString("case_name"));
-				}
+				if(query_sql.contains("DailyCase")){
+					// query_sql = "select case_name from DailyCase where case_name not
+					// in (select case_name from toDistributeCases);";
+					ResultSet result2 = state.executeQuery(query_sql);
+					while (result2.next()) {
+						caseList.add(result2.getString("case_name"));
+					}
 
-				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+CaseSearchService.sqlAdmin+"));";
-				state.executeUpdate(query_sql);
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+CaseSearchService.sqlAdmin+"));";
+					state.executeUpdate(query_sql);
+				}else if(query_sql.contains("DftTag")){
+					ResultSet result2 = state_DftCaseDB.executeQuery(query_sql);
+					String tmp = "";
+					while (result2.next()) {
+						tmp += "\"";
+						caseList.add(result2.getString("case_name"));
+						tmp += result2.getString("case_name");
+						tmp += "\"";
+						tmp += ",";
+					}
+					tmp = tmp.substring(0,tmp.length() - 1);
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+tmp+"));";
+					state.executeUpdate(query_sql);
+				}
 			}
 			
 			//caselist里面放的是曾经跑过的case但是现在serverinfo改动了，和一直没有跑的case
@@ -659,6 +725,7 @@ public class DistriButeCaseToLab {
 				}
 
 			}
+			logger.info(ServerName + " case: " + query_sql);
 			logger.info(ServerName + " case: " + caseList.toString());
 
 		} catch (SQLException e1) {
@@ -715,15 +782,16 @@ public class DistriButeCaseToLab {
 		}
 		if(idleServerNum==Servers.size() && caseListNull==Servers.size() ){
 			if(counterUninsRS==8640){
-				logger.debug("send e-mail of uninstall spa and rtdb!");
+				logger.debug("send e-mail of Missing spa and rtdb!");
 				counterUninsRS=0;
 				Map<String,Map<String,Map<String,Map<String,String>>>> uninstallRSANSI = getUninstallRS2(Servers, "ANSI");
 				Map<String,Map<String,Map<String,Map<String,String>>>> uninstallRSITU = getUninstallRS2(Servers, "ITU");
 				//send mail
 				JSONArray cc_list = new JSONArray();
 				JSONArray to_list = new JSONArray();
-//				cc_list.add("lei.k.huang@alcatel-lucent.com");
-				to_list.add("Haiqi.Wang@alcatel-lucent.com");
+				cc_list.add("lei.k.huang@alcatel-lucent.com");
+				cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+				to_list.add("chen.k.wang@nokia-sbell.com");
 				SendMail.genReport(cc_list, to_list, uninstallRSANSI, uninstallRSITU);
 			}
 			counterUninsRS++;
@@ -960,4 +1028,5 @@ public class DistriButeCaseToLab {
 	    double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	    return n;
 	}
+	
 }

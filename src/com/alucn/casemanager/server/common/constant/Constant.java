@@ -77,4 +77,10 @@ public class Constant {
 	public static final String  AUTH = "all";
 	public static final String  DAILYCASE = "DailyCase";
 	public static final String  DFTTAG = "DftTag";
+	public static final String TMSHOSTNAME = "135.3.27.70";
+	public static final int TMSHOSTPORT = 23;
+	public static final String TMSUSERAD4 = "svc_surepay";
+	public static final String TMSPASSWORDAD4 = "asb#2345"; 
+	public static final String TMSUSER = "yahou";//yanzhizh yahou
+	public static final String TMSPASSWORD = "tyz89bgv";//yanzhizh tyz89bgv 
 }

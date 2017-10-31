@@ -8,7 +8,7 @@ import com.alucn.weblab.service.MainService;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ6ÈÕ ÏÂÎç4:47:32
+ * 2017ï¿½ï¿½6ï¿½ï¿½6ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½4:47:32
  * desc:MainController
  */
 @Controller
@@ -18,7 +18,7 @@ public class MainController {
 	@Autowired
 	private MainService mainService;
 	
-	@RequestMapping(path = "/getStatistics")
+	@RequestMapping(value = "/getStatistics")
     public String getStatistics(Model model) throws Exception {
 		model.addAllAttributes(mainService.getStatistics());
         return "main";
