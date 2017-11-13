@@ -2,6 +2,7 @@
 	pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions"  prefix="fn"%>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -54,22 +55,62 @@
 			</div>
 		</div>
 		<%--Server informations show below --%>
-		<div class="row" class="servers">
-			<c:forEach items="${infos}" var="info">
-				<div class="col-xs-6 col-md-3 aServer">
-					<a href="./getServerDetails.do?serverName=${info.lab.serverName}"
-						class="thumbnail "> <font size=5>${info.lab.serverName}</font><br>
-						<font size=5>${info.lab.serverRelease}</font><br> <font size=5>${info.lab.serverProtocol}</font><br>
-						<font size=6 id="${info.taskStatus.status}">${info.taskStatus.status}</font>
-					</a>
+<!-- 		<div class="servers"> -->
+			<c:forEach items="${infos}" var="set">
+				<div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;padding:15px;margin:10px;">
+					<c:forEach items="${set.value}" var="servers">
+						<c:choose> 
+						     <c:when test="${fn:length(servers)>1}">
+							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;margin:10px;">
+									<table border="0">
+									<tr>
+									<c:forEach items="${servers}" var="server">
+										<td>
+											<div class="col-xs-6 col-md-3 aServer">
+												<a href="./getServerDetails.do?serverName=${server.value.body.lab.serverName}"
+													class="thumbnail "> <font size=4>${server.value.body.lab.serverName}</font><br>
+													<font size=4>${server.value.body.lab.serverTpye}/${server.value.body.lab.serverMate}</font><br>
+													<font size=4>${server.value.body.lab.serverRelease}</font><br>
+													<font size=4>${server.value.body.lab.serverProtocol}</font><br>
+													<font size=5 id="${server.value.body.taskStatus.status}">${server.value.body.taskStatus.status}</font>
+												</a>
+											</div>
+										</td>
+									</c:forEach>
+									</tr>
+									</table>
+								</div>
+							 </c:when>      
+						     <c:otherwise>  
+							     <c:forEach items="${servers}" var="server">
+										<div class="col-xs-6 col-md-3 aServer">
+											<a href="./getServerDetails.do?serverName=${server.value.body.lab.serverName}"
+												class="thumbnail "> <font size=4>${server.value.body.lab.serverName}</font><br>
+												<font size=4>${server.value.body.lab.serverTpye}/${server.value.body.lab.serverMate}</font><br>
+												<font size=4>${server.value.body.lab.serverRelease}</font><br> 
+												<font size=4>${server.value.body.lab.serverProtocol}</font><br>
+												<font size=5 id="${server.value.body.taskStatus.status}">${server.value.body.taskStatus.status}</font>
+											</a>
+										</div>
+								</c:forEach>
+						  	 </c:otherwise> 
+						</c:choose>
+					</c:forEach>
+					<div class="col-xs-6 col-md-3 aServer">
+						<a id="addlink" href="./addServerInfo.do"
+							class="thumbnail "> <span id="add"><font size=4>+</font></span>
+						</a>
+					</div>
 				</div>
 			</c:forEach>
-			<div class="col-xs-6 col-md-3 aServer">
-				<a id="addlink" href="./addServerInfo.do"
-					class="thumbnail "> <span id="add">+</span>
-				</a>
+			<div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;padding:15px;margin:10px;">
+				<div class="col-xs-6 col-md-3 aServer">
+					<a id="addlink" href="./addServerInfo.do"
+						class="thumbnail "> <span id="add"><font size=4>+</font></span>
+					</a>
+				</div>
 			</div>
 		</div>
-	</div>
+<!-- 	</div> -->
 </body>
 </html>

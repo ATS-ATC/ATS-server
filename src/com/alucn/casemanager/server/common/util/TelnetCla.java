@@ -33,7 +33,7 @@ public class TelnetCla {
 		this.passwordAD4 = passwordAD4;
 
 		telnet = new TelnetClient("VT100");                           // VT100 VT52 VT220 VTNT ANSI
-		telnet.setDefaultTimeout(5000);
+		telnet.setDefaultTimeout(10000);
 		telnet.connect(hostname, hostport);
 		in = telnet.getInputStream();
 		out = new PrintStream(telnet.getOutputStream());

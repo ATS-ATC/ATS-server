@@ -18,6 +18,8 @@ public class Constant {
 	public static final String SERVERNAME = "serverName";
 	public static final String SERVERRELEASE = "serverRelease";
 	public static final String SERVERPROTOCOL = "serverProtocol";
+	public static final String MATESERVER = "mateServer";
+	public static final String SETNAME = "setName";
 	public static final String SERVERSPA = "serverSPA";
 	public static final String SERVERRTDB = "serverRTDB";
 	public static final String TASKSTATUS = "taskStatus";
@@ -48,7 +50,7 @@ public class Constant {
 	public static final String AVAILABLECASE = "availableCase";
 	public static final String CASELIST = "case_list";
 	public static final String SPAANDRTDB = "spaANDrtdb.txt";
-	public static final JSONObject CASESTATUSPRE = JSONObject.fromObject("{\"head\": {\"reqType\": \"\",\"response\": \"\"},\"body\": {\"lab\": {\"serverIp\": \"\",\"serverName\": \"\",\"serverRelease\": \"\",\"serverProtocol\": \"\",\"serverSPA\": [],\"serverRTDB\": []},\"taskStatus\": {\"status\": \"\",\"runningCase\": \"\"},\"taskResult\": {\"success\": [{\"name\": \"\",\"time\": \"\"}],\"fail\": []}}}");
+	public static final JSONObject CASESTATUSPRE = JSONObject.fromObject("{\"head\": {\"reqType\": \"\",\"response\": \"\"},\"body\": {\"lab\": {\"serverIp\": \"\",\"serverName\": \"\",\"serverRelease\": \"\",\"serverProtocol\": \"\",\"serverTpye\": \"\",\"serverMate\": \"\",\"mateServer\": \"\",\"setName\": \"\",\"serverSPA\": [],\"serverRTDB\": []},\"taskStatus\": {\"status\": \"\",\"runningCase\": \"\"},\"taskResult\": {\"success\": [{\"name\": \"\",\"time\": \"\"}],\"fail\": []}}}");
 	public static final String LISTENERPORT="case.socket.listener.port";
 	public static final String READPERIODTIMEOUT="case.socket.read_period_timeout";
 	public static final String READTIMEOUT="case.socket.read_timeout";

@@ -221,6 +221,20 @@
 							</select></td>
 						</tr>
 						<tr>
+							<td>ServerType:</td>
+							<td><select class="form-control" name="mateServer"
+								id="mateServer">
+									<option>L</option>
+									<option>G</option>
+							</select></td>
+							<td>MateType:</td>
+							<td><select class="form-control" name="mateType"
+								id="mateType">
+									<option>P</option>
+									<option>S</option>
+							</select></td>
+						</tr>
+						<tr>
 							<td>
 								<div class="row clearfix">
 									<div class="col-md-12 column">SPA:</div>
@@ -262,7 +276,7 @@
 						<tr>
 							<td>
 								<div class="row clearfix">
-									<div class="col-md-12 column">Attach Servers:</div>
+									<div class="col-md-12 column">MateServer:</div>
 								</div>
 							<td colspan="3" class="text-right">
 								<div class="row clearfix">
@@ -276,7 +290,6 @@
 									</div>
 								</div>
 							</td>
-
 						</tr>
 						<tr>
 							<td colspan="3"></td>

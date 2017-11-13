@@ -1,5 +1,9 @@
 package com.alucn.weblab.controller;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,12 +14,11 @@ import com.alucn.weblab.model.Server;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ2ÈÕ ÏÂÎç5:39:08
+ * 2017ï¿½ï¿½6ï¿½ï¿½2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½5:39:08
  * desc: serverinfo
  */
 @Controller
@@ -29,18 +32,22 @@ public class ServerInfoController {
 	
 	@RequestMapping(path = "/getServerInfo")
 	public String getServerInfo(Model model){
-		JSONArray infos = serverInfoService.getServerInfo();
+		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfo();
 		model.addAttribute("infos", infos);
 		return "serverInfo";
 	}
 
 	@RequestMapping(path = "/getServerDetails")
 	public String getServerDetails(String serverName, Model model){
-		JSONArray infos = serverInfoService.getServerInfo();
-		for(int i=0; i<infos.size(); i++){
-			JSONObject info = infos.getJSONObject(i);
-			if(serverName.equals(info.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
-				model.addAttribute("info", info);
+		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfo();
+		for(String key : infos.keySet()){
+			Set<Map<String,JSONObject>> set = infos.get(key);
+			Iterator<Map<String, JSONObject>> iterator = set.iterator();
+			while(iterator.hasNext()){
+				Map<String,JSONObject> serverOrMate = iterator.next();
+				if(serverOrMate.get(serverName)!=null){
+					model.addAttribute("info", JSONObject.fromObject(serverOrMate.get(serverName)));
+				}
 			}
 		}
 		return "serverDetails";

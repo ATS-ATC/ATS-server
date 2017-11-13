@@ -45,9 +45,9 @@ public class WebLabApplicationInitializer implements WebApplicationInitializer {
 	}
 
 	public void initServer(ServletContext servletContext) {
-		String configPath = System.getenv("WEBLAB_CONF");
-//		String [] args = {servletContext.getRealPath("conf")};
-		String[] args = { configPath };
+//		String configPath = System.getenv("WEBLAB_CONF");
+		String [] args = {servletContext.getRealPath("conf")};
+//		String[] args = { configPath };
 		MainListener.init(args);
 	}
 }
