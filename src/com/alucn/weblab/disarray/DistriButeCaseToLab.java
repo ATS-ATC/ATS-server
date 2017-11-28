@@ -19,9 +19,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -400,7 +402,6 @@ public class DistriButeCaseToLab {
 
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
 					true, null);
-			JSONObject ServerMem;
 			ResultSet result2 = null;
 			if(CaseSearchService.dataBase.equals("DailyCase")){
 				result2 = state.executeQuery(QuerySql);
@@ -425,66 +426,76 @@ public class DistriButeCaseToLab {
 				porting_release = result2.getString("porting_release");
 				SPA = result2.getString("SPA");
 				RTDB = result2.getString("RTDB");
+//				lineMate = result2.getString("LineMate");
+//				groupMate = result2.getString("GroupMate");
 				spaArray = JSONArray.fromObject(SPA.split(","));
 				rtdbArray = JSONArray.fromObject(RTDB.split(","));
 				JSONArray kvmList = new JSONArray();
-				for (int i = 0; i < Servers.size(); i++) {
-					ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-					String serverName = ServerMem.getString(Constant.SERVERNAME);
-					JSONArray spaList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
-					JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
-					String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
-					String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
-//					 logger.error("Server: " + spaList.toString() + " ---- " +
-					// rtdbList.toString());
-					//logger.error(" ---------------------------- " + serverName + " ------------------------------");
-					if (!isLabListContainsCaseList(spaList, spaArray)) {
-						 //logger.error("Server: " + spaList.toString() + "case: " + spaArray.toString());
-						continue;
-					}
-					if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
-						 //logger.error("Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
-						continue;
-					}
-					if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
-							|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
-					    //logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
-						continue;
-					}
-					boolean isReleaseMath = false;
-//					logger.error(serverRelease + " --- " + release);
-					if (serverRelease.equals(release)) {
-						isReleaseMath = true;
-					} else {
-						JSONArray portingReleaseList = JSONArray
-								.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
-//						logger.error(serverRelease + " --- " + portingReleaseList);
-						if (IsInJSONArray(serverRelease, portingReleaseList)) {
-							isReleaseMath = true;
-						} else {
-							if (porting_release.endsWith("+")) {
-								int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
-//								logger.error(serverRelease + " --- " + releaseList);
-								if (serverReleasePostion != -1) {
-									int LastReleasePostion = postionInJSONArray(
-											porting_release.substring(porting_release.lastIndexOf(",") + 1,
-													porting_release.length() - 1),
-											releaseList);
-									if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
-										isReleaseMath = true;
+				String serverName = null;
+				Map<String,Set<Map<String,JSONObject>>> serversMap =  getServers(Servers);
+				JSONArray infos = new JSONArray();
+				
+				if(new_mate.equals(Constant.MATEN)){
+					if(new_lab_number.equals("2")){//L/G
+						for(String key : serversMap.keySet()){
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while(iterator.hasNext()){
+								for(JSONObject value : iterator.next().values()){
+									if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
+										infos.add(value);
 									}
 								}
 							}
 						}
-
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
+					}else if(new_lab_number.equals("1")){//lab 1
+						for(String key : serversMap.keySet()){
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while(iterator.hasNext()){
+								for(JSONObject value : iterator.next().values()){
+									if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE))){
+										infos.add(value);
+									}
+								}
+							}
+						}
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
 					}
-
-					if (!isReleaseMath) {
-					    //logger.debug("case_name: " + caseName + " Server: " + serverName);
-						continue;
+				}else if(new_mate.equals(Constant.MATEY)){
+					if(Integer.parseInt(new_lab_number)>=3){
+//						if(groupMate.equals("N")){
+							for(String key : serversMap.keySet()){
+								Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+								while(iterator.hasNext()){
+									for(JSONObject value : iterator.next().values()){
+										if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
+											infos.add(value);
+										}
+									}
+								}
+							}
+							serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
+						/*}else {
+							JSONArray infos = new JSONArray();
+							for(String key : serversMap.keySet()){
+								Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+								while(iterator.hasNext()){
+									for(JSONObject value : iterator.next().values()){
+										if("L".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
+											infos.add(value);
+										}
+									}
+								}
+							}
+							serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
+						}*/
 					}
-					kvmList.add(serverName);
 				}
+				System.out.println("----------------------------------" + infos.toString());
+				if("".equals(serverName)){
+					continue;
+				}
+				kvmList.add(serverName);
 				if (!new_lab_number.equals(old_lab_number)) {
 					IsSame = false;
 					// logger.error(old_lab_number + " --- " + new_lab_number);
@@ -560,6 +571,119 @@ public class DistriButeCaseToLab {
 		}
 	}
 	
+	public Map<String,Set<Map<String,JSONObject>>> getServers(JSONArray infos){
+		Map<String,Set<Map<String,JSONObject>>> setMap = new HashMap<String,Set<Map<String,JSONObject>>>();
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String setName = lib.getString(Constant.SETNAME);
+			String serverName = lib.getString(Constant.SERVERNAME);
+			String mateServer = lib.getString(Constant.MATESERVER);
+			if(setMap.get(setName)==null){
+				Set<Map<String,JSONObject>> serverSet = new HashSet<Map<String,JSONObject>>();
+				if(mateServer.equals("N")){
+					Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+					serverMap.put(serverName, info);
+					serverSet.add(serverMap);
+					setMap.put(setName, serverSet);
+				}else{
+					Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+					mateMap.put(mateServer, info);
+					serverSet.add(mateMap);
+					setMap.put(setName, serverSet);
+				}
+			}else{
+				Set<Map<String,JSONObject>> serverSet = setMap.get(setName);
+				Iterator<Map<String, JSONObject>> iterator = serverSet.iterator();
+				boolean isMate = false;
+				while(iterator.hasNext()){
+					Map<String,JSONObject> mateOrServerMap = iterator.next();
+					if(mateOrServerMap.get(serverName)!=null){
+						JSONObject mateinfo = mateOrServerMap.get(serverName);
+						mateOrServerMap.put(mateServer, mateinfo);
+						mateOrServerMap.put(serverName, info);
+						isMate = true;
+					}
+				}
+				if(!isMate){
+					if(mateServer.equals("N")){
+						Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+						serverMap.put(serverName, info);
+						serverSet.add(serverMap);
+						setMap.put(setName, serverSet);
+					}else{
+						Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+						mateMap.put(mateServer, info);
+						serverSet.add(mateMap);
+						setMap.put(setName, serverSet);
+					}
+				}
+			}
+		}
+		return setMap;
+	}
+	
+	public String gerServer(JSONArray Servers,String customer, String release, String porting_release,JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray){
+		String serverName = "";
+		for (int i=0; i < Servers.size(); i++) {
+			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			serverName = ServerMem.getString(Constant.SERVERNAME);
+			JSONArray spaList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
+			JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
+			String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
+			String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
+//			 logger.error("Server: " + spaList.toString() + " ---- " +
+			// rtdbList.toString());
+			//logger.error(" ---------------------------- " + serverName + " ------------------------------");
+			if (!isLabListContainsCaseList(spaList, spaArray)) {
+				 //logger.error("Server: " + spaList.toString() + "case: " + spaArray.toString());
+				continue;
+			}
+			if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
+				 //logger.error("Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
+				continue;
+			}
+			if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
+					|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
+			    //logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
+				continue;
+			}
+			boolean isReleaseMath = false;
+//			logger.error(serverRelease + " --- " + release);
+			if (serverRelease.equals(release)) {
+				isReleaseMath = true;
+			} else {
+				JSONArray portingReleaseList = JSONArray
+						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
+//				logger.error(serverRelease + " --- " + portingReleaseList);
+				if (IsInJSONArray(serverRelease, portingReleaseList)) {
+					isReleaseMath = true;
+				} else {
+					if (porting_release.endsWith("+")) {
+						int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
+//						logger.error(serverRelease + " --- " + releaseList);
+						if (serverReleasePostion != -1) {
+							int LastReleasePostion = postionInJSONArray(
+									porting_release.substring(porting_release.lastIndexOf(",") + 1,
+											porting_release.length() - 1),
+									releaseList);
+							if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
+								isReleaseMath = true;
+							}
+						}
+					}
+				}
+
+			}
+
+			if (!isReleaseMath) {
+			    //logger.debug("case_name: " + caseName + " Server: " + serverName);
+				continue;
+			}
+		}
+		return serverName;
+	}
+	
 	public static void main(String[] args) {
 		DistriButeCaseToLab test = new DistriButeCaseToLab();
 		JSONArray releaseList = test.GetReleaseList();
@@ -621,7 +745,7 @@ public class DistriButeCaseToLab {
 			}
 
 			if(CaseSearchService.sqlAdmin.equals("")){
-				query_sql = "select case_name from DailyCase where case_status = 'I';";
+				query_sql = "select case_name from DailyCase where case_status = 'I' order by lab_number asc,special_data asc;";
 				// query_sql = "select case_name from DailyCase where case_name not
 				// in (select case_name from toDistributeCases);";
 				ResultSet result2 = state.executeQuery(query_sql);
@@ -632,6 +756,15 @@ public class DistriButeCaseToLab {
 				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
 				state.executeUpdate(query_sql);
 			}else{
+				try {
+					String attachDatabase = "ATTACH '"+DftCaseDB+"' As dt;";
+					state.execute(attachDatabase);
+				} catch (Exception e) {
+				}finally{
+					String syncCaseDepends = "replace Into CaseDepends(case_name, SPA, DB, SecData) select case_name, SPA, DB, SecData from dt.CaseDepends;";
+					state.execute(syncCaseDepends);
+				}
+				
 				query_sql = CaseSearchService.sqlAdmin;
 				if(query_sql.contains("DailyCase")){
 					// query_sql = "select case_name from DailyCase where case_name not

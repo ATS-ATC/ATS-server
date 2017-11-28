@@ -189,6 +189,7 @@ public class CaseSearchService {
 			}
 		}else if(auth.equals("all")){
 			sqlAdmin=sql;
+			sqlAdmin+=" order by lab_number asc,special_data asc;";
 			query = caseSearchDaoImpl.query(jdbc, sql);
 		}
 		return "Total record:"+query.size();

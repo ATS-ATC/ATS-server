@@ -17,6 +17,8 @@ public class Constant {
 	public static final String IP = "serverIp";
 	public static final String SERVERNAME = "serverName";
 	public static final String SERVERRELEASE = "serverRelease";
+	public static final String SERVERTPYE = "serverTpye";
+	public static final String SERVERMATE = "serverMate";
 	public static final String SERVERPROTOCOL = "serverProtocol";
 	public static final String MATESERVER = "mateServer";
 	public static final String SETNAME = "setName";
@@ -76,6 +78,8 @@ public class Constant {
 	public static final String CASESERVERWEBIP = "case.server.web.ip";
 	public static final String  AUTHSUCCESS = "SLLAUTHSUCCESS";
 	public static final String  PROJECTNAME = "weblab";
+	public static final String  MATEN = "N";
+	public static final String  MATEY = "Y";
 	public static final String  AUTH = "all";
 	public static final String  DAILYCASE = "DailyCase";
 	public static final String  DFTTAG = "DftTag";

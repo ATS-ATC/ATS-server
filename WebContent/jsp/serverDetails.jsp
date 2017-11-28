@@ -200,39 +200,39 @@
 				<table class="table">
 					<tr>
 						<td>Server:</td>
-						<td><span class="subdetail">${info.body.lab.serverName}</span></td>
+						<td><span class="subdetail">${info.lab.serverName}</span></td>
 						<td>IP:</td>
-						<td><span class="subdetail">${info.body.lab.serverIp}</span></td>
+						<td><span class="subdetail">${info.lab.serverIp}</span></td>
 					</tr>
 					<tr>
 						<td>Status:</td>
-						<td colspan="1"><span class="subdetail">${info.body.taskStatus.status}</span></td>
-						<td colspan="2"><span class="subdetail">${info.body.taskStatus.runningCase}</span></td>
+						<td colspan="1"><span class="subdetail">${info.taskStatus.status}</span></td>
+						<td colspan="2"><span class="subdetail">${info.taskStatus.runningCase}</span></td>
 					</tr>
 					<tr>
 						<td>Release:</td>
-						<td><span class="subdetail">${info.body.lab.serverRelease}</span></td>
+						<td><span class="subdetail">${info.lab.serverRelease}</span></td>
 						<td>Protocol:</td>
-						<td><span class="subdetail">${info.body.lab.serverProtocol}</span></td>
+						<td><span class="subdetail">${info.lab.serverProtocol}</span></td>
 					</tr>
 					<tr>
 						<td>SPA:</td>
 						<td class="subdetail" colspan="3"><c:forEach
-								items="${info.body.lab.serverSPA}" var="spa">
+								items="${info.lab.serverSPA}" var="spa">
 							${spa}
 						</c:forEach></td>
 					</tr>
 					<tr>
 						<td>RTDB:</td>
 						<td class="subdetail" colspan="3"><c:forEach
-								items="${info.body.lab.serverRTDB}" var="rtdb">
+								items="${info.lab.serverRTDB}" var="rtdb">
 							${rtdb}
 						</c:forEach></td>
 					</tr>
 					<tr>
 						<td>MateServer:</td>
 						<td class="subdetail" colspan="3">
-						${info.body.lab.mateServer}
+						${info.lab.mateServer}
 						</td>
 					</tr>
 					<tr>

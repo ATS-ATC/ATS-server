@@ -67,12 +67,12 @@
 									<c:forEach items="${servers}" var="server">
 										<td>
 											<div class="col-xs-6 col-md-3 aServer">
-												<a href="./getServerDetails.do?serverName=${server.value.body.lab.serverName}"
-													class="thumbnail "> <font size=4>${server.value.body.lab.serverName}</font><br>
-													<font size=4>${server.value.body.lab.serverTpye}/${server.value.body.lab.serverMate}</font><br>
-													<font size=4>${server.value.body.lab.serverRelease}</font><br>
-													<font size=4>${server.value.body.lab.serverProtocol}</font><br>
-													<font size=5 id="${server.value.body.taskStatus.status}">${server.value.body.taskStatus.status}</font>
+												<a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
+													class="thumbnail "> <font size=4>${server.value.lab.serverName}</font><br>
+													<font size=4>${server.value.lab.serverTpye}/${server.value.lab.serverMate}</font><br>
+													<font size=4>${server.value.lab.serverRelease}</font><br>
+													<font size=4>${server.value.lab.serverProtocol}</font><br>
+													<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
 												</a>
 											</div>
 										</td>
@@ -84,12 +84,12 @@
 						     <c:otherwise>  
 							     <c:forEach items="${servers}" var="server">
 										<div class="col-xs-6 col-md-3 aServer">
-											<a href="./getServerDetails.do?serverName=${server.value.body.lab.serverName}"
-												class="thumbnail "> <font size=4>${server.value.body.lab.serverName}</font><br>
-												<font size=4>${server.value.body.lab.serverTpye}/${server.value.body.lab.serverMate}</font><br>
-												<font size=4>${server.value.body.lab.serverRelease}</font><br> 
-												<font size=4>${server.value.body.lab.serverProtocol}</font><br>
-												<font size=5 id="${server.value.body.taskStatus.status}">${server.value.body.taskStatus.status}</font>
+											<a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
+												class="thumbnail "> <font size=4>${server.value.lab.serverName}</font><br>
+												<font size=4>${server.value.lab.serverTpye}/${server.value.lab.serverMate}</font><br>
+												<font size=4>${server.value.lab.serverRelease}</font><br> 
+												<font size=4>${server.value.lab.serverProtocol}</font><br>
+												<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
 											</a>
 										</div>
 								</c:forEach>
