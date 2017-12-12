@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.springframework.stereotype.Service;
 
@@ -48,12 +49,12 @@ public class ServerInfoService {
 			if(setMap.get(setName)==null){
 				Set<Map<String,JSONObject>> serverSet = new HashSet<Map<String,JSONObject>>();
 				if(mateServer.equals("N")){
-					Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+					Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
 					serverMap.put(serverName, info);
 					serverSet.add(serverMap);
 					setMap.put(setName, serverSet);
 				}else{
-					Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+					Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
 					mateMap.put(mateServer, info);
 					serverSet.add(mateMap);
 					setMap.put(setName, serverSet);
@@ -73,12 +74,12 @@ public class ServerInfoService {
 				}
 				if(!isMate){
 					if(mateServer.equals("N")){
-						Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+						Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
 						serverMap.put(serverName, info);
 						serverSet.add(serverMap);
 						setMap.put(setName, serverSet);
 					}else{
-						Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+						Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
 						mateMap.put(mateServer, info);
 						serverSet.add(mateMap);
 						setMap.put(setName, serverSet);
@@ -86,6 +87,7 @@ public class ServerInfoService {
 				}
 			}
 		}
+		
 		return setMap;
 	}
 	

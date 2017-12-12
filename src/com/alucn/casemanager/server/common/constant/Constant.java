@@ -17,7 +17,7 @@ public class Constant {
 	public static final String IP = "serverIp";
 	public static final String SERVERNAME = "serverName";
 	public static final String SERVERRELEASE = "serverRelease";
-	public static final String SERVERTPYE = "serverTpye";
+	public static final String SERVERTYPE = "serverType";
 	public static final String SERVERMATE = "serverMate";
 	public static final String SERVERPROTOCOL = "serverProtocol";
 	public static final String MATESERVER = "mateServer";

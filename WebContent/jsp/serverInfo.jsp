@@ -61,20 +61,31 @@
 					<c:forEach items="${set.value}" var="servers">
 						<c:choose> 
 						     <c:when test="${fn:length(servers)>1}">
-							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;margin:10px;">
+							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px dashed #ddd;border-radius: 10px;width: auto;height: auto;margin:10px;">
 									<table border="0">
 									<tr>
 									<c:forEach items="${servers}" var="server">
 										<td>
-											<div class="col-xs-6 col-md-3 aServer">
-												<a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
-													class="thumbnail "> <font size=4>${server.value.lab.serverName}</font><br>
-													<font size=4>${server.value.lab.serverTpye}/${server.value.lab.serverMate}</font><br>
+										<c:choose>
+										   <c:when test="${server.value.lab.serverType == 'Line' }">  
+										        <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
+													class="thumbnail " style="border: 3px solid #ddd"> <font size=4>${server.value.lab.serverName}</font><br>
+													<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
 													<font size=4>${server.value.lab.serverRelease}</font><br>
 													<font size=4>${server.value.lab.serverProtocol}</font><br>
 													<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
 												</a>
-											</div>
+										   </c:when>
+										   <c:otherwise> 
+											   <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}" class="thumbnail " style="border: 3px solid #CCCC99"> 
+											   		<font size=4>${server.value.lab.serverName}</font><br>
+													<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
+													<font size=4>${server.value.lab.serverRelease}</font><br>
+													<font size=4>${server.value.lab.serverProtocol}</font><br>
+													<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
+												</a>
+										   </c:otherwise>
+										</c:choose>
 										</td>
 									</c:forEach>
 									</tr>
@@ -82,33 +93,58 @@
 								</div>
 							 </c:when>      
 						     <c:otherwise>  
-							     <c:forEach items="${servers}" var="server">
-										<div class="col-xs-6 col-md-3 aServer">
-											<a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
-												class="thumbnail "> <font size=4>${server.value.lab.serverName}</font><br>
-												<font size=4>${server.value.lab.serverTpye}/${server.value.lab.serverMate}</font><br>
-												<font size=4>${server.value.lab.serverRelease}</font><br> 
-												<font size=4>${server.value.lab.serverProtocol}</font><br>
-												<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
-											</a>
-										</div>
-								</c:forEach>
+							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px dashed white;border-radius: 10px;width: auto;height: auto;margin:10px;">
+									<table border="0">
+										<tr>
+										    <c:forEach items="${servers}" var="server">
+										     	<td>
+										     		<c:choose>
+													   <c:when test="${server.value.lab.serverType == 'Line' }">  
+													        <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}" class="thumbnail "> 
+															<font size=4>${server.value.lab.serverName}</font><br>
+															<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
+															<font size=4>${server.value.lab.serverRelease}</font><br> 
+															<font size=4>${server.value.lab.serverProtocol}</font><br>
+															<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
+															</a>
+													   </c:when>
+													   <c:otherwise> 
+														   <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}" class="thumbnail " style="border: 3px solid #CCCC99"> 
+															<font size=4>${server.value.lab.serverName}</font><br>
+															<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
+															<font size=4>${server.value.lab.serverRelease}</font><br> 
+															<font size=4>${server.value.lab.serverProtocol}</font><br>
+															<font size=5 id="${server.value.taskStatus.status}">${server.value.taskStatus.status}</font>
+															</a>
+													   </c:otherwise>
+													</c:choose>
+												</td>
+											</c:forEach>
+										</tr>
+									</table>
+								</div>
 						  	 </c:otherwise> 
 						</c:choose>
 					</c:forEach>
-					<div class="col-xs-6 col-md-3 aServer">
-						<a id="addlink" href="./addServerInfo.do"
-							class="thumbnail "> <span id="add"><font size=4>+</font></span>
-						</a>
-					</div>
+					<div class="col-xs-6 col-md-3 aServer" style="border: 3px dashed white;border-radius: 10px;width: auto;height: auto;margin:10px;">
+						<table border="0">
+						<tr>
+							<td>
+								<a id="addlink" href="./addServerInfo.do" class="thumbnail " > 
+									<span id="add"><font size=4>+</font></span>
+								</a>
+		                   </td>
+	                   </tr>
+	                   </table>
+                   </div>
 				</div>
 			</c:forEach>
 			<div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;padding:15px;margin:10px;">
-				<div class="col-xs-6 col-md-3 aServer">
+<!-- 				<div class="col-xs-6 col-md-3 aServer"> -->
 					<a id="addlink" href="./addServerInfo.do"
 						class="thumbnail "> <span id="add"><font size=4>+</font></span>
 					</a>
-				</div>
+<!-- 				</div> -->
 			</div>
 		</div>
 <!-- 	</div> -->

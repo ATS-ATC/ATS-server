@@ -441,7 +441,7 @@ public class DistriButeCaseToLab {
 							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
 							while(iterator.hasNext()){
 								for(JSONObject value : iterator.next().values()){
-									if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
+									if("Line".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE)) && "Primary".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
 										infos.add(value);
 									}
 								}
@@ -453,7 +453,7 @@ public class DistriButeCaseToLab {
 							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
 							while(iterator.hasNext()){
 								for(JSONObject value : iterator.next().values()){
-									if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE))){
+									if("Line".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE)) && !"Secondary".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
 										infos.add(value);
 									}
 								}
@@ -468,7 +468,7 @@ public class DistriButeCaseToLab {
 								Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
 								while(iterator.hasNext()){
 									for(JSONObject value : iterator.next().values()){
-										if("L".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
+										if("Line".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE)) && "Primary".equals(value/*.getJSONObject(Constant.BODY)*/.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
 											infos.add(value);
 										}
 									}
