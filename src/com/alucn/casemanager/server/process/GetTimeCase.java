@@ -18,8 +18,9 @@ import com.alucn.casemanager.server.listener.MainListener;
 public class GetTimeCase {
 	private static final Logger logger = Logger.getLogger(GetTimeCase.class);
 	private List<JSONObject> caseJsonVarList;
+	private int time_sensitive = 0;
 
-	private void analysisCase(int index, String caseDir, String caseName, String featureId, boolean isCase, int level,
+	public void analysisCase(int index, String caseDir, String caseName, String featureId, boolean isCase, int level,
 			String casePath, boolean isBase) {
 		int newLevel = level;
 		int newLevel2;
@@ -69,9 +70,10 @@ public class GetTimeCase {
 							
 						if(taskName.equals("DateTimeTask")) {
 							JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-							String sql = "update DftTag set time_Sensitive = 'Y' where case_name = '"+caseName+"'";
-//							System.out.println("++++++++++"+sql+"++"+caseDir+"++"+casePath);
+							String sql = "update DftTag set time_sensitive = 'Y' where case_name = '"+ featureId + "/" + caseName+"'";
+							//System.out.println("++++++++++"+sql+"++"+caseDir+"++"+casePath);
 							jdbc_cf.executeSql(sql);
+							++time_sensitive;
 							is = true;
 							break;
 						}
@@ -241,6 +243,7 @@ public class GetTimeCase {
 			String caseName = (String)query.get(i).get("case_name");
 			getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 		}
+		System.out.println("+++++++++++++++++++++++++++++++++++finshed"+getTimeCase.time_sensitive+"++++++++++++++++++++++++++++++++");
 	}
 		
 }

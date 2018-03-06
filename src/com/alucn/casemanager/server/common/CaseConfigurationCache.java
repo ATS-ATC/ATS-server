@@ -15,6 +15,7 @@ import com.alucn.casemanager.server.common.util.DateUtil;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.TelnetCla;
+import com.alucn.casemanager.server.process.GetTimeCase;
 
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
@@ -121,24 +122,29 @@ public class CaseConfigurationCache {
 		
 		TelnetCla telnetCla = new TelnetCla(Constant.TMSHOSTNAME, Constant.TMSHOSTPORT, Constant.TMSUSER, Constant.TMSPASSWORD, Constant.TMSUSERAD4, Constant.TMSPASSWORDAD4);
 		boolean readUntil = telnetCla.readUntil("apxtms: /home/"+Constant.TMSUSER+">");
-		for(int i=0; i<caseSuccessList.size(); i++){
-		    String caseName = caseSuccessList.getJSONObject(i).getString(Constant.NAME).replace("dft_server/", "");
-		    Integer caseTime = caseSuccessList.getJSONObject(i).getInt(Constant.TIME);
-			String dfttag_sql = "update DftTag set case_status='S', status_owner='ATS', case_cost="+caseTime+" where case_name='"+caseName+"'";
-			jdbc_df.executeSql(dfttag_sql);
-			String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
-			jdbc_cf.executeSql(dfttagdaily_sql);
-			if(readUntil){
-				String result = telnetCla.doJob(Constant.TMSUSER,caseName);
-				String[] split = result.split(",");
-				for(int j=0; j<split.length-1; j++){
-					String sql = "update DftTag set case_level='"+split[j]+"' where case_name='"+caseName+"'";
-					jdbc_df.executeSql(sql);
-					logger.info("[update "+caseName+" case_level to : "+split[j]+"]");
+		if(!caseSuccessList.getJSONObject(0).getString(Constant.NAME).equals("")){
+			GetTimeCase getTimeCase = new GetTimeCase();
+			for(int i=0; i<caseSuccessList.size(); i++){
+			    String caseName = caseSuccessList.getJSONObject(i).getString(Constant.NAME).replace("dft_server/", "");
+			    Integer caseTime = caseSuccessList.getJSONObject(i).getInt(Constant.TIME);
+				String dfttag_sql = "update DftTag set case_status='S', status_owner='ATS', case_cost="+caseTime+" where case_name='"+caseName+"'";
+				jdbc_df.executeSql(dfttag_sql);
+				String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
+				jdbc_cf.executeSql(dfttagdaily_sql);
+				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
+				if(readUntil){
+					String result = telnetCla.doJob(Constant.TMSUSER,caseName);
+					String[] split = result.split(",");
+					for(int j=0; j<split.length-1; j++){
+						String sql = "update DftTag set case_level='"+split[j]+"' where case_name='"+caseName+"'";
+						jdbc_df.executeSql(sql);
+						logger.info("[update "+caseName+" case_level to : "+split[j]+"]");
+					}
+				}else{
+					logger.error("[update "+caseName+" case_level is failed !");
 				}
-			}else{
-				logger.error("[update "+caseName+" case_level is failed !");
 			}
 		}
+		
 	}
 }

@@ -38,9 +38,12 @@ public class ErrorCaseInfoController {
 	public String getServerInfoDetails(HttpSession session, String featureName, Model model) throws Exception{
 		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, session.getAttribute("login").toString(), session.getAttribute("auth").toString());
 		ArrayList<HashMap<String, Object>> errorReasonList = errorCaseInfoService.getErrorCaseReason();
+		ArrayList<HashMap<String, Object>> errorCaseListHis = errorCaseInfoService.getErrorCaseReasonHis();
 		model.addAttribute("featureName",featureName);
 		model.addAttribute("errorCaseList",errorCaseList);
 		model.addAttribute("errorReasonList",errorReasonList);
+		model.addAttribute("errorCaseListHis",errorCaseListHis);
+		
 		return "errorCaseInfoDetails";
 	}
 	

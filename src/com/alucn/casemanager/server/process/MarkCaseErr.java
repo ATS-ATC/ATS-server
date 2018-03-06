@@ -90,7 +90,10 @@ public class MarkCaseErr {
 			if(report.size()!=0){
 				JSONArray cc_list = new JSONArray();
 				cc_list.add("lei.k.huang@alcatel-lucent.com");
+//				cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+//				cc_list.add("chen.k.wang@nokia-sbell.com");
 				to_list.add("Haiqi.Wang@alcatel-lucent.com");
+//				to_list.add("andy.2.liu@nokia-sbell.com");
 //				for (String key : to_list_map.keySet()) {
 //					to_list.add(key);
 //				}

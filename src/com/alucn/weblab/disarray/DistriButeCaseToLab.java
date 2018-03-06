@@ -475,6 +475,7 @@ public class DistriButeCaseToLab {
 								}
 							}
 							serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
+							logger.error("++++++++++++++++++++++++++++++++++++++"+serverName);
 						/*}else {
 							JSONArray infos = new JSONArray();
 							for(String key : serversMap.keySet()){
@@ -491,7 +492,6 @@ public class DistriButeCaseToLab {
 						}*/
 					}
 				}
-				System.out.println("----------------------------------" + infos.toString());
 				if("".equals(serverName)){
 					continue;
 				}
@@ -625,6 +625,7 @@ public class DistriButeCaseToLab {
 	
 	public String gerServer(JSONArray Servers,String customer, String release, String porting_release,JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray){
 		String serverName = "";
+		String serverNameTmp = "";
 		for (int i=0; i < Servers.size(); i++) {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			serverName = ServerMem.getString(Constant.SERVERNAME);
@@ -636,22 +637,23 @@ public class DistriButeCaseToLab {
 			// rtdbList.toString());
 			//logger.error(" ---------------------------- " + serverName + " ------------------------------");
 			if (!isLabListContainsCaseList(spaList, spaArray)) {
-				 //logger.error("Server: " + spaList.toString() + "case: " + spaArray.toString());
+//				logger.error("Server: " + spaList.toString() + "case: " + spaArray.toString());
 				continue;
 			}
 			if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
-				 //logger.error("Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
+				logger.error("=====================================Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
 				continue;
 			}
 			if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
 					|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
-			    //logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
+//			    logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
 				continue;
 			}
 			boolean isReleaseMath = false;
 //			logger.error(serverRelease + " --- " + release);
 			if (serverRelease.equals(release)) {
 				isReleaseMath = true;
+				return serverName;
 			} else {
 				JSONArray portingReleaseList = JSONArray
 						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
@@ -676,12 +678,14 @@ public class DistriButeCaseToLab {
 
 			}
 
-			if (!isReleaseMath) {
-			    //logger.debug("case_name: " + caseName + " Server: " + serverName);
+			if (isReleaseMath) {
+				serverNameTmp = serverName;
+			}else{
+//			    logger.debug("case_name: " + caseName + " Server: " + serverName);
 				continue;
 			}
 		}
-		return serverName;
+		return serverNameTmp;
 	}
 	
 	public static void main(String[] args) {

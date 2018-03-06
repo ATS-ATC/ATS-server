@@ -164,6 +164,8 @@ public class JdbcUtil {
 			conn = getConnection();
 			stm = conn.createStatement();
 			conn.setAutoCommit(false);
+			String open_recursive_triggers = "PRAGMA recursive_triggers='ON'";
+			stm.execute(open_recursive_triggers);
 			stm.executeUpdate(sql);
 			conn.commit();
 		} catch (SQLException e) {

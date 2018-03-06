@@ -74,6 +74,15 @@ public class ErrorCaseInfoService {
 		return result;
 	}
 	
+	public ArrayList<HashMap<String, Object>> getErrorCaseReasonHis() throws Exception{
+//		failedReason = new HashMap<String, String>();
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String getErrorType = "select casename, feature, err_reason, owner, insert_date, mark_date, email_date, servername, err_desc,max(mark_date) from errorcaseinfoHistory where mark_date != '' group by casename";
+		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorType);
+		return result;
+	}
+	
 	public void setMarkCase(String userName, String featureName, String errorcases, String failedreasons) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);

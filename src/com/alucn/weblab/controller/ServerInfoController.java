@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.alucn.casemanager.server.common.model.ServerSort;
 import com.alucn.weblab.model.Server;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
@@ -29,16 +30,23 @@ public class ServerInfoController {
 	@Autowired(required=true)
 	private SpaAndRtdbManService spaAndRtdbManService;
 	
-	@RequestMapping(path = "/getServerInfo")
+	/*@RequestMapping(path = "/getServerInfo")
 	public String getServerInfo(Model model){
 		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfo();
+		model.addAttribute("infos", infos);
+		return "serverInfo";
+	}*/
+	
+	@RequestMapping(path = "/getServerInfo")
+	public String getServerInfo(Model model){
+		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
 		model.addAttribute("infos", infos);
 		return "serverInfo";
 	}
 
 	@RequestMapping(path = "/getServerDetails")
 	public String getServerDetails(String serverName, Model model){
-		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfo();
+		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfoNosort();
 		for(String key : infos.keySet()){
 			Set<Map<String,JSONObject>> set = infos.get(key);
 			Iterator<Map<String, JSONObject>> iterator = set.iterator();
@@ -90,5 +98,4 @@ public class ServerInfoController {
 	public void setServerInfoService(ServerInfoService serverInfoService) {
 		this.serverInfoService = serverInfoService;
 	}
-
 }
