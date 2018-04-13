@@ -61,7 +61,7 @@
 				<div class="col-xs-6 col-md-3 aServer" style="border: 3px solid #ddd;border-radius: 10px;width: auto;height: auto;padding:15px;margin:10px;">
 					<c:forEach items="${set.value}" var="servers">
 						<c:choose> 
-						     <c:when test="${fn:length(servers)>1}">
+						     <c:when test="${fn:length(servers.getMap())>1}">
 							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px dashed #ddd;border-radius: 10px;width: auto;height: auto;margin:10px;">
 									<table border="0">
 									<tr>
@@ -97,7 +97,7 @@
 							     <div class="col-xs-6 col-md-3 aServer" style="border: 3px dashed white;border-radius: 10px;width: auto;height: auto;margin:10px;">
 									<table border="0">
 										<tr>
-										    <c:forEach items="${servers}" var="server">
+										    <c:forEach items="${servers.getMap()}" var="server">
 										     	<td>
 										     		<c:choose>
 													   <c:when test="${server.value.lab.serverType == 'Line' }">  
