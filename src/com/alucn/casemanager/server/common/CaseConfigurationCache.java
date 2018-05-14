@@ -1,5 +1,7 @@
 package com.alucn.casemanager.server.common;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -20,6 +22,7 @@ import com.alucn.casemanager.server.process.GetTimeCase;
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
 	public static ReadWriteLock lock ;
+	public static List<String> removeListServer = Collections.synchronizedList(new ArrayList<String>());;
 	//Case attribute configuration with dynamic refresh
 	private static JSONArray singletonCaseProperties ;
 	//Cache socket long connection information
@@ -72,6 +75,14 @@ public class CaseConfigurationCache {
 							break;
 						}
 					}
+					//remove server
+					for(int i=0; i<singletonCaseProperties.size();i++){
+						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
+						if(removeListServer.contains(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
+							singletonCaseProperties.remove(i);
+						}
+					}
+					removeListServer.clear();
 				}
 				return null;
 			} finally{

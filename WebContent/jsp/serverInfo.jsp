@@ -31,7 +31,7 @@
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="./getServerInfo.do">Servers</a></li>
-						<li><a href="./searchInfo.do">Case Search</a></li>
+<!-- 						<li><a href="./searchInfo.do">Case Search</a></li> -->
 						<li><a href="./getErrorCaseInfo.do">Error Cases</a></li>
 						<li class="dropdown"><a href="#" class="dropdown-toggle"
 							data-toggle="dropdown">Admin<strong class="caret"></strong></a>
@@ -68,7 +68,7 @@
 									<c:forEach items="${servers.getMap()}" var="server">
 										<td>
 										<c:choose>
-										   <c:when test="${server.value.lab.serverType == 'Line' }">  
+										   <c:when test="${server.value.lab.serverType == 'Group' }">  
 										        <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}"
 													class="thumbnail " style="border: 3px solid #ddd"> <font size=4>${server.value.lab.serverName}</font><br>
 													<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
@@ -100,8 +100,8 @@
 										    <c:forEach items="${servers.getMap()}" var="server">
 										     	<td>
 										     		<c:choose>
-													   <c:when test="${server.value.lab.serverType == 'Line' }">  
-													        <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}" class="thumbnail "> 
+													   <c:when test="${server.value.lab.serverType == 'Group' }">  
+													        <a href="./getServerDetails.do?serverName=${server.value.lab.serverName}" class="thumbnail "  style="border: 3px solid #ddd"> 
 															<font size=4>${server.value.lab.serverName}</font><br>
 															<font size=4>${server.value.lab.serverType}/${server.value.lab.serverMate}</font><br>
 															<font size=4>${server.value.lab.serverRelease}</font><br> 

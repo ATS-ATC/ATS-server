@@ -102,8 +102,8 @@ public class DistributeCase implements Runnable{
                                 if (case_array.size() > 0){
                                     IsCaseExist = true;
                                     CaseConfigurationCache.queueOfClient.get(key).put(Constant.AVAILABLECASE+":"+value);
-                                    tmpJsonObject.getJSONObject(Constant.TASKSTATUS).put(Constant.STATUS, Constant.CASESTATUSREADY);
-                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,tmpJsonObject);
+                                    //tmpJsonObject.getJSONObject(Constant.TASKSTATUS).put(Constant.STATUS, Constant.CASESTATUSREADY);
+                                    //CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,tmpJsonObject);
                                 }
                             }
                         }

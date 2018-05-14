@@ -1,6 +1,7 @@
 package com.alucn.weblab.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
+import com.alucn.casemanager.server.common.model.ServerMate;
 import com.alucn.casemanager.server.common.model.ServerSort;
+import com.alucn.casemanager.server.common.model.ServerType;
 import com.alucn.casemanager.server.common.util.Fifowriter;
 import com.alucn.casemanager.server.common.util.FileUtil;
 import com.alucn.weblab.model.Server;
@@ -106,7 +109,32 @@ public class ServerInfoService {
 		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21E\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"P\",\"mateServer\": \"BJRMS21F\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
 		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21F\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21E\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");*/
 		JSONArray infos = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//remove server
+		for(int i=0; i<infos.size();i++){
+			JSONObject tmpJsonObject = (JSONObject) infos.get(i);
+			if(CaseConfigurationCache.removeListServer.contains(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
+				infos.remove(i);
+			}
+		}
 		Map<String,Set<ServerSort>> setMap = new HashMap<String,Set<ServerSort>>();
+		JSONObject taskStatus = new JSONObject();
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String serverType = lib.getString(Constant.SERVERTYPE);
+			String serverMate = lib.getString(Constant.SERVERMATE);
+			if(serverType.equals(ServerType.LINE.getName()) && (serverMate.equals(ServerMate.PRIMARY.getName()) || serverMate.equals(ServerMate.N.getName()))){
+				taskStatus = info.getJSONObject(Constant.TASKSTATUS);
+			}
+		}
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String serverType = lib.getString(Constant.SERVERTYPE);
+			if(!serverType.equals(ServerType.STANDALONE.getName())){
+				info.put(Constant.TASKSTATUS, taskStatus);
+			}
+		}
 		for(int i=0; i<infos.size(); i++){
 			JSONObject info = infos.getJSONObject(i);
 			JSONObject lib = info.getJSONObject(Constant.LAB);
@@ -195,7 +223,39 @@ public class ServerInfoService {
 		}
 	}
 	
-	public void removeServerInfo(){
+	public String removeServerInfo(String serverName){
+		try {
+		    JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+		    for(int i=0; i<currKeyStatus.size();i++){
+                JSONObject tmpJsonObject = currKeyStatus.getJSONObject(i);
+                String server_name = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
+                if(serverName.equals(server_name)){
+                	String status = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
+                	if(!status.equals(Constant.CASESTATUSDEAD)){
+                		return "server is running,please stop it!";
+                	}else{
+                		CaseConfigurationCache.removeListServer.add(server_name);
+                	}
+                }
+            }
+			String cmd = "rm -rf /home/huanglei/*"+serverName+"*";
+			String[] cmds = {
+					"/bin/sh",
+					"-c",
+					cmd
+			};
+			Process process = Runtime.getRuntime().exec(cmds);
+			int result = process.waitFor();
+			if (process != null) {
+				process.destroy();
+		    }
+			if(0 != result){
+				return "remove server failed!";
+			}else{
+				return "remove server success!";
+			}
+		} catch (Exception e) {}
+		return "";
 	}
 	
 	public void removeServerDetails(){
@@ -204,7 +264,25 @@ public class ServerInfoService {
 	public void updateServerInfo(){
 	}
 	
-	public void cancel(){
+	public String cancel(String serverName){
+		try {
+			String cmd = "sh /home/huanglei/autoPreLab/stopClient.sh "+serverName;
+			String[] cmds = {
+					"/bin/sh",
+					"-c",
+					cmd
+			};
+			Process process = Runtime.getRuntime().exec(cmds);
+			int result = process.waitFor();
+			if (process != null) {
+				process.destroy();
+		    }
+			if(0 != result){
+				return "cancel failed!";
+			}else{
+				return "cancel success!";
+			}
+		} catch (Exception e) {}
+		return "";
 	}
-	
 }

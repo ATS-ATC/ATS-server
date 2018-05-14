@@ -1,8 +1,11 @@
 package com.alucn.weblab.controller;
 
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +21,6 @@ import net.sf.json.JSONObject;
 
 /**
  * @author haiqiw
- * 2017��6��2�� ����5:39:08
  * desc: serverinfo
  */
 @Controller
@@ -72,8 +74,8 @@ public class ServerInfoController {
 	}
 
 	@RequestMapping(path = "/removeServerInfo")
-	public String removeServerInfo(String model) throws Exception{
-		return "addServerInfo";
+	public void removeServerInfo(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
+		out.write(serverInfoService.removeServerInfo(condition));
 	}
 	
 	@RequestMapping(path = "/removeServerDetails")
@@ -87,8 +89,8 @@ public class ServerInfoController {
 	}
 	
 	@RequestMapping(path = "/cancel")
-	public String cancel(String model) throws Exception{
-		return "addServerInfo";
+	public void cancel(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
+		out.write(serverInfoService.cancel(condition));
 	}
 	
 	public ServerInfoService getServerInfoService() {

@@ -116,14 +116,25 @@ public class ReceiveAndSendRun implements Runnable {
 	}
 	
 	class SendMessage implements Runnable {
-		public SendMessage(){}
+		public SendMessage(){
+			
+		}
 		@Override
 		public void run() {
 			while(true){
 				try {
 					logger.info("send message thread is started !");
-					String message = sendMessageBlockingQueue.take();
-					sendMessage(message);
+					JSONArray currServerStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+					for(int i=0; i<currServerStatus.size();i++){
+                        JSONObject tmpJsonObject = (JSONObject) currServerStatus.get(i);
+                        String serverNameIn = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
+                        String status = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
+                        if(serverName.equals(serverNameIn) && status.equals(Constant.CASESTATUSIDLE)){
+                        	String message = sendMessageBlockingQueue.take();
+        					sendMessage(message);
+        					logger.info("server send message of queue "+ message);
+                        }
+					}
 					Thread.sleep(Integer.parseInt(ConfigProperites.getInstance().getCaseClientSocketTime()));
 				} catch (Exception e) {
 					logger.error("[Failed to send message]"+e.getMessage());

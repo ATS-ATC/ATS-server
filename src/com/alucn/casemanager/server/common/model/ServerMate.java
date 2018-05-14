@@ -1,7 +1,7 @@
 package com.alucn.casemanager.server.common.model;
 
 public enum ServerMate {
-	PRIMARY("Primary"), SECONDARY("Secondary"), STANDALONE("Standalone"), STANDALONEL("Standalone-L"), STANDALONEG("Standalone-G");
+	PRIMARY("Primary"), SECONDARY("Secondary"), N("N");
 	
 	private String name;
 	

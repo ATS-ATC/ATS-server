@@ -126,6 +126,83 @@
 			});
 		}
 		
+		
+			function confirmCancelAll(condition, info) {
+				$("#reminder").dialog({
+					modal : true,
+					buttons : {
+						"Confirm" : function() {
+							$.post("./cancel.do", {
+								condition : condition,
+							}, function(data) {
+								$("#reminder").dialog({
+									buttons : {
+										"Confirm" : function() {
+											$(this).dialog("close");
+											window.location.reload();
+										}
+									},
+									open : function(event, ui) {
+										$(this).html("");
+										$(this).append(data);
+									}
+								});
+
+							});
+							$(this).dialog("close");
+							$("#check-spartdb").dialog("close");
+						},
+						"Cancel" : function() {
+							$(this).dialog("close");
+						}
+					},
+					open : function(event, ui) {
+						$(this).html("");
+						$(this).append("<p>" + info + "</p>");
+					}
+				});
+
+			}
+			
+			
+				function confirmRemoveServer(condition, info) {
+					$("#reminder").dialog({
+						modal : true,
+						buttons : {
+							"Confirm" : function() {
+								$.post("./removeServerInfo.do", {
+									condition : condition,
+								}, function(data) {
+									$("#reminder").dialog({
+										buttons : {
+											"Confirm" : function() {
+												$(this).dialog("close");
+												window.location.reload();
+											}
+										},
+										open : function(event, ui) {
+											$(this).html("");
+											$(this).append(data);
+										}
+									});
+
+								});
+								$(this).dialog("close");
+								$("#check-spartdb").dialog("close");
+							},
+							"Cancel" : function() {
+								$(this).dialog("close");
+							}
+						},
+						open : function(event, ui) {
+							$(this).html("");
+							$(this).append("<p>" + info + "</p>");
+						}
+					});
+
+				}
+		
+	
 		$("#back").click(function() {
 			location.href="./getServerInfo.do";
 		});
@@ -141,11 +218,13 @@
 		});
 
 		$("#removeServer").click(function() {
-			confirm("removeServer", "Confirm to remove this server?");
+			var serverName = document.getElementById("featureid").value;
+			confirmRemoveServer(serverName, "Confirm to remove this server?");
 		});
 
 		$("#cancelAll").click(function() {
-			confirm("cancelAll", "Confirm to cancel all running cases?");
+			var serverName = document.getElementById("featureid").value;
+			confirmCancelAll(serverName, "Confirm to cancel all running cases?");
 		});
 
 	});
@@ -169,7 +248,7 @@
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="./getServerInfo.do">Servers</a></li>
-						<li><a href="./searchInfo.do">Case Search</a></li>
+<!-- 						<li><a href="./searchInfo.do">Case Search</a></li> -->
 						<li><a href="./getErrorCaseInfo.do">Error Cases</a></li>
 						<li class="dropdown "><a href="#" class="dropdown-toggle"
 							data-toggle="dropdown">Admin<strong class="caret"></strong></a>
@@ -200,7 +279,7 @@
 				<table class="table">
 					<tr>
 						<td>Server:</td>
-						<td><span class="subdetail">${info.lab.serverName}</span></td>
+						<td><span class="subdetail" id="serverName">${info.lab.serverName}</span></td>
 						<td>IP:</td>
 						<td><span class="subdetail">${info.lab.serverIp}</span></td>
 					</tr>
@@ -240,10 +319,10 @@
 							<button class="btn btn-default" name="back" id="back">back</button>
 							<button class="btn btn-default" name="cancelAll" id="cancelAll">Cancel
 								All</button>
-							<button class="btn btn-default " name="updateBuild"
-								id="updateBuild">Update Build</button>
-							<button class="btn btn-default " name="removeBuild"
-								id="removeBuild">Remove Build</button>
+<!-- 							<button class="btn btn-default " name="updateBuild" -->
+<!-- 								id="updateBuild">Update Build</button> -->
+<!-- 							<button class="btn btn-default " name="removeBuild" -->
+<!-- 								id="removeBuild">Remove Build</button> -->
 							<button class="btn btn-default " name="removeServer"
 								id="removeServer">Remove Server</button>
 						</td>

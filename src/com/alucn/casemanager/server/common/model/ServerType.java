@@ -1,7 +1,7 @@
 package com.alucn.casemanager.server.common.model;
 
 public enum ServerType {
-	LINE("Line"), GROUP("Group");
+	LINE("Line"), GROUP("Group"), STANDALONE("Standalone");
 	
 	private String name;
 	
