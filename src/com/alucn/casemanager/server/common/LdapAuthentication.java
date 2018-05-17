@@ -31,6 +31,8 @@ public class LdapAuthentication {
 		if (User.trim().equals("") || Passwd.trim().equals("")) {
 			return AuthFail;
 		}
+		
+		/*
 		String root = "ou=Users,ou=cnluc,ou=cn,dc=ad4,dc=ad,dc=alcatel,dc=com"; // root
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -65,7 +67,57 @@ public class LdapAuthentication {
 				}
 			}
 		}
-
+		 */
+		int try_times = 0;
+        String ad4_server = "ad.alcatel.com";
+        while(try_times < 2)
+        {
+            
+            Hashtable env = new Hashtable();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            env.put(Context.PROVIDER_URL, "ldap://" + ad4_server + ":389/");
+            //env.put(Context.SECURITY_AUTHENTICATION, "simple");
+            env.put(Context.SECURITY_PRINCIPAL, "ad4\\" +User  );
+            env.put(Context.SECURITY_CREDENTIALS, Passwd);
+             try {
+                  // 链接ldap
+                 ctx = new InitialDirContext(env);
+                 log.debug("LdapAuthentication sucess");
+                 return AuthSuccess;
+             } catch (javax.naming.AuthenticationException e) {
+                 log.error(User + " LdapAuthentication fail 1: " + e.toString());
+                 log.debug("LdapAuthentication fail");
+                 return AuthFail;
+             } catch (javax.naming.CommunicationException e) {
+                 log.error(User + " Ldap server connection fail 2: " + e.toString());
+                 ad4_server = "135.251.33.43";
+                 try_times += 1;
+                 // TODO: handle exception
+             } 
+             catch (Exception e) {
+                 log.debug("LdapAuthentication server fail");
+                 log.error(User + " LdapAuthentication server fail 3: " + e.toString());
+                 
+                 //e.printStackTrace();
+                 return Ad4ServerFail;
+             }
+            
+             finally
+             {
+                  
+                 if(ctx != null)
+                 {
+                     try {
+                         ctx.close();
+                     } catch (NamingException e) {
+                         // TODO Auto-generated catch block
+                         System.out.println(e);
+                     }
+                 }
+             }
+             
+        }
+        return Ad4ServerFail;
 	}
 
 	public static void main(String[] args) {

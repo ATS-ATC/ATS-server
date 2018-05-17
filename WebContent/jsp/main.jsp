@@ -17,7 +17,7 @@
 </head>
 <body>
 	<%
-		String auth = session.getAttribute("auth").toString();
+	    String auth = session.getAttribute("auth").toString();
 	%>
 	<div class="container">
 		<div class="row clearfix">
@@ -34,28 +34,26 @@
 				<div class="collapse navbar-collapse"
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-					<%
-					if(auth.equals("all")){
-					%>
+						<%
+						    if (auth.equals("all")) {
+						%>
 						<li><a href="./getServerInfo.do">Servers</a></li>
-<!-- 						<li><a href="./searchInfo.do">Case Search</a></li> -->
+						<!-- 						<li><a href="./searchInfo.do">Case Search</a></li> -->
 						<li><a href="./getErrorCaseInfo.do">Error Cases</a></li>
 						<li class="dropdown"><a href="#" class="dropdown-toggle"
 							data-toggle="dropdown">Admin<strong class="caret"></strong></a>
 							<ul class="dropdown-menu">
-								<li><a href="./getSpaAndRtdbInfo.do">SPA
-										and RTDB</a></li>
+								<li><a href="./getSpaAndRtdbInfo.do">SPA and RTDB</a></li>
 								<li><a href="./config.do">Config Manage</a></li>
 								<li class="divider"></li>
 							</ul></li>
-					<%
-					}else if(auth.equals("errorCases")){
-					%>
-						<li><a href="./getErrorCaseInfo.do">Error
-								Cases</a></li>
-					<%
-					}
-					%>
+						<%
+						    } else if (auth.equals("errorCases")) {
+						%>
+						<li><a href="./getErrorCaseInfo.do">Error Cases</a></li>
+						<%
+						    }
+						%>
 					</ul>
 					<form class="navbar-form navbar-left">
 						<div class="form-group">
@@ -76,8 +74,9 @@
 		<div class="row clearfix">
 			<div class="col-md-6 column">
 				<ul class="list-group">
-				<jsp:useBean id="now" class="java.util.Date" />
-				<fmt:formatDate value="${now}" type="both" dateStyle="long" pattern="yyyy-MM-dd HH:mm:ss" var="cc"/>
+					<jsp:useBean id="now" class="java.util.Date" />
+					<fmt:formatDate value="${now}" type="both" dateStyle="long"
+						pattern="yyyy-MM-dd HH:mm:ss" var="cc" />
 					<li class="list-group-item"><span class="badge">${cc}</span>
 						Refresh time:</li>
 					<li class="list-group-item" style="background-color: #4CAF50">
@@ -90,7 +89,10 @@
 						<span class="badge">${I}</span> Initial cases:
 					</li>
 					<li class="list-group-item" style="background-color: #FFC107">
-						<span class="badge">${J}</span> Pending cases:
+						<span class="badge">${P}</span> Pending cases:
+					</li>
+					<li class="list-group-item" style="background-color: #E8E8E8">
+						<span class="badge">${O}</span> Obsolete cases:
 					</li>
 					<li class="list-group-item" style="background-color: #a969fd">
 						<span class="badge">${R}</span> Resubmit cases:
@@ -158,8 +160,12 @@
 								}, {
 									name : 'Pending',
 									color : '#FFC107',
-									y : ${J}/${T}
+									y : ${P}/${T}
 								}, {
+                                    name : 'Obsolete',
+                                    color : '#E8E8E8',
+                                    y : ${O}/${T}
+                                }, {
 									name : 'Initial',
 									color : '#67bde8',
 									y : ${I}/${T}
@@ -169,7 +175,7 @@
 									y : ${R}/${T}
 								} ]
 							} ]
-						});
+					});
 	</script>
 </body>
 </html>

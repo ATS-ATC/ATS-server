@@ -23,7 +23,7 @@ public class DbOperation {
 				UpdateSql += "'" + UnNeedServers.getString(i) + "', ";
 			}
 			UpdateSql = UpdateSql.substring(0, UpdateSql.length() - 2) + ");";
-
+			logger.debug("DeleteDistributedCase delete sql: " + UpdateSql);
 			stat.executeUpdate(UpdateSql);
 
 			// delete
