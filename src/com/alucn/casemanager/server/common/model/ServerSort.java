@@ -35,5 +35,12 @@ public class ServerSort implements Comparable<ServerSort>,Serializable{
 			break;
 		}
 		return -one.compareTo(two);
+	}
+
+	@Override
+	public String toString() {
+		return "ServerSort [map=" + map + "]";
 	} 
+	
+	
 }

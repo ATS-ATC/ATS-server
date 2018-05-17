@@ -121,9 +121,9 @@ public class ReceiveAndSendRun implements Runnable {
 		}
 		@Override
 		public void run() {
+			logger.info("send message thread is started !");
 			while(true){
 				try {
-					logger.info("send message thread is started !");
 					JSONArray currServerStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
 					for(int i=0; i<currServerStatus.size();i++){
                         JSONObject tmpJsonObject = (JSONObject) currServerStatus.get(i);
@@ -135,9 +135,13 @@ public class ReceiveAndSendRun implements Runnable {
         					logger.info("server send message of queue "+ message);
                         }
 					}
-					Thread.sleep(Integer.parseInt(ConfigProperites.getInstance().getCaseClientSocketTime()));
+					
 				} catch (Exception e) {
 					logger.error("[Failed to send message]"+e.getMessage());
+				}finally{
+					try {
+						Thread.sleep(Integer.parseInt(ConfigProperites.getInstance().getCaseClientSocketTime()));
+					} catch (NumberFormatException | InterruptedException e) {}
 				}
 			}
 		}

@@ -45,7 +45,7 @@ public class CaseConfigurationCache {
 	public static JSONArray readOrWriteSingletonCaseProperties(ReadWriteLock lock,boolean isCheck,JSONObject body){
 		if (isCheck) {
 			try {
-				lock.readLock().lock();  
+				lock.readLock().lock(); 
 				JSONArray infos = singletonCaseProperties;
 				return infos;
 			} finally{
