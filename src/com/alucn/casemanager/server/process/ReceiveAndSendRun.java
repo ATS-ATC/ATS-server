@@ -121,10 +121,8 @@ public class ReceiveAndSendRun implements Runnable {
 		}
 		@Override
 		public void run() {
-			logger.info("send message thread is started !");
-			while(true){
-				try {
-					JSONArray currServerStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+			logger.info("send message thread is started !");			while(true){
+				try {					JSONArray currServerStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
 					for(int i=0; i<currServerStatus.size();i++){
                         JSONObject tmpJsonObject = (JSONObject) currServerStatus.get(i);
                         String serverNameIn = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);

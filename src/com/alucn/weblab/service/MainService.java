@@ -12,7 +12,7 @@ import com.alucn.weblab.dao.impl.MainDaoImpl;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ6ÈÕ ÏÂÎç4:50:45
+ * 2017ï¿½ï¿½6ï¿½ï¿½6ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½4:50:45
  * desc:
  */
 @Service("mainService")
@@ -25,7 +25,8 @@ public class MainService {
 	public Map<String, Integer> getStatistics() throws Exception {
     	caseCounter.put("S", 0);
     	caseCounter.put("F", 0);
-    	caseCounter.put("J", 0);
+    	caseCounter.put("P", 0);
+    	caseCounter.put("O", 0);
     	caseCounter.put("I", 0);
     	caseCounter.put("R", 0);
     	String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
@@ -33,9 +34,11 @@ public class MainService {
 		int total=0;
     	for(String state: caseCounter.keySet()){
 			String statisticsAll = "SELECT COUNT(case_name) FROM DftTag WHERE case_status='"+state+"'; " ;
+			/*
 			if (state=="J") {
 				statisticsAll = "SELECT COUNT(case_name) FROM DftTag WHERE case_status='F' AND jira_id <> ''; " ;
 			}
+			*/
 			Integer value = 0;
 			ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, statisticsAll);
 			for(int i=0; i<result.size();i++){

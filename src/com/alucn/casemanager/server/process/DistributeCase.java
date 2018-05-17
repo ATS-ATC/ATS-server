@@ -40,6 +40,7 @@ public class DistributeCase implements Runnable{
 					logger.info("[case  list :]"+caseList.toString());
 				}
 				clientACK.clear();      //To prevent the lab side from receiving the same caselist, the incoming ack affects the next wave of caselist distribution
+				logger.info("[call distributeCase...]");
 				distributeCase(toHashMap(caseList));
 				
 				//check the lab status, remove the distributed case list
