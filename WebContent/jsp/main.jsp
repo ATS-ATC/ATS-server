@@ -94,6 +94,9 @@
 					<li class="list-group-item" style="background-color: #E8E8E8">
 						<span class="badge">${O}</span> Obsolete cases:
 					</li>
+					<li class="list-group-item" style="background-color: #D1EEEE">
+                        <span class="badge">${PP}</span> Pre-Pending cases:
+                    </li>
 					<li class="list-group-item" style="background-color: #a969fd">
 						<span class="badge">${R}</span> Resubmit cases:
 					</li>
@@ -165,7 +168,12 @@
                                     name : 'Obsolete',
                                     color : '#E8E8E8',
                                     y : ${O}/${T}
-                                }, {
+                                },
+                                {
+                                    name : 'Pre-Pending',
+                                    color : '##D1EEEE',
+                                    y : ${PP}/${T}
+                                },{
 									name : 'Initial',
 									color : '#67bde8',
 									y : ${I}/${T}
