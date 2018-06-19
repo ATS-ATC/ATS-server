@@ -201,6 +201,45 @@
 					});
 
 				}
+				
+				
+				
+				function confirmStartServer(condition, info) {
+					$("#reminder").dialog({
+						modal : true,
+						buttons : {
+							"Confirm" : function() {
+								$.post("./start.do", {
+									condition : condition,
+								}, function(data) {
+									$("#reminder").dialog({
+										buttons : {
+											"Confirm" : function() {
+												$(this).dialog("close");
+												window.location.reload();
+											}
+										},
+										open : function(event, ui) {
+											$(this).html("");
+											$(this).append(data);
+										}
+									});
+
+								});
+								$(this).dialog("close");
+								$("#check-spartdb").dialog("close");
+							},
+							"Cancel" : function() {
+								$(this).dialog("close");
+							}
+						},
+						open : function(event, ui) {
+							$(this).html("");
+							$(this).append("<p>" + info + "</p>");
+						}
+					});
+
+				}
 		
 	
 		$("#back").click(function() {
@@ -218,15 +257,19 @@
 		});
 
 		$("#removeServer").click(function() {
-			var serverName = document.getElementById("featureid").value;
+			var serverName = document.getElementById("serverName").innerText;
 			confirmRemoveServer(serverName, "Confirm to remove this server?");
 		});
 
 		$("#cancelAll").click(function() {
-			var serverName = document.getElementById("featureid").value;
+			var serverName = document.getElementById("serverName").innerText;			
 			confirmCancelAll(serverName, "Confirm to cancel all running cases?");
 		});
-
+		$("#startServer").click(function() {
+			var serverName = document.getElementById("serverName").innerText;			
+			confirmStartServer(serverName, "Confirm to start server?");
+		});
+		
 	});
 </script>
 </head>
@@ -323,6 +366,8 @@
 <!-- 								id="updateBuild">Update Build</button> -->
 <!-- 							<button class="btn btn-default " name="removeBuild" -->
 <!-- 								id="removeBuild">Remove Build</button> -->
+							<button class="btn btn-default " name="startServer"
+								id="startServer">Start Server</button>
 							<button class="btn btn-default " name="removeServer"
 								id="removeServer">Remove Server</button>
 						</td>

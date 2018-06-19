@@ -15,13 +15,14 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.listener.MainListener;
 
-public class GetTimeCase {
-	private static final Logger logger = Logger.getLogger(GetTimeCase.class);
+public class GetTagCase {
+	private static final Logger logger = Logger.getLogger(GetTagCase.class);
 	private List<JSONObject> caseJsonVarList;
-	private int time_sensitive = 0;
+	private int tag_sensitive = 0;
 
+	//getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 	public void analysisCase(int index, String caseDir, String caseName, String featureId, boolean isCase, int level,
-			String casePath, boolean isBase) {
+			String casePath, boolean isBase, String tag) {
 		int newLevel = level;
 		int newLevel2;
 		String caseFilePath;
@@ -67,13 +68,21 @@ public class GetTimeCase {
 					if (!Names[i].startsWith("_")) {
 						jsonObjectItem = jsonObject.getJSONObject(Names[i]);
 						taskName = jsonObjectItem.getString("task");
-							
-						if(taskName.equals("DateTimeTask")) {
+						
+						if(taskName.equals(tag) && tag.equals("DateTimeTask")) {
 							JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
 							String sql = "update DftTag set time_sensitive = 'Y' where case_name = '"+ featureId + "/" + caseName+"'";
 							//System.out.println("++++++++++"+sql+"++"+caseDir+"++"+casePath);
 							jdbc_cf.executeSql(sql);
-							++time_sensitive;
+							++tag_sensitive;
+							is = true;
+							break;
+						}else if(taskName.equals(tag) && tag.equals("AuditTask")) {
+							JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
+							String sql = "update DftTag set audit_tag = 'Y' where case_name = '"+ featureId + "/" + caseName+"'";
+							System.out.println("++++++++++"+sql+"++"+caseDir+"++"+casePath);
+							jdbc_cf.executeSql(sql);
+							++tag_sensitive;
 							is = true;
 							break;
 						}
@@ -134,7 +143,7 @@ public class GetTimeCase {
 										nextCasePath = "/home/huanglei/SurepayDraft";
 									}
 									analysisCase(-1, caseDir, moudleName, featureId, false, newLevel2, nextCasePath,
-											isBaseModule);
+											isBaseModule, tag);
 								}
 							}
 						}
@@ -237,13 +246,13 @@ public class GetTimeCase {
 		MainListener.init(argss);
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
 		String sql = "select case_name from DftTag;";
-		GetTimeCase getTimeCase = new GetTimeCase();
+		GetTagCase getTimeCase = new GetTagCase();
 		ArrayList<HashMap<String, Object>> query = jdbc_cf.query(sql);
 		for(int i=0; i<query.size(); i++){
 			String caseName = (String)query.get(i).get("case_name");
-			getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
+			getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false, "AuditTask") ;
 		}
-		System.out.println("+++++++++++++++++++++++++++++++++++finshed"+getTimeCase.time_sensitive+"++++++++++++++++++++++++++++++++");
+		System.out.println("+++++++++++++++++++++++++++++++++++finshed"+getTimeCase.tag_sensitive+"++++++++++++++++++++++++++++++++");
 	}
 		
 }

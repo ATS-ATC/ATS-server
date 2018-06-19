@@ -17,7 +17,7 @@ import com.alucn.casemanager.server.common.util.DateUtil;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.TelnetCla;
-import com.alucn.casemanager.server.process.GetTimeCase;
+import com.alucn.casemanager.server.process.GetTagCase;
 
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
@@ -134,7 +134,7 @@ public class CaseConfigurationCache {
 		TelnetCla telnetCla = new TelnetCla(Constant.TMSHOSTNAME, Constant.TMSHOSTPORT, Constant.TMSUSER, Constant.TMSPASSWORD, Constant.TMSUSERAD4, Constant.TMSPASSWORDAD4);
 		boolean readUntil = telnetCla.readUntil("apxtms: /home/"+Constant.TMSUSER+">");
 		if(!caseSuccessList.getJSONObject(0).getString(Constant.NAME).equals("")){
-			GetTimeCase getTimeCase = new GetTimeCase();
+			GetTagCase getTimeCase = new GetTagCase();
 			for(int i=0; i<caseSuccessList.size(); i++){
 			    String caseName = caseSuccessList.getJSONObject(i).getString(Constant.NAME).replace("dft_server/", "");
 			    Integer caseTime = caseSuccessList.getJSONObject(i).getInt(Constant.TIME);
@@ -142,7 +142,8 @@ public class CaseConfigurationCache {
 				jdbc_df.executeSql(dfttag_sql);
 				String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
 				jdbc_cf.executeSql(dfttagdaily_sql);
-				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
+				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false, "DateTimeTask") ;
+				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false, "AuditTask") ;
 				if(readUntil){
 					String result = telnetCla.doJob(Constant.TMSUSER,caseName);
 					String[] split = result.split(",");

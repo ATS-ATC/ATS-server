@@ -93,6 +93,12 @@ public class ServerInfoController {
 		out.write(serverInfoService.cancel(condition));
 	}
 	
+	@RequestMapping(path = "/start")
+	public void start(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
+		out.write(serverInfoService.startServer(condition));
+	}
+	
+	
 	public ServerInfoService getServerInfoService() {
 		return serverInfoService;
 	}
