@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -14,9 +15,21 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.alucn.weblab.controller.JiraSeleniumController;
+
 public class JiraSelenium {
+	
+	public static Logger logger = Logger.getLogger(JiraSelenium.class);
+	/**
+	 * <pre>
+	 * Example: JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
+	 * Description: login the system
+	 * Arguments: driver;url
+	 * Return: void
+	 * Variable：none
+	 * </pre>
+	 */
     public static void login(WebDriver driver,String url)  {
-    	
         driver.get(url);
         WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-form-username")));
@@ -31,9 +44,18 @@ public class JiraSelenium {
     	
     	driver.findElement(By.id("login-form-submit")).click();
 		
-		System.out.println("================login success!!================");
+		logger.info("================login success!!================");
     	
 	}
+    /**
+     * <pre>
+     * Example: JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
+     * Description: Get the intermediate variable,For splicing urls
+     * Arguments: driver;url
+     * Return: ArrayList<String>
+     * Variable：none
+     * </pre>
+     */
     public static ArrayList<String> getIssues(WebDriver driver,String url) {
     	ArrayList<String> targetUrls = new ArrayList<String>();
     	driver.get(url);
@@ -48,11 +70,11 @@ public class JiraSelenium {
 			}else if ("CLOSED".equals(text)) {
 				continue;
 			}else {
-				System.out.println("text:=========="+text);
+				logger.info("text:=========="+text);
 				String attribute = element.getAttribute("data-issuekey");
 				targetUrls.add(attribute);
 			}
-    		//System.out.println(attribute);
+    		//logger.info(attribute);
     	}*/
     	issuerowInfo(driver,targetUrls);
     	String totalCount = driver.findElement(By.className("results-count-total")).getText();
@@ -73,19 +95,19 @@ public class JiraSelenium {
         		}else if ("CLOSED".equals(text)) {
         			continue;
 				}else {
-        			System.out.println("text:=========="+text);
+        			logger.info("text:=========="+text);
         			String attribute = element.getAttribute("data-issuekey");
         			targetUrls.add(attribute);
 				}
         	}*/
-    		//System.out.println(url2);
+    		//logger.info(url2);
     		i--;
     	}
     	
     	/*File file = new File("d:/jira2.txt");  
         PrintStream ps = new PrintStream(new FileOutputStream(file));  
         ps.println(targetUrls);*/
-    	System.out.println("targetUrls:======================="+targetUrls);
+    	logger.info("targetUrls:======================="+targetUrls);
     	return targetUrls;
     }
     
@@ -105,15 +127,15 @@ public class JiraSelenium {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-        System.out.println("=============find issuerow start================");
+        logger.info("=============find issuerow start================");
     	//List<WebElement> findElements = driver.findElements(By.xpath("//tr[starts-with(@id,'issuerow')]"));
     	List<WebElement> findElements = driver.findElements(By.className("issuerow"));
-    	System.out.println("findElements:===="+findElements.size());
+    	logger.info("findElements:===="+findElements.size());
     	for(WebElement element :findElements) {
     		 WebElement status = element.findElement(By.className("status"));
     		 String text = status.getText();
     		 if(!"RESOLVED".equals(text)&&!"CLOSED".equals(text)) {
-    			//System.out.println("text:=========="+text);
+    			//logger.info("text:=========="+text);
 				String attribute = element.getAttribute("data-issuekey");
 				targetUrls.add(attribute);
     		 }
@@ -130,9 +152,9 @@ public class JiraSelenium {
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
         ArrayList<String> cliArgsCap = new ArrayList<>();
         cliArgsCap.add("--proxy=http://"+HOST+":"+PORT);
-        cliArgsCap.add("--load-images=no");//�ر�ͼƬ����
-        //cliArgsCap.add("--disk-cache=yes");//��������
-        cliArgsCap.add("--ignore-ssl-errors=true");//����https����
+        cliArgsCap.add("--load-images=no");
+        //cliArgsCap.add("--disk-cache=yes");
+        cliArgsCap.add("--ignore-ssl-errors=true");
         capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
 
         WebDriver driver = new PhantomJSDriver(capabilities);
@@ -140,6 +162,15 @@ public class JiraSelenium {
         JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
         getIssuesInfo(driver,"SUREPAYRD-17687");
 	}
+    /**
+     * <pre>
+     * Example: JiraSelenium.getIssuesInfo(driver,"SUREPAYRD-17687");
+     * Description: Gets the specified element 
+     * Arguments: driver;target
+     * Return: Map<String,Object>
+     * Variable：none
+     * </pre>
+     */
     public static Map<String ,Object> getIssuesInfo(WebDriver driver,String target) {
     	Map<String ,Object> result  = new HashedMap(); 
     	//result.put("target",target);
@@ -150,8 +181,8 @@ public class JiraSelenium {
     	File file = new File("d:/jira3.txt");  
         PrintStream ps = new PrintStream(new FileOutputStream(file));  
         ps.println(pageSource);*/
-    	//System.out.println("url:======="+url);
-    	//System.out.println(url);
+    	//logger.info("url:======="+url);
+    	//logger.info(url);
     	//driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
     	try {
     		WebDriverWait wait = new WebDriverWait(driver, 10);
@@ -160,11 +191,11 @@ public class JiraSelenium {
 			//Thread.sleep(3000);
             
             WebElement caseStatus =  driver.findElement(By.id("customfield_13641-val"));
-	    	//System.out.println(caseStatus.getText());
+	    	//logger.info(caseStatus.getText());
 	    	result.put("caseStatus", caseStatus.getText().trim());
 	    	
 	    	WebElement Feature = driver.findElement(By.id("customfield_13636-val"));
-	    	//System.out.println(Feature.getText());
+	    	//logger.info(Feature.getText());
 	    	result.put("Feature", Feature.getText().trim());
 	    	
 	    	WebElement Assignee = driver.findElement(By.id("assignee-val"));
@@ -175,10 +206,10 @@ public class JiraSelenium {
 	    	for (WebElement webElement : labels) {
 	    		List<WebElement> caseListA = webElement.findElements(By.className("lozenge"));
 	    		for (WebElement webElement2 : caseListA) {
-	    			//System.out.println("webElement2.getText().trim():+=================="+webElement2.getText().trim());
+	    			//logger.info("webElement2.getText().trim():+=================="+webElement2.getText().trim());
 	    			labelList.add(webElement2.getText().trim()==null?"":webElement2.getText().trim());
 				}
-	    		//System.out.println("labelList.toString():============="+labelList.toString());
+	    		//logger.info("labelList.toString():============="+labelList.toString());
 	    		result.put("labels", labelList.toString().replace("[","").replace("]", ""));
 			}
 	    	//List<WebElement> caseLists = driver.findElements(By.cssSelector("#customfield_13599-1316992-value > li"));
@@ -190,17 +221,17 @@ public class JiraSelenium {
 	    		List<WebElement> caseListA = webElement.findElements(By.className("lozenge"));
 	    		for (WebElement webElement2 : caseListA) {
 	    			String text = webElement2.getText().trim().replace(",", "");
-	    			//System.out.println(text);
+	    			//logger.info(text);
 	    			caselist.add(text);
 				}
-	    		/*System.out.println(webElement.getAttribute("title"));
+	    		/*logger.info(webElement.getAttribute("title"));
 	    		caselist.add(webElement.getAttribute("title"));*/
 	    	}
-	    	//System.out.println("caselist:======="+caselist);
+	    	//logger.info("caselist:======="+caselist);
 	    	result.put("caselist", caselist);
     	} catch (Exception e) {
     		e.printStackTrace();
-    		System.out.println("null target:==-=-=-=-=-="+target);
+    		logger.info("null target:==-=-=-=-=-="+target);
     		driver.quit();
     		return null;
 		}	
