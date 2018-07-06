@@ -1,0 +1,50 @@
+@CHARSET "UTF-8";
+
+
+div{
+	text-align: left;
+}
+
+.table{
+	margin:30px auto;
+	width: 100%;
+	border-radius:10px;
+	padding: 25px;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	border: 3px solid #d3d3d3 !important;
+	border-collapse:separate; 
+	border-spacing:10px;
+}
+.detail>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
+	border:none;
+}
+
+caption{
+	margin:20px auto;
+}
+
+h1,h2,h3,h4,p{
+	text-align: left;
+}
+
+.detail{
+	color:#000000;
+	font-size:1.3em;
+}
+
+.subdetail{
+	color:#62b0ff;
+}
+
+.submit{
+	text-align: right;
+	font-size: 1.1em;
+	line-height:30px;
+}
+.hide{
+	display: none;
+}
+
+
+  
