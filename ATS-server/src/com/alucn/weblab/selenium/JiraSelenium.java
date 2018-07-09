@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
@@ -29,7 +30,7 @@ public class JiraSelenium {
 	 * Variable：none
 	 * </pre>
 	 */
-    public static void login(WebDriver driver,String url)  {
+    public static void login(WebDriver driver,String url) throws NoSuchElementException {
         driver.get(url);
         WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-form-username")));
@@ -55,8 +56,9 @@ public class JiraSelenium {
      * Return: ArrayList<String>
      * Variable：none
      * </pre>
+     * @throws InterruptedException,NoSuchElementException 
      */
-    public static ArrayList<String> getIssues(WebDriver driver,String url) {
+    public static ArrayList<String> getIssues(WebDriver driver,String url) throws InterruptedException,NoSuchElementException {
     	ArrayList<String> targetUrls = new ArrayList<String>();
     	driver.get(url);
     	//driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
@@ -111,8 +113,7 @@ public class JiraSelenium {
     	return targetUrls;
     }
     
-    public static ArrayList<String> issuerowInfo(WebDriver driver,ArrayList<String> targetUrls){
-    	try {
+    public static ArrayList<String> issuerowInfo(WebDriver driver,ArrayList<String> targetUrls) throws InterruptedException,NoSuchElementException{
 	    	WebDriverWait wait = new WebDriverWait(driver, 10);
 	        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tr[starts-with(@id,'issuerow')]")));
 	        //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS); 
@@ -124,9 +125,7 @@ public class JiraSelenium {
 	    	//List<WebElement> findElements = driver.findElements(By.className("issuerow"));
         
 			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		
         logger.info("=============find issuerow start================");
     	//List<WebElement> findElements = driver.findElements(By.xpath("//tr[starts-with(@id,'issuerow')]"));
     	List<WebElement> findElements = driver.findElements(By.className("issuerow"));

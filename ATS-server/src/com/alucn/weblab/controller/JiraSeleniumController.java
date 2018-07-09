@@ -3,7 +3,6 @@ package com.alucn.weblab.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -13,12 +12,9 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -27,7 +23,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.selenium.JiraSelenium;
 import com.alucn.weblab.service.JiraSeleniumService;
 
@@ -59,7 +54,7 @@ public class JiraSeleniumController {
     
     @RequestMapping(value="/loopSetJiraCaseTbl")
     @ResponseBody
-    public String loopSetJiraCaseTbl() throws Exception {
+    public String loopSetJiraCaseTbl() {
     	if(running) {
     		return "running";
     	}
@@ -69,10 +64,15 @@ public class JiraSeleniumController {
     		if (!Flag) {
 				break;
 			}
-    		logger.info("==================loopSetJiraCaseTbl running!!!==================");
-    		//Thread.sleep(1000*60*1);
-    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
-    		this.setJiraCaseTbl();
+    		try {
+	    		logger.info("==================loopSetJiraCaseTbl running!!!==================");
+	    		Thread.sleep(1000*60*1);
+	    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
+				this.setJiraCaseTbl();
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
     		
     	}
     	logger.info("loopSetJiraCaseTbl stop!!!");
@@ -85,15 +85,15 @@ public class JiraSeleniumController {
     public String setJiraCaseTbl() throws Exception {
     	running = true;
     	
-    	long startMili=System.currentTimeMillis();// 当前时间对应的毫秒数
+    	long startMili=System.currentTimeMillis(); 
     	
         System.setProperty("phantomjs.binary.path", phantomjs);
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
         ArrayList<String> cliArgsCap = new ArrayList<>();
         cliArgsCap.add("--proxy=http://"+HOST+":"+PORT);
-        cliArgsCap.add("--load-images=no");//关闭图片加载
-        cliArgsCap.add("--disk-cache=no");//关闭缓存
-        cliArgsCap.add("--ignore-ssl-errors=true");//忽略https错误
+        cliArgsCap.add("--load-images=no"); 
+        cliArgsCap.add("--disk-cache=no"); 
+        cliArgsCap.add("--ignore-ssl-errors=true"); 
         capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
 
         WebDriver driver = new PhantomJSDriver(capabilities);
@@ -178,6 +178,7 @@ public class JiraSeleniumController {
         driver.quit();
         long endMili=System.currentTimeMillis();
         running = false;
+        logger.info("cost : "+formatTime(endMili-startMili));
         return formatTime(endMili-startMili);
     }
     public static String formatTime(Long ms) {
