@@ -63,15 +63,26 @@
 				<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
 				<font size="2" color="gray"><a>${releases.version_owner }</a> released this on ${releases.version_date} to master since this release</font>
 				</footer></blockquote>
-				<h3>Assets</h3>
-				<div style="padding-top: 10px;">
-					<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-					<a href="${releases.source_zip_url }">Source code (zip)</a>
-				</div>
-				<div style="padding-top: 10px;">
+				<c:forEach items="${releases.source_zip_urls}" varStatus="idx" var="urls" > 
+					<h3>Assets</h3>
+					<div style="padding-top: 10px;">
+						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+						<a href="${urls.Windows }" target= _blank>Source code (Windows)</a>
+					</div>
+					<div style="padding-top: 10px;">
+						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+						<a href="${urls.Linux }" target= _blank>Source code (Linux)</a>
+					</div>
+					<div style="padding-top: 10px;">
+						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+						<a href="${urls.Command }" target= _blank>Source code (Command)</a>
+					</div>
+				</c:forEach> 
+				<%-- <div style="padding-top: 10px;">
 					<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
 					<a href="${releases.source_tar_info }">Source code (tar.gz)</a>
-				</div>
+				</div> --%>
+				
 				<br/><br/>
 				<p>
 					<div id="version_info">${releases.version_info }</div>
