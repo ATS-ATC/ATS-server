@@ -63,6 +63,8 @@
                      <list>
                          <value>/userLogin.do</value>
                          <value>/userLoginCheckOut.do</value>
+                         <value>/releasesLogin.do</value>
+                         <value>/releasesLoginCheckOut.do</value>
                     </list>
                 </property>
 			</bean>
