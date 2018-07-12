@@ -46,6 +46,9 @@ public class LoginInterceptors implements HandlerInterceptor{
 				return true;
 			}
 		}
+		if(requestUri.endsWith("releasesLogin.do")||requestUri.endsWith("releasesLoginCheckOut.do")) {
+			return true;
+		}
 		HttpSession session = request.getSession();
 		if (session.getAttribute("login")==null || "".equals(session.getAttribute("login"))) {
 			throw new WebAuthException();

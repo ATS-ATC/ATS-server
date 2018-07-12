@@ -32,7 +32,7 @@ public class ReleasesService {
 			List<Map<String,String>> source_zip_urls = new ArrayList<>();
 			String source_zip_url = (String) hashMap.get("source_zip_url");
 			System.out.println("source_zip_url:=========="+source_zip_url);
-			if(!"".equals(source_zip_url)) {
+			if(!"".equals(source_zip_url)&&source_zip_url!=null) {
 				Map<String,String> map = new HashMap<>();
 				JSONObject json = JSONObject.fromObject(source_zip_url);
 				System.out.println(json.toString());
