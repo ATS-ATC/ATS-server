@@ -52,6 +52,11 @@
 				</p>
 			</div>
 		</div> -->
+		<div class="row" style="padding-top: 33px;">
+			<div class="col-md-3" align="right" style="padding-top: 25px;">
+				<h2>Releases</h2>
+			</div>
+		</div>
 		<c:forEach items="${releases}" varStatus="idx" var="releases" > 
 		<div class="row" style="padding-top: 33px;">
 			<div class="col-md-2" align="right" style="padding-top: 25px;">
