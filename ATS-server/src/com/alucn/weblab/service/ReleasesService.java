@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bouncycastle.jce.provider.BrokenJCEBlockCipher.BrokePBEWithMD5AndDES;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +32,21 @@ public class ReleasesService {
 			HashMap<String, Object> urlList = new HashMap<String, Object>();
 			List<Map<String,String>> source_zip_urls = new ArrayList<>();
 			String source_zip_url = (String) hashMap.get("source_zip_url");
-			System.out.println("source_zip_url:=========="+source_zip_url);
+			//System.out.println("source_zip_url:=========="+source_zip_url);
 			if(!"".equals(source_zip_url)&&source_zip_url!=null) {
 				Map<String,String> map = new HashMap<>();
 				JSONObject json = JSONObject.fromObject(source_zip_url);
-				System.out.println(json.toString());
+				//System.out.println(json.toString());
 				try {
-					if(json.get("Windows")!=null) {
-						System.out.println(json.get("Windows").toString());
+					Set<String> keySet = json.keySet();
+					for (String key : keySet) {
+						if(json.get(key)!=null) {
+							System.out.println(key+":"+json.get(key).toString());
+							map.put(key, json.get(key).toString());
+						}
+					}
+					/*if(json.get("Windows")!=null) {
+						//System.out.println(json.get("Windows").toString());
 						map.put("Windows", json.get("Windows").toString());
 					}
 					if(json.get("Linux")!=null) {
@@ -46,7 +54,7 @@ public class ReleasesService {
 					}
 					if(json.get("Command")!=null) {
 						map.put("Command", json.get("Command").toString());
-					}
+					}*/
 					source_zip_urls.add(map);
 				}catch (Exception e) {
 					e.printStackTrace();

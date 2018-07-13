@@ -66,22 +66,25 @@
 				<h2 style="color: #0366D6;">${releases.version_num }</h2>
 				<blockquote><footer>
 				<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-				<font size="2" color="gray"><a>${releases.version_owner }</a> released this on ${releases.version_date} to master since this release</font>
+				<font size="2" color="gray"><a>${releases.version_owner }</a> released this on ${releases.version_date}</font>
 				</footer></blockquote>
-				<c:forEach items="${releases.source_zip_urls}" varStatus="idx" var="urls" > 
-					<h3>Assets</h3>
+				<c:forEach items="${releases.source_zip_urls}" var="urls" > 
+					<h3>Download</h3>
+					<c:forEach var="item" items="${urls}">   
 					<div style="padding-top: 10px;">
 						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-						<a href="${urls.Windows }" target= _blank>Source code (Windows)</a>
+						<a href="${item.value }" target= _blank>${item.key }</a>
+					</div>
+					</c:forEach>  
+					
+					<%-- <div style="padding-top: 10px;">
+						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+						<a href="${urls.Linux }" target= _blank>Linux Version</a>
 					</div>
 					<div style="padding-top: 10px;">
 						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-						<a href="${urls.Linux }" target= _blank>Source code (Linux)</a>
-					</div>
-					<div style="padding-top: 10px;">
-						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-						<a href="${urls.Command }" target= _blank>Source code (Command)</a>
-					</div>
+						<a href="${urls.Command }" target= _blank>Command Version</a>
+					</div> --%>
 				</c:forEach> 
 				<%-- <div style="padding-top: 10px;">
 					<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
@@ -89,6 +92,7 @@
 				</div> --%>
 				
 				<br/><br/>
+				<h3>Change History</h3>
 				<p>
 					<div id="version_info">${releases.version_info }</div>
 					<span class="glyphicon glyphicon-grain" aria-hidden="true"></span>
