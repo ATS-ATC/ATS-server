@@ -66,7 +66,7 @@ public class JiraSeleniumController {
 			}
     		try {
 	    		logger.info("==================loopSetJiraCaseTbl running!!!==================");
-	    		Thread.sleep(1000*60*1);
+	    		//Thread.sleep(1000*60*1);
 	    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
 				this.setJiraCaseTbl();
 			} catch (Exception e) {
