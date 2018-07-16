@@ -245,7 +245,10 @@ var TableInit = function () {
             }, {
                 field: 'porting_release',
                 title: 'PortingRelease'
-            }     
+            }, {
+                field: 'jira_id',
+                title: 'JiraId'
+            }
             
             ]
         });
