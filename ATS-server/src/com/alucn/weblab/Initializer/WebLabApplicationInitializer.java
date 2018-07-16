@@ -47,11 +47,14 @@ public class WebLabApplicationInitializer implements WebApplicationInitializer {
 	public void initServer(ServletContext servletContext) {
 		String configPath = System.getenv("WEBLAB_CONF");
 		//String java_home = System.getenv("java_home");
-		//String [] args = {servletContext.getRealPath("conf")};
-		//String [] args = {servletContext.getRealPath("conf")};
-		String[] args = { configPath };
-		//System.out.println("========================="+args.toString()+"-------"+configPath+"==="+java_home);
-		MainListener.init(args);
+		
+		//localhost server
+		String [] args = {servletContext.getRealPath("conf")};
+		String [] args2 = { configPath };
+		//linux server
+		//String[] args = { configPath };
+		//MainListener.init(args);
+		MainListener.init(args.length==0?args2:args);
 		
 		/*JSONArray infos = new JSONArray();
 //		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21H\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"P\",\"mateServer\": \"BJRMS21I\",\"setName\": \"set2\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");

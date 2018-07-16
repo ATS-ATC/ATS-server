@@ -91,7 +91,7 @@
 					<a href="${releases.source_tar_info }">Source code (tar.gz)</a>
 				</div> --%>
 				
-				<br/><br/>
+				<br/>
 				<h3>Change History</h3>
 				<p>
 					<div id="version_info">${releases.version_info }</div>
