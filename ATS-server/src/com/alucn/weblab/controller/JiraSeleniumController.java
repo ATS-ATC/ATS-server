@@ -35,7 +35,8 @@ public class JiraSeleniumController {
 
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";
-    static final String phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
+    //static final String phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
+    //static final String phantomjs ="/opt/phantomjs/bin/phantomjs";
     
     static boolean Flag = false;
     static boolean running =false;
@@ -66,7 +67,7 @@ public class JiraSeleniumController {
 			}
     		try {
 	    		logger.info("==================loopSetJiraCaseTbl running!!!==================");
-	    		//Thread.sleep(1000*60*1);
+	    		Thread.sleep(1000*60*1);
 	    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
 				this.setJiraCaseTbl();
 			} catch (Exception e) {
@@ -86,7 +87,13 @@ public class JiraSeleniumController {
     	running = true;
     	
     	long startMili=System.currentTimeMillis(); 
-    	
+    	String configPath = System.getenv("WEBLAB_CONF");
+    	String phantomjs;
+    	if(configPath==null) {
+    		phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
+    	}else {
+    		phantomjs ="/opt/phantomjs/bin/phantomjs";
+		}
         System.setProperty("phantomjs.binary.path", phantomjs);
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
         ArrayList<String> cliArgsCap = new ArrayList<>();
@@ -144,7 +151,7 @@ public class JiraSeleniumController {
                         }
                         Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(ddriver,target);
                         //System.out.println(Thread.currentThread().getName()+"=========:issuesInfo:========"+issuesInfo);
-                        logger.info(Thread.currentThread().getName()+"=========:issuesInfo:========"+issuesInfo);
+                        logger.info(Thread.currentThread().getName()+":issuesInfo:========"+issuesInfo);
                         aMap.put(target, issuesInfo);
                         ddriver.quit();
                      }else {

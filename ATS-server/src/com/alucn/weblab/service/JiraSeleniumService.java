@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,12 @@ import org.springframework.stereotype.Service;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
+import com.alucn.weblab.controller.JiraSeleniumController;
 import com.alucn.weblab.dao.impl.JiraSeleniumDaoImpl;
 
 @Service("jiraSeleniumService")
 public class JiraSeleniumService {
-	
+	public static Logger logger = Logger.getLogger(JiraSeleniumService.class);
 	@Autowired(required=true)
 	private JiraSeleniumDaoImpl jiraSeleniumDaoImpl;
 	
@@ -87,7 +89,7 @@ public class JiraSeleniumService {
 				}
 			}
 			//merge into 
-			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag_bak_20180717 a\r\n" + 
+			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag a\r\n" + 
 					"left join (\r\n" + 
 					"select case casestatus\r\n" + 
 					"when 'Pre-Pending' then 'PP' \r\n" + 
@@ -116,11 +118,12 @@ public class JiraSeleniumService {
 			
 			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
 			//System.out.println(query);
+			logger.info(query);
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
 			int i = 0;
-			String usql="update DftTag_bak_20180717 set case_status=?,jira_id=? where case_name=?";
+			String usql="update DftTag set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			for (HashMap<String, Object> hashMap : query) {
 				//System.out.println(hashMap.toString());
