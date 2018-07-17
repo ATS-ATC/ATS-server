@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,14 +87,14 @@ public class JiraSeleniumService {
 				}
 			}
 			//merge into 
-			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag_bak_20180716 a\r\n" + 
+			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag_bak_20180717 a\r\n" + 
 					"left join (\r\n" + 
 					"select case casestatus\r\n" + 
 					"when 'Pre-Pending' then 'PP' \r\n" + 
 					"when 'Pending' then 'P'\r\n" + 
 					"when 'Resubmit' then 'R'\r\n" + 
 					"when 'Pre-Delete' then 'PD'\r\n" + 
-					"when 'Delete' then 'D'\r\n" + 
+					"when 'Delete' then 'O'\r\n" + 
 					"when 'Pre-Retag' then 'PRT'\r\n" + 
 					"when 'Retag' then 'RT'\r\n" + 
 					"end ct,*,(\r\n" + 
@@ -119,7 +120,7 @@ public class JiraSeleniumService {
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
 			int i = 0;
-			String usql="update DftTag_bak_20180626 set case_status=?,jira_id=? where case_name=?";
+			String usql="update DftTag_bak_20180717 set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			for (HashMap<String, Object> hashMap : query) {
 				//System.out.println(hashMap.toString());
@@ -144,7 +145,14 @@ public class JiraSeleniumService {
 					}
 				}
 				//System.out.println("jira_id_new:======"+jira_id_new+"   jira_id :======="+jira_id);
-				if("PP".equals(ct)) {
+				String case_status = hashMap.get("case_status").toString();
+				if(		
+						  ("PP".equals(ct))
+						||("P".equals(ct)&&"PP".equals(case_status))
+						||("O".equals(ct)&&("PP".equals(case_status)||"PD".equals(case_status)))
+						||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
+						
+					) {
 					/*String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 							+ "values('"+hashMap.get("casename")+"','"+hashMap.get("feature")+"','"+hashMap.get("case_name")+"'"
 									+ ",'"+jira_id+"','"+hashMap.get("surepay")+"','"+jira_id_new+"','"+hashMap.get("case_status")+"','"+ct+"',datetime('now', 'localtime'))";
@@ -156,7 +164,7 @@ public class JiraSeleniumService {
 					ps.setString(4, jira_id);
 					ps.setString(5, hashMap.get("surepay").toString());
 					ps.setString(6, jira_id_new.toString());
-					ps.setString(7, hashMap.get("case_status").toString());
+					ps.setString(7, case_status);
 					ps.setString(8, ct);
 					//ps.execute();
 					ps.addBatch();
@@ -177,7 +185,6 @@ public class JiraSeleniumService {
 	                	ups.clearBatch(); // 清空缓存
 	                }
 				}
-				
 				
 			}
 			ps.executeBatch();
