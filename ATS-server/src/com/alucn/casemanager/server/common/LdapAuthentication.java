@@ -1,6 +1,9 @@
 package com.alucn.casemanager.server.common;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
@@ -70,7 +73,12 @@ public class LdapAuthentication {
 		 */
 		int try_times = 0;
         String ad4_server = "ad.alcatel.com";
-        while(try_times < 2)
+        List<String> ad4_server_list =new ArrayList<>();
+        ad4_server_list.add("135.251.44.183");
+        ad4_server_list.add("135.251.33.43");
+        ad4_server_list.add("135.252.44.225");
+        ad4_server_list.add("135.251.33.52");
+        while(try_times < 5)
         {
             
             Hashtable env = new Hashtable();
@@ -90,7 +98,7 @@ public class LdapAuthentication {
                  return AuthFail;
              } catch (javax.naming.CommunicationException e) {
                  log.error(User + " Ldap server connection fail 2: " + e.toString());
-                 ad4_server = "135.251.33.43";
+                 ad4_server_list.get(try_times);//ad4_server = "135.251.33.43";
                  try_times += 1;
                  // TODO: handle exception
              } 
