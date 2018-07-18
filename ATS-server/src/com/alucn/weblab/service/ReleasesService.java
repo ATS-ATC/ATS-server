@@ -2,9 +2,11 @@ package com.alucn.weblab.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.bouncycastle.jce.provider.BrokenJCEBlockCipher.BrokePBEWithMD5AndDES;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +40,7 @@ public class ReleasesService {
 				JSONObject json = JSONObject.fromObject(source_zip_url);
 				//System.out.println(json.toString());
 				try {
-					Set<String> keySet = json.keySet();
+					LinkedHashSet<String> keySet =  (LinkedHashSet<String>) json.keySet();
 					for (String key : keySet) {
 						if(json.get(key)!=null) {
 							//System.out.println(key+":"+json.get(key).toString());
