@@ -1,6 +1,7 @@
 package com.alucn.weblab.controller;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -43,6 +45,28 @@ public class JiraSeleniumController {
 
     @Autowired(required=true)
     private JiraSeleniumService jiraSeleniumService;
+    
+    @RequestMapping(value="/statusSetJiraCaseTbl")
+    @ResponseBody
+    public String statusSetJiraCaseTbl(){
+    	
+    	String msg="on-off flag : "+Flag
+    			+"<br> is running flag : "+running;
+    	
+    	return msg;
+    }
+    @RequestMapping(value="/testSetJiraCaseTbl")
+    @ResponseBody
+    public String testSetJiraCaseTbl(){
+    	try {
+			jiraSeleniumService.testTempJiraTbl();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	return "";
+    }
+    
+    
     
     @RequestMapping(value="/stopSetJiraCaseTbl")
     @ResponseBody

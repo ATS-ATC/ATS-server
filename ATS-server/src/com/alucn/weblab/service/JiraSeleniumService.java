@@ -36,10 +36,9 @@ public class JiraSeleniumService {
 			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 			conn = jdbc.getConnection();
 			conn.setAutoCommit(false);
-			//ps = conn.prepareStatement();
 			
 			String dsql="delete from temp_jira_status_tbl";
-			//jiraSeleniumDaoImpl.delete(jdbc, dsql);
+			
 			ps = conn.prepareStatement(dsql);
 			ps.execute();
 			ps.close();
@@ -61,7 +60,7 @@ public class JiraSeleniumService {
 						String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag) "
 								  + "values(?,?,?,?,?,?,datetime('now', 'localtime'),0)";
 						ps = conn.prepareStatement(sql);
-						int i =0;
+						//int i =0;
 						for (String  casename : caselist) {
 							
 							//String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag) "
@@ -77,11 +76,11 @@ public class JiraSeleniumService {
 			                ps.setString(5, assignee.trim());
 			                ps.setString(6, labels.trim());
 			                ps.addBatch();
-			                if (i % 1000 == 0) {
+			                /*if (i % 1000 == 0) {
 			                     ps.executeBatch();
 			                     ps.clearBatch(); // 清空缓存
 			                }
-			                i++;
+			                i++;*/
 						}
 						ps.executeBatch();
 						ps.close();
@@ -122,7 +121,7 @@ public class JiraSeleniumService {
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
-			int i = 0;
+			//int i = 0;
 			String usql="update DftTag set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			for (HashMap<String, Object> hashMap : query) {
@@ -152,10 +151,12 @@ public class JiraSeleniumService {
 				if(		
 						  ("PP".equals(ct))
 						||("P".equals(ct)&&"PP".equals(case_status))
-						||("O".equals(ct)&&("PP".equals(case_status)||"PD".equals(case_status)))
-						||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
+						||("O".equals(ct)&&"PP".equals(case_status))
+						//||("O".equals(ct)&&("PP".equals(case_status)||"PD".equals(case_status)))
+						//||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
 						
 					) {
+					System.out.println("case_status/temp: "+ct+" + target: "+case_status);
 					/*String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 							+ "values('"+hashMap.get("casename")+"','"+hashMap.get("feature")+"','"+hashMap.get("case_name")+"'"
 									+ ",'"+jira_id+"','"+hashMap.get("surepay")+"','"+jira_id_new+"','"+hashMap.get("case_status")+"','"+ct+"',datetime('now', 'localtime'))";
@@ -171,11 +172,10 @@ public class JiraSeleniumService {
 					ps.setString(8, ct);
 					//ps.execute();
 					ps.addBatch();
-	                if (i % 1000 == 0) {
+	                /* if (i % 1000 == 0) {
 	                     ps.executeBatch();
 	                     ps.clearBatch(); // 清空缓存
-	                }
-	                i++;
+	                }*/
 					//String usql="update DftTag_bak_20180626 set case_status='"+ct+"',jira_id='"+jira_id_new+"' where case_name='"+hashMap.get("case_name")+"'";
 					//ps = conn.prepareStatement(usql);
 					//ps.execute();
@@ -183,10 +183,11 @@ public class JiraSeleniumService {
 	                ups.setString(2, jira_id_new.toString());
 	                ups.setString(3, hashMap.get("case_name").toString());
 	                ups.addBatch();
-	                if (i % 1000 == 0) {
+	                /*if (i % 1000 == 0) {
 	                	ups.executeBatch();
 	                	ups.clearBatch(); // 清空缓存
 	                }
+	                i++;*/
 				}
 				
 			}
@@ -214,30 +215,119 @@ public class JiraSeleniumService {
 		
 	}
 	
-	public static void main(String[] args) {
-		String msql="select a.case_name,a.case_status,b.* from DftTag_bak_20180626 a\r\n" + 
-				"left join (\r\n" + 
-				"select case casestatus\r\n" + 
-				"when 'Pre-Pending' then 'PP' \r\n" + 
-				"when 'Pending' then 'P'\r\n" + 
-				"when 'Resubmit' then 'R'\r\n" + 
-				"when 'Pre-Delete' then 'PD'\r\n" + 
-				"when 'Delete' then 'D'\r\n" + 
-				"when 'Pre-Retag' then 'PRT'\r\n" + 
-				"when 'Retag' then 'RT'\r\n" + 
-				"end ct,*\r\n" + 
-				"from temp_jira_status_tbl\r\n" + 
-				") b  on a.case_name=b.feature||'/'||b.casename||'.json'\r\n" + 
-				"where 1=1\r\n" + 
-				"and b.stateflag=0\r\n" + 
-				"and b.casestatus!='<Case Status>'\r\n" + 
-				"and a.case_status!=b.ct";
-		System.out.println(msql);
+	
+	public void testTempJiraTbl() throws SQLException {
+
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = null;
+		Connection conn = null;
+		PreparedStatement ps = null;
+		PreparedStatement ups = null;
+		try {
+			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+			conn = jdbc.getConnection();
+			conn.setAutoCommit(false);
+			
+			//merge into 
+			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag_bak_20180718 a\r\n" + 
+					"left join (\r\n" + 
+					"select case casestatus\r\n" + 
+					"when 'Pre-Pending' then 'PP' \r\n" + 
+					"when 'Pending' then 'P'\r\n" + 
+					"when 'Resubmit' then 'R'\r\n" + 
+					"when 'Pre-Delete' then 'PD'\r\n" + 
+					"when 'Delete' then 'O'\r\n" + 
+					"when 'Pre-Retag' then 'PRT'\r\n" + 
+					"when 'Retag' then 'RT'\r\n" + 
+					"end ct,*,(\r\n" + 
+					"select count(1) \r\n" + 
+					"from temp_jira_status_tbl b \r\n" + 
+					"where casename=b.casename \r\n" + 
+					"and surepay<b.surepay \r\n" + 
+					") rn\r\n" + 
+					"from temp_jira_status_tbl \r\n" + 
+					"where rn =0\r\n" + 
+					") b  on a.case_name=b.feature||'/'||b.casename||'.json'\r\n" + 
+					"where 1=1\r\n" + 
+					"and b.stateflag=0\r\n" + 
+					"and b.casestatus!='<Case Status>'\r\n" + 
+					"and a.case_status!=b.ct\r\n" + 
+					"and b.surepay||'/'||b.feature||'/'||b.casename not in(\r\n" + 
+					"select distinct jira_id_mid||'/'||feature||'/'||casename from jira_status_tbl where stateflag=0\r\n" + 
+					")";
+			
+			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
+			logger.info(query);
+			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
+					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
+			ps = conn.prepareStatement(sql);
+			String usql="update DftTag_bak_20180718 set case_status=?,jira_id=? where case_name=?";
+			ups = conn.prepareStatement(usql);
+			for (HashMap<String, Object> hashMap : query) {
+				String ct = (String) hashMap.get("ct");
+				String jira_id = (String)hashMap.get("jira_id");
+				StringBuffer jira_id_new = new StringBuffer();
+				if("".equals(jira_id)|| jira_id==null) {
+					jira_id="";
+					jira_id_new.append(hashMap.get("surepay"));
+				}else if (jira_id.contains(",")) {
+					String[] split = jira_id.split(",");
+					if(!split[split.length-1].equals(hashMap.get("surepay").toString())) {
+						jira_id_new.append(jira_id).append(",").append(hashMap.get("surepay")); 
+					}else {
+						jira_id_new.append(jira_id);
+					}
+				}else if(!jira_id.contains(",")) {
+					if(jira_id.equals(hashMap.get("surepay"))) {
+						jira_id_new.append(jira_id);
+					}else {
+						jira_id_new.append(jira_id).append(",").append(hashMap.get("surepay")); 
+					}
+				}
+				String case_status = hashMap.get("case_status").toString();
+				if(		
+						  ("PP".equals(ct))
+						||("P".equals(ct)&&"PP".equals(case_status))
+						||("O".equals(ct)&&"PP".equals(case_status))
+						
+					) {
+					System.out.println("case_status/temp: "+ct+" + target: "+case_status);
+					ps.setString(1, hashMap.get("casename").toString());
+					ps.setString(2, hashMap.get("feature").toString());
+					ps.setString(3, hashMap.get("case_name").toString());
+					ps.setString(4, jira_id);
+					ps.setString(5, hashMap.get("surepay").toString());
+					ps.setString(6, jira_id_new.toString());
+					ps.setString(7, case_status);
+					ps.setString(8, ct);
+					ps.addBatch();
+	                ups.setString(1, ct);
+	                ups.setString(2, jira_id_new.toString());
+	                ups.setString(3, hashMap.get("case_name").toString());
+	                ups.addBatch();
+				}
+				
+			}
+			ps.executeBatch();
+			ps.close();
+			ups.executeBatch();
+			ups.close();
+			
+			
+			
+			
+			conn.commit();
+			
+			
+			
+			
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			conn.rollback();
+		}
 	}
-	
-	
-	
-	
 	
 	
 }
