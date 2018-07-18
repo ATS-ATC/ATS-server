@@ -2,13 +2,11 @@ package com.alucn.weblab.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
-import org.bouncycastle.jce.provider.BrokenJCEBlockCipher.BrokePBEWithMD5AndDES;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +15,8 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ReleasesDaoImpl;
 
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Service("releasesService")
@@ -36,11 +36,15 @@ public class ReleasesService {
 			String source_zip_url = (String) hashMap.get("source_zip_url");
 			//System.out.println("source_zip_url:=========="+source_zip_url);
 			if(!"".equals(source_zip_url)&&source_zip_url!=null) {
-				Map<String,String> map = new HashMap<>();
+				Map<String,String> map = new LinkedHashMap<>();
 				JSONObject json = JSONObject.fromObject(source_zip_url);
+				/*JSONArray jsonArray = JSONArray.fromObject(source_zip_url);
+				for (Object object : jsonArray) {
+					
+				}*/
 				//System.out.println(json.toString());
 				try {
-					LinkedHashSet<String> keySet =  (LinkedHashSet<String>) json.keySet();
+					Set<String> keySet = json.keySet();
 					for (String key : keySet) {
 						if(json.get(key)!=null) {
 							//System.out.println(key+":"+json.get(key).toString());
