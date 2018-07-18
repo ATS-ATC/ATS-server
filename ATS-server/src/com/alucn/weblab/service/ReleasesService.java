@@ -41,7 +41,7 @@ public class ReleasesService {
 					Set<String> keySet = json.keySet();
 					for (String key : keySet) {
 						if(json.get(key)!=null) {
-							System.out.println(key+":"+json.get(key).toString());
+							//System.out.println(key+":"+json.get(key).toString());
 							map.put(key, json.get(key).toString());
 						}
 					}
