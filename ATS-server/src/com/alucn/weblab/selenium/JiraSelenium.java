@@ -14,6 +14,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -229,86 +231,18 @@ public class JiraSelenium {
     	WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("footer-comment-button")));
         
-        
         String rurl = driver.findElement(By.id("footer-comment-button")).getAttribute("href");
     	driver.get(rurl);
-    	
+    	Thread.sleep(5000);
     	System.out.println(driver.getCurrentUrl());
+    	WebElement webElement = driver.findElement(By.xpath("/html"));
+    	System.out.println(webElement.getAttribute("outerHTML"));
     	//driver.switchTo().frame("mce_0_ifr");
+    	//driver.switchTo().frame(driver.findElement(By.id("mce_0_ifr")));
     	String pageSource = driver.getPageSource();
-    	File file = new File("d:/jira9.txt");  
+    	File file = new File("d:/jira10.txt");  
         PrintStream ps = new PrintStream(new FileOutputStream(file));  
-        ps.println(pageSource);
-    	/*id:1335901
-    	comment:
-    	commentLevel:
-    	atl_token:B28N-N0OU-TOAR-EWV5|78fd97c89a965a1f6fd55cf35becae6bf80491ec|lin
-    	Add:Add*/
-    	
-    	/*wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tinymce")));
-    	driver.findElement(By.cssSelector("#tinymce > p")).sendKeys("test3 for post");
-    	driver.findElement(By.id("issue-comment-add-submit")).click();*/
-    	//System.out.println(rurl);
-    	//wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tinymce")));
-        /*driver.findElement(By.cssSelector("#tinymce > p")).click();
-    	driver.findElement(By.cssSelector("#tinymce > p")).sendKeys("test3 for post");
-    	JavascriptExecutor jse = (JavascriptExecutor) driver ;
-    	jse.executeScript("");
-    	driver.findElement(By.id("issue-comment-add-submit")).click();*/
-    	
-    	
-    	
-    	/*JavascriptExecutor jse = (JavascriptExecutor) driver ;
-
-        try {
-        	String script =
-        			"function setHeader(){\r\n" + 
-        			"		var xmlhttp=new XMLHttpRequest();\r\n" + 
-        			"		xmlhttp.open(\"POST\",\"https://greenhopper.app.alcatel-lucent.com/rest/api/2/issue/SUREPAYRD-19904/comment\");\r\n" + 
-        			"		xmlhttp.setRequestHeader(\"Content-type\",\"application/json\");\r\n" + 
-        			"		return xmlhttp.responseText; \r\n" + 
-        			"}\r\n" + 
-        			"function httpPost(URL, PARAMS) {\r\n" + 
-        			"	 setHeader();\r\n" + 
-        			"    var temp = document.createElement(\"form\");\r\n" + 
-        			"    temp.action = URL;\r\n" + 
-        			"    temp.method = \"post\";\r\n" + 
-        			"    temp.style.display = \"none\";\r\n" + 
-        			"\r\n" + 
-        			"    for (var x in PARAMS) {\r\n" + 
-        			"        var opt = document.createElement(\"textarea\");\r\n" + 
-        			"        opt.name = x;\r\n" + 
-        			"        opt.value = PARAMS[x];\r\n" + 
-        			"        temp.appendChild(opt);\r\n" + 
-        			"    }\r\n" + 
-        			"\r\n" + 
-        			"    document.body.appendChild(temp);\r\n" + 
-        			"    temp.submit();\r\n" + 
-        			"\r\n" + 
-        			"    return temp;\r\n" + 
-        			"}\r\n" + 
-        			"var params = {\r\n" + 
-        			"        \"body\":'test3'\r\n" + 
-        			"    };\r\n" + 
-        			"httpPost(\"https://greenhopper.app.alcatel-lucent.com/rest/api/2/issue/SUREPAYRD-19904/comment\", params);"
-        		 ;
-        	String script2=
-        			"function setHeader(){\r\n" + 
-        			"		var xmlhttp=new XMLHttpRequest();\r\n" + 
-        			"		xmlhttp.open(\"POST\",\"https://greenhopper.app.alcatel-lucent.com/rest/api/2/issue/SUREPAYRD-19904/comment\",\"true\");\r\n" + 
-        			"		xmlhttp.setRequestHeader(\"Content-type\",\"application/json\");\r\n" + 
-        			"		xmlhttp.send(\"body=test3\");\r\n" + 
-        			"		return xmlhttp.responseText; \r\n" + 
-        			"}\r\n" + 
-        			"setHeader()";
-        	System.out.println(script2);
-            String resp = (String) jse.executeScript(script2);
-            System.out.println(resp);
-
-        } catch (Exception e) {
-            //.......... Exception 
-        	e.printStackTrace();
-        }*/
+        ps.println(webElement.getAttribute("outerHTML"));
     }
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";
@@ -316,11 +250,12 @@ public class JiraSelenium {
     public static void main(String[] args) {
     	System.setProperty("phantomjs.binary.path", phantomjs);
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
+        capabilities.setJavascriptEnabled(true);
         ArrayList<String> cliArgsCap = new ArrayList<>();
         cliArgsCap.add("--proxy=http://"+HOST+":"+PORT);
         cliArgsCap.add("--load-images=no");
         //cliArgsCap.add("--disk-cache=yes");
-        cliArgsCap.add("--ignore-ssl-errors=true");
+        //cliArgsCap.add("--ignore-ssl-errors=true");
         capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
 
         WebDriver driver = new PhantomJSDriver(capabilities);
