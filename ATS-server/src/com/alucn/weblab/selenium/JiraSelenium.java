@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,13 +13,17 @@ import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -227,22 +232,16 @@ public class JiraSelenium {
     public static void setComment(WebDriver driver,String target) throws FileNotFoundException, InterruptedException {
     	String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
     	driver.get(url);
-    	
+    	Thread.sleep(5000);
     	WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("footer-comment-button")));
-        
         String rurl = driver.findElement(By.id("footer-comment-button")).getAttribute("href");
     	driver.get(rurl);
-    	Thread.sleep(5000);
     	System.out.println(driver.getCurrentUrl());
-    	WebElement webElement = driver.findElement(By.xpath("/html"));
-    	System.out.println(webElement.getAttribute("outerHTML"));
-    	//driver.switchTo().frame("mce_0_ifr");
-    	//driver.switchTo().frame(driver.findElement(By.id("mce_0_ifr")));
-    	String pageSource = driver.getPageSource();
-    	File file = new File("d:/jira10.txt");  
-        PrintStream ps = new PrintStream(new FileOutputStream(file));  
-        ps.println(webElement.getAttribute("outerHTML"));
+    	JavascriptExecutor jse = (JavascriptExecutor) driver ;
+    	String script = "$(\"#comment\").val(\"change status by ATS-server\");\r\n" + 
+    			"$(\"#comment-add-submit\").trigger(\"click\"); ";
+    	jse.executeScript(script);
     }
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";
@@ -257,9 +256,13 @@ public class JiraSelenium {
         //cliArgsCap.add("--disk-cache=yes");
         //cliArgsCap.add("--ignore-ssl-errors=true");
         capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
-
         WebDriver driver = new PhantomJSDriver(capabilities);
-
+    	/*System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        WebDriver driver = new RemoteWebDriver("http://localhost:9515", DesiredCapabilities.chrome());*/
+        
+        
         JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
         //getIssuesInfo(driver,"SUREPAYRD-17687");
         try {
