@@ -45,7 +45,7 @@ public class ReleasesController {
 			session.setAttribute("auth", Constant.AUTH);
 			model.addAttribute("loginResult", "success");
 			session.setAttribute("login", user.getUserName());
-			returnDec =  "forward:/getReleases.do";
+			returnDec =  "redirect:/getReleases.do";
 		}else{
 			boolean authResult = loginService.authUser(user);
 			if(authResult){
@@ -57,7 +57,7 @@ public class ReleasesController {
 				}
 				model.addAttribute("loginResult", "success");
 				session.setAttribute("login", user.getUserName());
-				returnDec =  "forward:/getReleases.do";
+				returnDec =  "redirect:/getReleases.do";
 			}else{
 				model.addAttribute("loginResult", "failed");
 				returnDec = "loginReleases";

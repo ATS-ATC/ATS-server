@@ -1,10 +1,6 @@
 package com.alucn.weblab.selenium;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,17 +9,11 @@ import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.logging.LogEntries;
-import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -239,9 +229,28 @@ public class JiraSelenium {
     	driver.get(rurl);
     	System.out.println(driver.getCurrentUrl());
     	JavascriptExecutor jse = (JavascriptExecutor) driver ;
-    	String script = "$(\"#comment\").val(\"change status by ATS-server\");\r\n" + 
-    			"$(\"#comment-add-submit\").trigger(\"click\"); ";
-    	jse.executeScript(script);
+    	String script = "$(\"#comment\").val(\"change status by ATS-server2\");\r\n" + 
+    			"$(\"#comment-add-submit\").trigger(\"click\");";
+    	Object executeScript = jse.executeScript(script);
+    	System.out.println(executeScript);
+    }
+    public static void testTrigger(WebDriver driver) throws FileNotFoundException, InterruptedException {
+    	String url = "http://135.242.16.163:8080/weblab/userLogin.do";
+    	driver.get(url);
+    	Thread.sleep(5000);
+    	System.out.println(driver.getCurrentUrl());
+    	JavascriptExecutor jse = (JavascriptExecutor) driver ;
+    	/*$("#userName").val("Administrator");
+    	$("#passWord").val("Admin");
+    	$("#submit").trigger("click");*/
+    	String script = "$(\"#userName\").val(\"Administrator\");\r\n" + 
+    			"$(\"#passWord\").val(\"Admin\");\r\n" + 
+    			"$(\"#submit\").trigger(\"click\");\r\n"
+    			+ "return $(\"html\").prop(\"outerHTML\");";
+    	Object executeScript = jse.executeScript(script);
+    	System.out.println(executeScript);
+    	Thread.sleep(5000);
+    	//System.out.println(driver.getPageSource());
     }
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";
@@ -263,10 +272,11 @@ public class JiraSelenium {
         WebDriver driver = new RemoteWebDriver("http://localhost:9515", DesiredCapabilities.chrome());*/
         
         
-        JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
+        //JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
         //getIssuesInfo(driver,"SUREPAYRD-17687");
         try {
-			setComment(driver,"SUREPAYRD-19904");
+			//setComment(driver,"SUREPAYRD-19904");
+        	testTrigger(driver);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

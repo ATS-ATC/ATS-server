@@ -48,7 +48,7 @@ public class LoginController {
 			session.setAttribute("auth", Constant.AUTH);
 			model.addAttribute("loginResult", "success");
 			session.setAttribute("login", user.getUserName());
-			returnDec =  "forward:/getMain.do";
+			returnDec =  "redirect:/getMain.do";
 		}else{
 			boolean authResult = loginService.authUser(user);
 			if(authResult){
@@ -60,7 +60,7 @@ public class LoginController {
 				}
 				model.addAttribute("loginResult", "success");
 				session.setAttribute("login", user.getUserName());
-				returnDec =  "forward:/getMain.do";
+				returnDec =  "redirect:/getMain.do";
 			}else{
 				model.addAttribute("loginResult", "failed");
 				returnDec = "login";
@@ -72,7 +72,7 @@ public class LoginController {
 	
 	@RequestMapping(path = "/userLoginBackHome", method = RequestMethod.GET)
     public String userLoginBackHome() {
-        return "forward:/getMain.do";
+        return "redirect:/getMain.do";
     }
 
 	public LoginService getLoginService() {
