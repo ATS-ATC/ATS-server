@@ -237,6 +237,7 @@ public class JiraSelenium {
     			"$(\"#comment-add-submit\").trigger(\"click\");";
     	jse.executeScript(script);
     	logger.info(driver.getCurrentUrl().equals(rurl));
+    	
     	for(int i =0;i<10;i++) {
     		if(driver.getCurrentUrl().equals(rurl)) {
         		Thread.sleep(1000);
@@ -246,9 +247,9 @@ public class JiraSelenium {
     	}
     	logger.info(driver.getCurrentUrl().equals(rurl));
     	logger.info(driver.getCurrentUrl());
-    	boolean flag = true;
-    	if(driver.getCurrentUrl().equals(rurl)) {
-    		flag=false;
+    	boolean flag = false;
+    	if(!driver.getCurrentUrl().equals(rurl)) {
+    		flag=true;
     	}
     	return flag;
     }
