@@ -219,7 +219,7 @@ public class JiraSelenium {
     	String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
     	driver.get(url);
     }
-    public static void setComment(WebDriver driver,String target) throws FileNotFoundException, InterruptedException {
+    public static void setComment(WebDriver driver,String target,String msg) throws FileNotFoundException, InterruptedException {
     	String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
     	driver.get(url);
     	Thread.sleep(5000);
@@ -227,30 +227,35 @@ public class JiraSelenium {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("footer-comment-button")));
         String rurl = driver.findElement(By.id("footer-comment-button")).getAttribute("href");
     	driver.get(rurl);
-    	System.out.println(driver.getCurrentUrl());
+    	//System.out.println(driver.getCurrentUrl());
     	JavascriptExecutor jse = (JavascriptExecutor) driver ;
-    	String script = "$(\"#comment\").val(\"change status by ATS-server2\");\r\n" + 
+    	String script = "$(\"#comment\").val(\""+msg+"\");\r\n" + 
     			"$(\"#comment-add-submit\").trigger(\"click\");";
     	Object executeScript = jse.executeScript(script);
-    	System.out.println(executeScript);
+    	//System.out.println(executeScript);
     }
     public static void testTrigger(WebDriver driver) throws FileNotFoundException, InterruptedException {
     	String url = "http://135.242.16.163:8080/weblab/userLogin.do";
     	driver.get(url);
+    	System.out.println("快拔网线！");
     	Thread.sleep(5000);
     	System.out.println(driver.getCurrentUrl());
-    	JavascriptExecutor jse = (JavascriptExecutor) driver ;
-    	/*$("#userName").val("Administrator");
-    	$("#passWord").val("Admin");
-    	$("#submit").trigger("click");*/
-    	String script = "$(\"#userName\").val(\"Administrator\");\r\n" + 
-    			"$(\"#passWord\").val(\"Admin\");\r\n" + 
-    			"$(\"#submit\").trigger(\"click\");\r\n"
-    			+ "return $(\"html\").prop(\"outerHTML\");";
-    	Object executeScript = jse.executeScript(script);
-    	System.out.println(executeScript);
-    	Thread.sleep(5000);
-    	//System.out.println(driver.getPageSource());
+    	if(!"about:blank".equals(driver.getCurrentUrl())) {
+    		logger.info("network work");
+    		System.out.println("network work");
+    		JavascriptExecutor jse = (JavascriptExecutor) driver ;
+    		/*$("#userName").val("Administrator");
+	    	$("#passWord").val("Admin");
+	    	$("#submit").trigger("click");*/
+    		String script = 
+    				"$(\"#userName\").val(\"Administrator\");\r\n" + 
+    				"$(\"#passWord\").val(\"Admin\");\r\n" + 
+    				"$(\"#submit\").trigger(\"click\");";
+    		jse.executeScript(script);
+    	}else {
+			logger.info("network error");
+			System.out.println("network error");
+		}
     }
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";

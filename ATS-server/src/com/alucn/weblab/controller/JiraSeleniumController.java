@@ -205,6 +205,17 @@ public class JiraSeleniumController {
         }
 
         jiraSeleniumService.setTempJiraTbl(iMap);
+        ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
+        if(commentJira.size()>0) {
+        	for (HashMap<String, Object> hashMap : commentJira) {
+        		String jira_id_mid = (String) hashMap.get("jira_id_mid");
+        		String casename = (String) hashMap.get("casename");
+        		JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		jiraSeleniumService.updateCommentJira(jira_id_mid);
+        	}
+        }else {
+			logger.error("cant get comment jira");
+		}
 
         driver.quit();
         long endMili=System.currentTimeMillis();

@@ -314,20 +314,41 @@ public class JiraSeleniumService {
 			ups.close();
 			
 			
-			
-			
 			conn.commit();
-			
-			
-			
-			
-			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			conn.rollback();
 		}
 	}
-	
+	public ArrayList<HashMap<String,Object>> getCommentJira() throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		Connection conn = jdbc.getConnection();
+		
+		String csql=
+				"select \r\n" + 
+				"group_concat(distinct (casename||'('||case_status_old||'-->'||case_status_new||')')) casename,jira_id_mid \r\n" + 
+				"from jira_status_tbl\r\n" + 
+				"where stateflag = 0\r\n" + 
+				"and isComment = 0\r\n" + 
+				"group by jira_id_mid";
+		ArrayList<HashMap<String,Object>> comment = jiraSeleniumDaoImpl.query(jdbc, csql);
+		return comment;
+	}
+	public void updateCommentJira(String jira_id_mid) throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		Connection conn = jdbc.getConnection();
+		if(!"".equals(jira_id_mid)) {
+			String usql=
+					"update jira_status_tbl set isComment=datetime('now','localtime')\r\n" + 
+							"where stateflag=0\r\n" + 
+							"and jira_id_mid='"+jira_id_mid+"'";
+			jiraSeleniumDaoImpl.update(jdbc, usql);
+		}else {
+			logger.error("jira_id_mid is null,cant update");
+		}
+	}
 	
 }
