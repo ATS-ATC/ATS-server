@@ -339,7 +339,6 @@ public class JiraSeleniumService {
 	public void updateCommentJira(String jira_id_mid) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		Connection conn = jdbc.getConnection();
 		if(!"".equals(jira_id_mid)) {
 			String usql=
 					"update jira_status_tbl set isComment=datetime('now','localtime')\r\n" + 

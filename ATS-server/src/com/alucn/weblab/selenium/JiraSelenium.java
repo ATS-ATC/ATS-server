@@ -1,8 +1,10 @@
 package com.alucn.weblab.selenium;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
@@ -16,6 +18,8 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.citicbank.utils.SystemEnvUtil;
 
 public class JiraSelenium {
 	
@@ -219,25 +223,39 @@ public class JiraSelenium {
     	String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
     	driver.get(url);
     }
-    public static void setComment(WebDriver driver,String target,String msg) throws FileNotFoundException, InterruptedException {
+    public static boolean setComment(WebDriver driver,String target,String msg) throws FileNotFoundException, InterruptedException {
     	String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
     	driver.get(url);
-    	Thread.sleep(5000);
+    	Thread.sleep(3000);
     	WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("footer-comment-button")));
         String rurl = driver.findElement(By.id("footer-comment-button")).getAttribute("href");
     	driver.get(rurl);
-    	//System.out.println(driver.getCurrentUrl());
+    	logger.info(driver.getCurrentUrl());
     	JavascriptExecutor jse = (JavascriptExecutor) driver ;
     	String script = "$(\"#comment\").val(\""+msg+"\");\r\n" + 
     			"$(\"#comment-add-submit\").trigger(\"click\");";
-    	Object executeScript = jse.executeScript(script);
-    	//System.out.println(executeScript);
+    	jse.executeScript(script);
+    	logger.info(driver.getCurrentUrl().equals(rurl));
+    	for(int i =0;i<10;i++) {
+    		if(driver.getCurrentUrl().equals(rurl)) {
+        		Thread.sleep(1000);
+        	}else {
+        		break;
+        	}
+    	}
+    	logger.info(driver.getCurrentUrl().equals(rurl));
+    	logger.info(driver.getCurrentUrl());
+    	boolean flag = true;
+    	if(driver.getCurrentUrl().equals(rurl)) {
+    		flag=false;
+    	}
+    	return flag;
     }
     public static void testTrigger(WebDriver driver) throws FileNotFoundException, InterruptedException {
     	String url = "http://135.242.16.163:8080/weblab/userLogin.do";
     	driver.get(url);
-    	System.out.println("快拔网线！");
+    	//System.out.println("快拔网线！");
     	Thread.sleep(5000);
     	System.out.println(driver.getCurrentUrl());
     	if(!"about:blank".equals(driver.getCurrentUrl())) {
@@ -252,6 +270,8 @@ public class JiraSelenium {
     				"$(\"#passWord\").val(\"Admin\");\r\n" + 
     				"$(\"#submit\").trigger(\"click\");";
     		jse.executeScript(script);
+    		Thread.sleep(5000);
+    		System.out.println(driver.getCurrentUrl());
     	}else {
 			logger.info("network error");
 			System.out.println("network error");
@@ -277,11 +297,11 @@ public class JiraSelenium {
         WebDriver driver = new RemoteWebDriver("http://localhost:9515", DesiredCapabilities.chrome());*/
         
         
-        //JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
+        JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
         //getIssuesInfo(driver,"SUREPAYRD-17687");
         try {
-			//setComment(driver,"SUREPAYRD-19904");
-        	testTrigger(driver);
+			setComment(driver,"SUREPAYRD-19904","test return2");
+        	//testTrigger(driver);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

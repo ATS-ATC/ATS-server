@@ -210,8 +210,10 @@ public class JiraSeleniumController {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = (String) hashMap.get("casename");
-        		JiraSelenium.setComment(driver, jira_id_mid, casename);
-        		jiraSeleniumService.updateCommentJira(jira_id_mid);
+        		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		if(comment) {
+        			jiraSeleniumService.updateCommentJira(jira_id_mid);
+        		}
         	}
         }else {
 			logger.error("cant get comment jira");
