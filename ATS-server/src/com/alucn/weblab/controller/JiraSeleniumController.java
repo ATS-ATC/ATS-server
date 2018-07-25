@@ -50,8 +50,8 @@ public class JiraSeleniumController {
     @ResponseBody
     public String statusSetJiraCaseTbl(){
     	
-    	String msg="on-off flag : "+Flag
-    			+"<br> is running flag : "+running;
+    	String msg="task will be : "+(Flag==false?"off":"on")
+    			+"<br>task is running : "+(running==true?"yes":"no");
     	
     	return msg;
     }
@@ -211,20 +211,23 @@ public class JiraSeleniumController {
         //Executor end ------------------------------------->
         
         jiraSeleniumService.setTempJiraTbl(iMap);
-        /*ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
+        
+        ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
         if(commentJira.size()>0) {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = (String) hashMap.get("casename");
-        		//setComment for jira system
+        		System.out.println("casename===="+casename);
+        		//为了方便测试，临时注释掉发送comment和修改comment表操作
         		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
         		if(comment) {
         			jiraSeleniumService.updateCommentJira(jira_id_mid);
         		}
+        		//jiraSeleniumService.updateCommentJira(jira_id_mid);
         	}
         }else {
 			logger.error("cant get comment jira");
-		}*/
+		}
 
         driver.quit();
         long endMili=System.currentTimeMillis();

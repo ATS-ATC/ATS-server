@@ -34,8 +34,10 @@ public class JiraSelenium {
     public static void login(WebDriver driver,String url) throws NoSuchElementException, IOException {
     	
     	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
-    	int num=string.indexOf("target");
-    	String wpath=string.substring(1,num)+"WebContent/conf";
+    	System.out.println(string);
+    	int num=string.indexOf("WEB-INF");
+    	//int num=string.indexOf("target");
+    	String wpath=string.substring(1,num)+"/conf";
     	//System.out.println(path);
     	Properties properties = new Properties();
     	String configPath = System.getenv("WEBLAB_CONF");
