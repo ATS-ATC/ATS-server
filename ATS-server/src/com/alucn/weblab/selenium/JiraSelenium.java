@@ -1,10 +1,12 @@
 package com.alucn.weblab.selenium;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Properties;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
@@ -13,13 +15,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import com.citicbank.utils.SystemEnvUtil;
 
 public class JiraSelenium {
 	
@@ -32,8 +29,24 @@ public class JiraSelenium {
 	 * Return: void
 	 * Variable：none
 	 * </pre>
+	 * @throws IOException 
 	 */
-    public static void login(WebDriver driver,String url) throws NoSuchElementException {
+    public static void login(WebDriver driver,String url) throws NoSuchElementException, IOException {
+    	
+    	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
+    	int num=string.indexOf("target");
+    	String wpath=string.substring(1,num)+"WebContent/conf";
+    	//System.out.println(path);
+    	Properties properties = new Properties();
+    	String configPath = System.getenv("WEBLAB_CONF");
+    	String path = configPath==null?wpath+"/jira.properties":configPath+"/jira.properties";
+    	BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+    	properties.load(bufferedReader);
+    	String jiraId = properties.getProperty("jiraId");
+    	String jiraPass = properties.getProperty("jiraPass");
+    	System.out.println(jiraId+":"+jiraPass);
+    	
+    	
         driver.get(url);
         WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-form-username")));
@@ -41,14 +54,16 @@ public class JiraSelenium {
         
         
     	driver.findElement(By.id("login-form-username")).click();
-    	driver.findElement(By.id("login-form-username")).sendKeys("lkhuang");
+    	//driver.findElement(By.id("login-form-username")).sendKeys("lkhuang");
+    	driver.findElement(By.id("login-form-username")).sendKeys(jiraId);
     	
     	driver.findElement(By.id("login-form-password")).click();
-    	driver.findElement(By.id("login-form-password")).sendKeys("@WSXxdr5");
+    	//driver.findElement(By.id("login-form-password")).sendKeys("@WSXxdr5");
+    	driver.findElement(By.id("login-form-password")).sendKeys(jiraPass);
     	
     	driver.findElement(By.id("login-form-submit")).click();
 		
-		logger.info("================login success!!================");
+		logger.info("================login action done!!================");
     	
 	}
     /**
@@ -281,8 +296,8 @@ public class JiraSelenium {
     static final String HOST = "135.251.33.15";
     static final String PORT = "80";
     static final String phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
-    public static void main(String[] args) {
-    	System.setProperty("phantomjs.binary.path", phantomjs);
+    public static void main(String[] args) throws NoSuchElementException, IOException {
+    	/*System.setProperty("phantomjs.binary.path", phantomjs);
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
         capabilities.setJavascriptEnabled(true);
         ArrayList<String> cliArgsCap = new ArrayList<>();
@@ -292,10 +307,6 @@ public class JiraSelenium {
         //cliArgsCap.add("--ignore-ssl-errors=true");
         capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
         WebDriver driver = new PhantomJSDriver(capabilities);
-    	/*System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
-        WebDriver driver = new RemoteWebDriver("http://localhost:9515", DesiredCapabilities.chrome());*/
         
         
         JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
@@ -305,6 +316,20 @@ public class JiraSelenium {
         	//testTrigger(driver);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
+    	//=========================================================================================
+    	//String string = JiraSelenium.class.getResource("/").toString();
+    	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
+    	int num=string.indexOf("target");
+    	String wpath=string.substring(1,num)+"WebContent/conf";
+    	//System.out.println(path);
+    	Properties properties = new Properties();
+    	String configPath = System.getenv("WEBLAB_CONF");
+    	String path = configPath==null?wpath+"/jira.properties":configPath+"/jira.properties";
+    	BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+    	properties.load(bufferedReader);
+    	String jira_id = properties.getProperty("jiraId");
+    	String jira_pass = properties.getProperty("jiraPass");
+    	System.out.println(jira_id+":"+jira_pass);
 	}
 }

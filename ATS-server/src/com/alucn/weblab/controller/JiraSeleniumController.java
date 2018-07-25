@@ -137,14 +137,18 @@ public class JiraSeleniumController {
         ArrayList<String> issues = JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
 
         Map iMap = new HashedMap();
-        /*if(issues.size()>0) {
+        //simple start ------------------------------------->
+        if(issues.size()>0) {
 			for (String target : issues) {
 			Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(driver,target);
 			iMap.put(target, issuesInfo);
 			}
-		}*/
+		}
+        //simple end ------------------------------------->
         
-        ExecutorService executor = Executors.newCachedThreadPool();
+        //Executor start ------------------------------------->
+        
+        /*ExecutorService executor = Executors.newCachedThreadPool();
         
         //int count = issues.size();
         int count = 10;
@@ -202,14 +206,17 @@ public class JiraSeleniumController {
         }finally {
         	driver.quit();
             executor.shutdown();
-        }
-
+        }*/
+        
+        //Executor end ------------------------------------->
+        
         jiraSeleniumService.setTempJiraTbl(iMap);
-        ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
+        /*ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
         if(commentJira.size()>0) {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = (String) hashMap.get("casename");
+        		//setComment for jira system
         		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
         		if(comment) {
         			jiraSeleniumService.updateCommentJira(jira_id_mid);
@@ -217,7 +224,7 @@ public class JiraSeleniumController {
         	}
         }else {
 			logger.error("cant get comment jira");
-		}
+		}*/
 
         driver.quit();
         long endMili=System.currentTimeMillis();
