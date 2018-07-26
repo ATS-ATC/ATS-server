@@ -96,8 +96,8 @@ public class JiraSeleniumService {
 					"when 'Resubmit' then 'R'\r\n" + 
 					"when 'Pre-Delete' then 'PD'\r\n" + 
 					"when 'Delete' then 'O'\r\n" + 
-					"when 'Pre-Retag' then 'PRT'\r\n" + 
-					"when 'Retag' then 'RT'\r\n" + 
+					"when 'Pre-ReTag' then 'PRT'\r\n" + 
+					"when 'ReTag' then 'RT'\r\n" + 
 					"end ct,*,(\r\n" + 
 					"select count(1) \r\n" + 
 					"from temp_jira_status_tbl b \r\n" + 
@@ -287,8 +287,8 @@ public class JiraSeleniumService {
 					"when 'Resubmit' then 'R'\r\n" + 
 					"when 'Pre-Delete' then 'PD'\r\n" + 
 					"when 'Delete' then 'O'\r\n" + 
-					"when 'Pre-Retag' then 'PRT'\r\n" + 
-					"when 'Retag' then 'RT'\r\n" + 
+					"when 'Pre-ReTag' then 'PRT'\r\n" + 
+					"when 'ReTag' then 'RT'\r\n" + 
 					"end ct,*,(\r\n" + 
 					"select count(1) \r\n" + 
 					"from temp_jira_status_tbl b \r\n" + 
@@ -305,15 +305,18 @@ public class JiraSeleniumService {
 					"and b.surepay||'/'||b.feature||'/'||b.casename not in(\r\n" + 
 					"select distinct jira_id_mid||'/'||feature||'/'||casename from jira_status_tbl where stateflag=0\r\n" + 
 					")";
-			System.out.println(msql);
+			
 			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
+			System.out.println(query);
 			logger.info(query);
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
+			//int i = 0;
 			String usql="update DftTag_bak_20180718 set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			for (HashMap<String, Object> hashMap : query) {
+				//System.out.println(hashMap.toString());
 				String ct = (String) hashMap.get("ct");
 				String jira_id = (String)hashMap.get("jira_id");
 				StringBuffer jira_id_new = new StringBuffer();
@@ -334,14 +337,22 @@ public class JiraSeleniumService {
 						jira_id_new.append(jira_id).append(",").append(hashMap.get("surepay")); 
 					}
 				}
+				//System.out.println("jira_id_new:======"+jira_id_new+"   jira_id :======="+jira_id);
 				String case_status = hashMap.get("case_status").toString();
 				if(		
 						  ("PP".equals(ct))
 						||("P".equals(ct)&&"PP".equals(case_status))
 						||("O".equals(ct)&&"PP".equals(case_status))
+						//||("O".equals(ct)&&("PP".equals(case_status)||"PD".equals(case_status)))
+						//||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
 						
 					) {
 					//System.out.println("case_status/temp: "+ct+" + target: "+case_status);
+					/*String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
+							+ "values('"+hashMap.get("casename")+"','"+hashMap.get("feature")+"','"+hashMap.get("case_name")+"'"
+									+ ",'"+jira_id+"','"+hashMap.get("surepay")+"','"+jira_id_new+"','"+hashMap.get("case_status")+"','"+ct+"',datetime('now', 'localtime'))";
+					System.out.println(sql);
+					ps = conn.prepareStatement(sql);*/
 					ps.setString(1, hashMap.get("casename").toString());
 					ps.setString(2, hashMap.get("feature").toString());
 					ps.setString(3, hashMap.get("case_name").toString());
@@ -350,11 +361,24 @@ public class JiraSeleniumService {
 					ps.setString(6, jira_id_new.toString());
 					ps.setString(7, case_status);
 					ps.setString(8, ct);
+					//ps.execute();
 					ps.addBatch();
+	                /* if (i % 1000 == 0) {
+	                     ps.executeBatch();
+	                     ps.clearBatch(); // 清空缓存
+	                }*/
+					//String usql="update DftTag_bak_20180718_bak_20180626 set case_status='"+ct+"',jira_id='"+jira_id_new+"' where case_name='"+hashMap.get("case_name")+"'";
+					//ps = conn.prepareStatement(usql);
+					//ps.execute();
 	                ups.setString(1, ct);
 	                ups.setString(2, jira_id_new.toString());
 	                ups.setString(3, hashMap.get("case_name").toString());
 	                ups.addBatch();
+	                /*if (i % 1000 == 0) {
+	                	ups.executeBatch();
+	                	ups.clearBatch(); // 清空缓存
+	                }
+	                i++;*/
 				}
 				
 			}
@@ -364,7 +388,14 @@ public class JiraSeleniumService {
 			ups.close();
 			
 			
+			
+			
 			conn.commit();
+			
+			
+			
+			
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();

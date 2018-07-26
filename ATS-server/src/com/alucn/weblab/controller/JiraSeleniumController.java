@@ -120,10 +120,12 @@ public class JiraSeleniumController {
     	        			jiraSeleniumService.updateCommentJira(jira_id_mid);
     	        		}
     	        	}
+    	        	return "testTempJiraTbl done";
     	        }else {
     				logger.error("cant get comment jira");
+    				return "cant get comment jira from jira_status_tbl";
     			}
-    	        return "testTempJiraTbl done";
+    	        
     		}
     	}
     	return "";

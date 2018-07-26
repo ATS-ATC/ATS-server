@@ -46,7 +46,7 @@ public class JiraSelenium {
     	properties.load(bufferedReader);
     	String jiraId = properties.getProperty("jiraId");
     	String jiraPass = properties.getProperty("jiraPass");
-    	System.out.println(jiraId+":"+jiraPass);
+    	//System.out.println(jiraId+":"+jiraPass);
     	
     	
         driver.get(url);
