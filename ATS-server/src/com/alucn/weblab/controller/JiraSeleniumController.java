@@ -57,13 +57,77 @@ public class JiraSeleniumController {
     }
     @RequestMapping(value="/testSetJiraCaseTbl")
     @ResponseBody
-    public String testSetJiraCaseTbl(){
-    	try {
-			jiraSeleniumService.testTempJiraTbl();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+    public String testSetJiraCaseTbl(String type) throws Exception{
+    	System.out.println(type);
+    	if(type!=null&&!"".equals(type)) {
+    		if("1".equals(type)) {
+    			long startMili=System.currentTimeMillis(); 
+    	    	String configPath = System.getenv("WEBLAB_CONF");
+    	    	String phantomjs;
+    	    	if(configPath==null) {
+    	    		phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
+    	    	}else {
+    	    		phantomjs ="/opt/phantomjs/bin/phantomjs";
+    			}
+    	        System.setProperty("phantomjs.binary.path", phantomjs);
+    	        DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
+    	        ArrayList<String> cliArgsCap = new ArrayList<>();
+    	        cliArgsCap.add("--proxy=http://"+HOST+":"+PORT);
+    	        cliArgsCap.add("--load-images=no"); 
+    	        cliArgsCap.add("--disk-cache=no"); 
+    	        cliArgsCap.add("--ignore-ssl-errors=true"); 
+    	        capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
+
+    	        WebDriver driver = new PhantomJSDriver(capabilities);
+
+    	        JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
+    	        Thread.sleep(100);
+    	        Set<Cookie> cookies= driver.manage().getCookies();
+    	        //System.out.println("cookie:====="+cookies);
+    	        
+    	        ArrayList<String> issues = JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
+
+    	        Map iMap = new HashedMap();
+    	        //single start ------------------------------------->
+    	        if(issues.size()>0) {
+    				for (String target : issues) {
+    				Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(driver,target);
+    				iMap.put(target, issuesInfo);
+    				}
+    			}
+    	        //single end ------------------------------------->
+    	        jiraSeleniumService.testTempJiraTbl(iMap);
+    	        driver.quit();
+    	        long endMili=System.currentTimeMillis();
+    	        running = false;
+    	        logger.info("cost : "+formatTime(endMili-startMili));
+    	        return "cost : "+formatTime(endMili-startMili);
+    		}
+    		if("2".equals(type)) {
+    			//jiraSeleniumService.testTempJiraTbl();
+    			ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
+    	        if(commentJira.size()>0) {
+    	        	for (HashMap<String, Object> hashMap : commentJira) {
+    	        		String jira_id_mid = (String) hashMap.get("jira_id_mid");
+    	        		String casename =  "[**Auto**] { "+(String) hashMap.get("casename")+" }";
+    	        		//System.out.println("casename===="+casename);
+    	        		//jiraSeleniumService.updateCommentJira(jira_id_mid);
+    	        		//为了方便测试，临时注释掉发送comment和修改comment表操作
+    	        		//boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+    	        		boolean comment =  true;
+    	        		logger.info(jira_id_mid+":="+casename);
+    	        		if(comment) {
+    	        			jiraSeleniumService.updateCommentJira(jira_id_mid);
+    	        		}
+    	        	}
+    	        }else {
+    				logger.error("cant get comment jira");
+    			}
+    	        return "testTempJiraTbl done";
+    		}
+    	}
     	return "";
+    	
     }
     
     
@@ -86,12 +150,15 @@ public class JiraSeleniumController {
     	running=true;
     	Flag=true;
     	while(true) {
-    		if (!Flag) {
-				break;
-			}
     		try {
 	    		logger.info("==================loopSetJiraCaseTbl running!!!==================");
+	    		if (!Flag) {
+					break;
+				}
 	    		Thread.sleep(1000*60*1);
+	    		if (!Flag) {
+					break;
+				}
 	    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
 				this.setJiraCaseTbl();
 			} catch (Exception e) {
@@ -100,6 +167,7 @@ public class JiraSeleniumController {
 			}
     		
     	}
+    	running=false;
     	logger.info("loopSetJiraCaseTbl stop!!!");
     	return "close";
     }
@@ -137,16 +205,16 @@ public class JiraSeleniumController {
         ArrayList<String> issues = JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
 
         Map iMap = new HashedMap();
-        //simple start ------------------------------------->
+        //single start ------------------------------------->
         if(issues.size()>0) {
 			for (String target : issues) {
 			Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(driver,target);
 			iMap.put(target, issuesInfo);
 			}
 		}
-        //simple end ------------------------------------->
+        //single end ------------------------------------->
         
-        //Executor start ------------------------------------->
+        //thread start ------------------------------------->
         
         /*ExecutorService executor = Executors.newCachedThreadPool();
         
@@ -208,7 +276,7 @@ public class JiraSeleniumController {
             executor.shutdown();
         }*/
         
-        //Executor end ------------------------------------->
+        //thread end ------------------------------------->
         
         jiraSeleniumService.setTempJiraTbl(iMap);
         
@@ -216,14 +284,16 @@ public class JiraSeleniumController {
         if(commentJira.size()>0) {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
-        		String casename = (String) hashMap.get("casename");
+        		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
         		System.out.println("casename===="+casename);
+        		//jiraSeleniumService.updateCommentJira(jira_id_mid);
         		//为了方便测试，临时注释掉发送comment和修改comment表操作
         		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		//boolean comment =  true;
+        		logger.info(jira_id_mid+":="+casename);
         		if(comment) {
         			jiraSeleniumService.updateCommentJira(jira_id_mid);
         		}
-        		//jiraSeleniumService.updateCommentJira(jira_id_mid);
         	}
         }else {
 			logger.error("cant get comment jira");

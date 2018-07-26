@@ -156,7 +156,7 @@ public class JiraSeleniumService {
 						//||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
 						
 					) {
-					System.out.println("case_status/temp: "+ct+" + target: "+case_status);
+					//System.out.println("case_status/temp: "+ct+" + target: "+case_status);
 					/*String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 							+ "values('"+hashMap.get("casename")+"','"+hashMap.get("feature")+"','"+hashMap.get("case_name")+"'"
 									+ ",'"+jira_id+"','"+hashMap.get("surepay")+"','"+jira_id_new+"','"+hashMap.get("case_status")+"','"+ct+"',datetime('now', 'localtime'))";
@@ -216,7 +216,7 @@ public class JiraSeleniumService {
 	}
 	
 	
-	public void testTempJiraTbl() throws SQLException {
+	public void testTempJiraTbl(Map map) throws SQLException {
 
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = null;
@@ -228,6 +228,56 @@ public class JiraSeleniumService {
 			conn = jdbc.getConnection();
 			conn.setAutoCommit(false);
 			
+			String dsql="delete from temp_jira_status_tbl";
+			
+			ps = conn.prepareStatement(dsql);
+			ps.execute();
+			ps.close();
+			
+			//int i =10/0;
+			
+			
+			Set<String> keySet = map.keySet();
+			for (String surepay : keySet) {
+				Map<String, Object> issuesInfo = (Map<String, Object>) map.get(surepay);
+				if(issuesInfo!=null) {
+					//String target = (String) issuesInfo.get("target");
+					String caseStatus = (String) issuesInfo.get("caseStatus");
+					String Feature = (String) issuesInfo.get("Feature");
+					List<String> caselist = (List) issuesInfo.get("caselist");
+					String assignee = (String) issuesInfo.get("Assignee");
+					String labels = (String) issuesInfo.get("labels");
+					if(caselist.size()>0) {
+						String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag) "
+								  + "values(?,?,?,?,?,?,datetime('now', 'localtime'),0)";
+						ps = conn.prepareStatement(sql);
+						//int i =0;
+						for (String  casename : caselist) {
+							
+							//String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag) "
+							//	  + "values('"+casename.trim()+"','"+Feature.trim()+"','"+surepay.trim()+"','"+caseStatus.trim()+"','"+assignee.trim()+"','"+labels.trim()+"',datetime('now', 'localtime'),0)";
+							//System.out.println(sql);
+							//jiraSeleniumDaoImpl.insert(jdbc, sql);
+							//ps = conn.prepareStatement(sql);
+							//ps.execute();
+							ps.setString(1, casename.trim());
+			                ps.setString(2, Feature.trim());
+			                ps.setString(3, surepay.trim());
+			                ps.setString(4, caseStatus.trim());
+			                ps.setString(5, assignee.trim());
+			                ps.setString(6, labels.trim());
+			                ps.addBatch();
+			                /*if (i % 1000 == 0) {
+			                     ps.executeBatch();
+			                     ps.clearBatch(); // 清空缓存
+			                }
+			                i++;*/
+						}
+						ps.executeBatch();
+						ps.close();
+					}
+				}
+			}
 			//merge into 
 			String msql="select a.case_name,a.case_status,a.jira_id,b.* from DftTag_bak_20180718 a\r\n" + 
 					"left join (\r\n" + 
@@ -255,7 +305,7 @@ public class JiraSeleniumService {
 					"and b.surepay||'/'||b.feature||'/'||b.casename not in(\r\n" + 
 					"select distinct jira_id_mid||'/'||feature||'/'||casename from jira_status_tbl where stateflag=0\r\n" + 
 					")";
-			
+			System.out.println(msql);
 			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
 			logger.info(query);
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
@@ -291,7 +341,7 @@ public class JiraSeleniumService {
 						||("O".equals(ct)&&"PP".equals(case_status))
 						
 					) {
-					System.out.println("case_status/temp: "+ct+" + target: "+case_status);
+					//System.out.println("case_status/temp: "+ct+" + target: "+case_status);
 					ps.setString(1, hashMap.get("casename").toString());
 					ps.setString(2, hashMap.get("feature").toString());
 					ps.setString(3, hashMap.get("case_name").toString());
@@ -346,7 +396,7 @@ public class JiraSeleniumService {
 							"and jira_id_mid='"+jira_id_mid+"'";
 			jiraSeleniumDaoImpl.update(jdbc, usql);
 		}else {
-			logger.error("jira_id_mid is null,cant update");
+			logger.error("jira_id_mid is null,can not update");
 		}
 	}
 	
