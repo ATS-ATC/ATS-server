@@ -1,21 +1,13 @@
 package com.alucn.weblab.controller;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
-import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.openqa.selenium.Cookie;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -157,12 +149,15 @@ public class JiraSeleniumController {
 	    		if (!Flag) {
 					break;
 				}
-	    		Thread.sleep(1000*60*1);
+	    		this.setJiraCaseTbl();
 	    		if (!Flag) {
 					break;
 				}
-	    		logger.info("==================loopSetJiraCaseTbl start!!!==================");
-				this.setJiraCaseTbl();
+	    		logger.info("==================loopSetJiraCaseTbl waiting!!!==================");
+	    		Thread.sleep(1000*60*30);
+	    		if (!Flag) {
+					break;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -170,7 +165,7 @@ public class JiraSeleniumController {
     		
     	}
     	running=false;
-    	logger.info("loopSetJiraCaseTbl stop!!!");
+    	logger.info("==================loopSetJiraCaseTbl stop!!!==================");
     	return "close";
     }
 
