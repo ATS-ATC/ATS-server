@@ -307,8 +307,8 @@ public class JiraSeleniumService {
 					")";
 			
 			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
-			System.out.println(query);
-			logger.info(query);
+			logger.info("msql:=="+msql);
+			logger.info("query:=="+query);
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
