@@ -83,6 +83,7 @@ public class LdapAuthentication {
             
             Hashtable env = new Hashtable();
             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            env.put("com.sun.jndi.ldap.connect.timeout", "2000");//连接超时设置为3秒
             env.put(Context.PROVIDER_URL, "ldap://" + ad4_server + ":389/");
             //env.put(Context.SECURITY_AUTHENTICATION, "simple");
             env.put(Context.SECURITY_PRINCIPAL, "ad4\\" +User  );
