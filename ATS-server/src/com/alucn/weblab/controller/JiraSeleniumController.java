@@ -284,9 +284,9 @@ public class JiraSeleniumController {
         		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
         		System.out.println("casename===="+casename);
         		//jiraSeleniumService.updateCommentJira(jira_id_mid);
-        		//为了方便测试，临时注释掉发送comment和修改comment表操作
-        		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
-        		//boolean comment =  true;
+        		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>
+        		//boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		boolean comment =  true;
         		logger.info(jira_id_mid+":="+casename);
         		if(comment) {
         			jiraSeleniumService.updateCommentJira(jira_id_mid);

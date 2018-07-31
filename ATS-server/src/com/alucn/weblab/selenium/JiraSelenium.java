@@ -1,8 +1,11 @@
 package com.alucn.weblab.selenium;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +18,9 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -36,8 +42,9 @@ public class JiraSelenium {
     	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
     	System.out.println(string);
     	int num=string.indexOf("WEB-INF");
-    	//int num=string.indexOf("target");
     	String wpath=string.substring(1,num)+"/conf";
+    	//int num=string.indexOf("target");                      //java启动
+    	//String wpath=string.substring(1,num)+"/WebContent/conf";//java启动
     	//System.out.println(path);
     	Properties properties = new Properties();
     	String configPath = System.getenv("WEBLAB_CONF");
@@ -188,7 +195,11 @@ public class JiraSelenium {
 			wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customfield_13641-val")));
 			//driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS); 
 			//Thread.sleep(3000);
-            
+			
+			File file = new File("d:/jira-version.txt");  
+	        PrintStream ps = new PrintStream(new FileOutputStream(file));  
+	        ps.println(driver.getPageSource());
+	        
             WebElement caseStatus =  driver.findElement(By.id("customfield_13641-val"));
 	    	//logger.info(caseStatus.getText());
 	    	result.put("caseStatus", caseStatus.getText().trim());
@@ -199,6 +210,15 @@ public class JiraSelenium {
 	    	
 	    	WebElement Assignee = driver.findElement(By.id("assignee-val"));
 	    	result.put("Assignee", Assignee.getText().trim());
+	    	
+	    	WebElement versions = driver.findElement(By.id("versions-field"));
+	    	String vHtml = versions.getAttribute("innerHTML").trim();
+	    	int indexOf = vHtml.indexOf(">");
+	    	int lastIndexOf = vHtml.lastIndexOf("<");
+	    	String substring = vHtml.substring(indexOf, lastIndexOf).replace(">", "");
+	    	System.out.println(substring);
+	    	result.put("Versions", substring);
+	    	
 	    	
 	    	List<WebElement> labels = driver.findElements(By.cssSelector("#wrap-labels .labels"));
 	    	List labelList = new ArrayList<>();
@@ -299,7 +319,7 @@ public class JiraSelenium {
     static final String PORT = "80";
     static final String phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
     public static void main(String[] args) throws NoSuchElementException, IOException {
-    	/*System.setProperty("phantomjs.binary.path", phantomjs);
+    	System.setProperty("phantomjs.binary.path", phantomjs);
         DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
         capabilities.setJavascriptEnabled(true);
         ArrayList<String> cliArgsCap = new ArrayList<>();
@@ -312,16 +332,17 @@ public class JiraSelenium {
         
         
         JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
-        //getIssuesInfo(driver,"SUREPAYRD-17687");
+        Map<String, Object> issuesInfo = getIssuesInfo(driver,"SUREPAYRD-19620");
+        System.out.println(issuesInfo);
         try {
-			setComment(driver,"SUREPAYRD-19904","test return2");
+			//setComment(driver,"SUREPAYRD-19904","test return2");
         	//testTrigger(driver);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}*/
+		}
     	//=========================================================================================
     	//String string = JiraSelenium.class.getResource("/").toString();
-    	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
+    	/*String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
     	int num=string.indexOf("target");
     	String wpath=string.substring(1,num)+"WebContent/conf";
     	//System.out.println(path);
@@ -332,6 +353,7 @@ public class JiraSelenium {
     	properties.load(bufferedReader);
     	String jira_id = properties.getProperty("jiraId");
     	String jira_pass = properties.getProperty("jiraPass");
-    	System.out.println(jira_id+":"+jira_pass);
+    	System.out.println(jira_id+":"+jira_pass);*/
+    	//=========================================================================================
 	}
 }
