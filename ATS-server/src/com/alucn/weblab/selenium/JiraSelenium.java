@@ -196,9 +196,9 @@ public class JiraSelenium {
 			//driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS); 
 			//Thread.sleep(3000);
 			
-			File file = new File("d:/jira-version.txt");  
+			/*File file = new File("d:/jira-version.txt");  
 	        PrintStream ps = new PrintStream(new FileOutputStream(file));  
-	        ps.println(driver.getPageSource());
+	        ps.println(driver.getPageSource());*/
 	        
             WebElement caseStatus =  driver.findElement(By.id("customfield_13641-val"));
 	    	//logger.info(caseStatus.getText());
