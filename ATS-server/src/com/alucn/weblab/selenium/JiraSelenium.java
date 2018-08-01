@@ -213,10 +213,10 @@ public class JiraSelenium {
 	    	
 	    	WebElement versions = driver.findElement(By.id("versions-field"));
 	    	String vHtml = versions.getAttribute("innerHTML").trim();
-	    	int indexOf = vHtml.indexOf(">");
+	    	int indexOf = vHtml.indexOf(">")+1;
 	    	int lastIndexOf = vHtml.lastIndexOf("<");
-	    	String substring = vHtml.substring(indexOf, lastIndexOf).replace(">", "");
-	    	System.out.println(substring);
+	    	String substring = vHtml.substring(indexOf, lastIndexOf);//.replace(">", "")
+	    	//System.out.println(substring);
 	    	result.put("Versions", substring);
 	    	
 	    	
