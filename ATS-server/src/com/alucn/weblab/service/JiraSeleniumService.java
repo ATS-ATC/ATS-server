@@ -332,11 +332,8 @@ public class JiraSeleniumService {
 			String usql="update DftTag_bak_20180718 set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			
-			String rsql="update DftTag_bak_20180718 set release=? where case_name=?";
+			String rsql="update DftTag_bak_20180718 set release=?,jira_id=? where case_name=?";
 			rps = conn.prepareStatement(rsql);
-			
-			String bsql="update DftTag_bak_20180718 set case_status=? where case_name=?";
-			bps = conn.prepareStatement(bsql);
 			
 			for (HashMap<String, Object> hashMap : query) {
 				String ct = (String) hashMap.get("ct");
@@ -388,7 +385,8 @@ public class JiraSeleniumService {
 					//如果releases不同，需要更新表内字段，发送shell命令
 					if(!hashMap.get("releases").toString().equals(hashMap.get("release").toString())){
 						rps.setString(1, hashMap.get("releases").toString());
-						rps.setString(2, hashMap.get("case_name").toString());
+						rps.setString(2, jira_id_new.toString());
+						rps.setString(3, hashMap.get("case_name").toString());
 						rps.addBatch();
 						String[] cmd={"/bin/sh","-c","sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString()};
 						logger.info(cmd.toString());
@@ -408,14 +406,16 @@ public class JiraSeleniumService {
 	                	String case_name_foregin = hashMap2.get("case_name_foregin").toString();
 	                	if(hashMap.get("case_name").toString().equals(case_name_foregin)) {
 	                		
-	                		System.out.println(case_name_foregin+" has bak sys rollbak");
+	                		System.out.println(case_name_foregin+" has bak , system rollbak");
 	                		
-	                		bps.setString(1, hashMap2.get("case_status_old").toString());
-	    	                bps.setString(2, hashMap.get("case_name").toString());
-	    	                bps.addBatch();
-	    	                
 	    	                ps.setString(7, ct);
 	    					ps.setString(8, hashMap2.get("case_status_old").toString());
+	    					
+	    					ups.setString(1, hashMap2.get("case_status_old").toString());
+	    	                ups.setString(2, jira_id_new.toString());
+	    	                ups.setString(3, hashMap.get("case_name").toString());
+	    	                ups.addBatch();
+	    	                
 	    					bak=false;
 	    					
 	                		break;
@@ -426,6 +426,7 @@ public class JiraSeleniumService {
 	                	ps.setString(8, ct);
 	                }
 					ps.addBatch();
+	                
 				}
 				
 			}
@@ -435,8 +436,6 @@ public class JiraSeleniumService {
 			ups.close();
 			rps.executeBatch();
 			rps.close();
-			bps.executeBatch();
-			bps.close();
 			
 			conn.commit();
 			
