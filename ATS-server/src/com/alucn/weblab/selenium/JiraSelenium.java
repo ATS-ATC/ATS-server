@@ -273,7 +273,7 @@ public class JiraSelenium {
     	String script = "$(\"#comment\").val(\""+msg+"\");\r\n" + 
     			"$(\"#comment-add-submit\").trigger(\"click\");";
     	jse.executeScript(script);
-    	logger.info(driver.getCurrentUrl().equals(rurl));
+    	//logger.info(driver.getCurrentUrl().equals(rurl));
     	
     	for(int i =0;i<10;i++) {
     		if(driver.getCurrentUrl().equals(rurl)) {
@@ -282,7 +282,7 @@ public class JiraSelenium {
         		break;
         	}
     	}
-    	logger.info(driver.getCurrentUrl().equals(rurl));
+    	//logger.info(driver.getCurrentUrl().equals(rurl));
     	logger.info(driver.getCurrentUrl());
     	boolean flag = false;
     	if(!driver.getCurrentUrl().equals(rurl)) {

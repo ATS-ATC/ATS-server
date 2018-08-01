@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alucn.weblab.selenium.JiraSelenium;
 import com.alucn.weblab.service.JiraSeleniumService;
 
-import mx4j.tools.config.DefaultConfigurationBuilder.New;
 
 
 
@@ -298,10 +297,9 @@ public class JiraSeleniumController {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
-        		System.out.println("casename===="+casename);
         		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>
-        		//boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
-        		boolean comment =  true;
+        		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		//boolean comment =  true;
         		logger.info(jira_id_mid+":="+casename);
         		if(comment) {
         			jiraSeleniumService.updateCommentJira(jira_id_mid);
@@ -310,10 +308,9 @@ public class JiraSeleniumController {
         }else {
 			logger.error("cant get comment jira");
 		}
-
         driver.quit();
         long endMili=System.currentTimeMillis();
-        running = false;
+        //running = false;
         logger.info("cost : "+formatTime(endMili-startMili));
         return formatTime(endMili-startMili);
     }

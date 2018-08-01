@@ -259,10 +259,10 @@ $(document).ready(function(){
 	
 	var running= '${ running}';
 	//alert(running);
-	if(running){
+	if(running=='true'){
 		$('#btnActivation').addClass('btn--waiting');
 	}else {
-		$('#btnText').innerText='start';
+		$('#btnText').text('start');
 	}
   	$('#btnActivation').click(function(){
     if(!$('#btnActivation').hasClass(('btn--activated'))){
