@@ -1,6 +1,9 @@
 package com.alucn.weblab.controller;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -14,11 +17,14 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alucn.weblab.selenium.JiraSelenium;
 import com.alucn.weblab.service.JiraSeleniumService;
+
+import mx4j.tools.config.DefaultConfigurationBuilder.New;
 
 
 
@@ -38,6 +44,12 @@ public class JiraSeleniumController {
     @Autowired(required=true)
     private JiraSeleniumService jiraSeleniumService;
     
+    @RequestMapping(value="/jiraStatus")
+    public String jiraStatus(Model model){
+    	model.addAttribute("Flag", Flag);
+    	model.addAttribute("running", running);
+    	return "jiraStatus";
+    }
     @RequestMapping(value="/statusSetJiraCaseTbl")
     @ResponseBody
     public String statusSetJiraCaseTbl(){
@@ -154,7 +166,7 @@ public class JiraSeleniumController {
 					break;
 				}
 	    		logger.info("==================loopSetJiraCaseTbl waiting!!!==================");
-	    		Thread.sleep(1000*60*30);
+	    		Thread.sleep(1000*60*60*6);
 	    		if (!Flag) {
 					break;
 				}
@@ -274,7 +286,11 @@ public class JiraSeleniumController {
         }*/
         
         //thread end ------------------------------------->
-        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+    	String time = sdf.format(new Date());
+        String[] command = {"/bin/sh","-c","cp /home/surepayftp/DftCase/dftTag.db /home/surepayftp/DftCase/dftTag.db_"+time};
+		jiraSeleniumService.exeCmd(command);
+		
         jiraSeleniumService.setTempJiraTbl(iMap);
         
         ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
@@ -283,7 +299,6 @@ public class JiraSeleniumController {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
         		System.out.println("casename===="+casename);
-        		//jiraSeleniumService.updateCommentJira(jira_id_mid);
         		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>
         		//boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
         		boolean comment =  true;
@@ -332,4 +347,9 @@ public class JiraSeleniumController {
         }
         return sb.toString();
     }
+    public static void main(String[] args) {
+    	SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+    	String time = sdf.format(new Date());
+		System.out.println(time);
+	}
 }

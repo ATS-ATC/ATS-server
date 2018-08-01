@@ -32,11 +32,13 @@ public class JiraSeleniumService {
 	private JiraSeleniumDaoImpl jiraSeleniumDaoImpl;
 	
 	public void setTempJiraTbl(Map map) throws SQLException {
+
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = null;
 		Connection conn = null;
 		PreparedStatement ps = null;
 		PreparedStatement ups = null;
+		PreparedStatement rps = null;
 		try {
 			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 			conn = jdbc.getConnection();
@@ -55,7 +57,6 @@ public class JiraSeleniumService {
 			for (String surepay : keySet) {
 				Map<String, Object> issuesInfo = (Map<String, Object>) map.get(surepay);
 				if(issuesInfo!=null) {
-					//String target = (String) issuesInfo.get("target");
 					String caseStatus = (String) issuesInfo.get("caseStatus");
 					String Feature = (String) issuesInfo.get("Feature");
 					List<String> caselist = (List) issuesInfo.get("caselist");
@@ -66,15 +67,8 @@ public class JiraSeleniumService {
 						String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag,releases) "
 								  + "values(?,?,?,?,?,?,datetime('now', 'localtime'),0,?)";
 						ps = conn.prepareStatement(sql);
-						//int i =0;
 						for (String  casename : caselist) {
 							
-							//String sql ="insert into temp_jira_status_tbl(casename,feature,surepay,casestatus,assignee,labels,datetime,stateflag) "
-							//	  + "values('"+casename.trim()+"','"+Feature.trim()+"','"+surepay.trim()+"','"+caseStatus.trim()+"','"+assignee.trim()+"','"+labels.trim()+"',datetime('now', 'localtime'),0)";
-							//System.out.println(sql);
-							//jiraSeleniumDaoImpl.insert(jdbc, sql);
-							//ps = conn.prepareStatement(sql);
-							//ps.execute();
 							ps.setString(1, casename.trim());
 			                ps.setString(2, Feature.trim());
 			                ps.setString(3, surepay.trim());
@@ -83,11 +77,6 @@ public class JiraSeleniumService {
 			                ps.setString(6, labels.trim());
 			                ps.setString(7, versions.trim());
 			                ps.addBatch();
-			                /*if (i % 1000 == 0) {
-			                     ps.executeBatch();
-			                     ps.clearBatch(); // 清空缓存
-			                }
-			                i++;*/
 						}
 						ps.executeBatch();
 						ps.close();
@@ -124,16 +113,24 @@ public class JiraSeleniumService {
 					")";
 			
 			ArrayList<HashMap<String,Object>> query = jiraSeleniumDaoImpl.query(jdbc, msql);
-			//System.out.println(query);
-			logger.info(query);
+			
+			
+			String jsql="select * from jira_status_tbl where stateflag=0";
+			ArrayList<HashMap<String, Object>> jira = jiraSeleniumDaoImpl.query(jdbc, jsql);
+			
+			
+			logger.info("msql:=="+msql);
+			logger.info("query:=="+query);
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
-			//int i = 0;
 			String usql="update DftTag set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
+			
+			String rsql="update DftTag set release=?,jira_id=? where case_name=?";
+			rps = conn.prepareStatement(rsql);
+			
 			for (HashMap<String, Object> hashMap : query) {
-				//System.out.println(hashMap.toString());
 				String ct = (String) hashMap.get("ct");
 				String jira_id = (String)hashMap.get("jira_id");
 				StringBuffer jira_id_new = new StringBuffer();
@@ -154,22 +151,12 @@ public class JiraSeleniumService {
 						jira_id_new.append(jira_id).append(",").append(hashMap.get("surepay")); 
 					}
 				}
-				//System.out.println("jira_id_new:======"+jira_id_new+"   jira_id :======="+jira_id);
 				String case_status = hashMap.get("case_status").toString();
 				if(		
 						  ("PP".equals(ct))
 						||("P".equals(ct)&&"PP".equals(case_status))
 						||("O".equals(ct)&&"PP".equals(case_status))
-						//||("O".equals(ct)&&("PP".equals(case_status)||"PD".equals(case_status)))
-						//||("RT".equals(ct)&&("PP".equals(case_status)||"PRT".equals(case_status)))
-						
 					) {
-					//System.out.println("case_status/temp: "+ct+" + target: "+case_status);
-					/*String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
-							+ "values('"+hashMap.get("casename")+"','"+hashMap.get("feature")+"','"+hashMap.get("case_name")+"'"
-									+ ",'"+jira_id+"','"+hashMap.get("surepay")+"','"+jira_id_new+"','"+hashMap.get("case_status")+"','"+ct+"',datetime('now', 'localtime'))";
-					System.out.println(sql);
-					ps = conn.prepareStatement(sql);*/
 					ps.setString(1, hashMap.get("casename").toString());
 					ps.setString(2, hashMap.get("feature").toString());
 					ps.setString(3, hashMap.get("case_name").toString());
@@ -178,35 +165,63 @@ public class JiraSeleniumService {
 					ps.setString(6, jira_id_new.toString());
 					ps.setString(7, case_status);
 					ps.setString(8, ct);
-					//ps.execute();
 					ps.addBatch();
-	                /* if (i % 1000 == 0) {
-	                     ps.executeBatch();
-	                     ps.clearBatch(); // 清空缓存
-	                }*/
-					//String usql="update DftTag_bak_20180626 set case_status='"+ct+"',jira_id='"+jira_id_new+"' where case_name='"+hashMap.get("case_name")+"'";
-					//ps = conn.prepareStatement(usql);
-					//ps.execute();
 	                ups.setString(1, ct);
 	                ups.setString(2, jira_id_new.toString());
 	                ups.setString(3, hashMap.get("case_name").toString());
 	                ups.addBatch();
-	                /*if (i % 1000 == 0) {
-	                	ups.executeBatch();
-	                	ups.clearBatch(); // 清空缓存
-	                }
-	                i++;*/
 				}
+				
+				//需求变动：
+				//1. 如果是ReTag状态数据，需要替换文件中的一个字段（通过发送一段shell命令实现）。
+				//2. 更新目标表内数据。
+				//3. 如果之前更新过（jira_status_tbl内有数据），需要回滚为原有数据。
 				if("RT".equals(ct)){
-					//需求变动：
-					//1. 如果是ReTag状态数据，需要替换文件中的一个字段（通过发送一段shell命令实现）。
-					//2. 更新目标表内数据。
-					//3. 如果之前更新过（jira_status_tbl内有数据），需要回滚为原有数据。
-					String cmd="sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString();
-					logger.info(cmd);
-					System.out.println(cmd);
-					/*String result = execCmd(cmd, null);
-			        System.out.println(result);*/
+					//如果releases不同，需要更新表内字段，发送shell命令
+					if(!hashMap.get("releases").toString().equals(hashMap.get("release").toString())){
+						rps.setString(1, hashMap.get("releases").toString());
+						rps.setString(2, jira_id_new.toString());
+						rps.setString(3, hashMap.get("case_name").toString());
+						rps.addBatch();
+						String[] cmd={"/bin/sh","-c","sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString()};
+						logger.info(cmd.toString());
+						exeCmd(cmd);
+				        //System.out.println(result);
+					}
+	                //其余的判断是否有过更新，有-回滚-记录，无-记录
+	                ps.setString(1, hashMap.get("casename").toString());
+					ps.setString(2, hashMap.get("feature").toString());
+					ps.setString(3, hashMap.get("case_name").toString());
+					ps.setString(4, jira_id);
+					ps.setString(5, hashMap.get("surepay").toString());
+					ps.setString(6, jira_id_new.toString());
+					
+					boolean bak=true;
+	                for (HashMap<String, Object> hashMap2 : jira) {
+	                	String case_name_foregin = hashMap2.get("case_name_foregin").toString();
+	                	if(hashMap.get("case_name").toString().equals(case_name_foregin)) {
+	                		
+	                		System.out.println(case_name_foregin+" has bak , system rollbak");
+	                		
+	    	                ps.setString(7, ct);
+	    					ps.setString(8, hashMap2.get("case_status_old").toString());
+	    					
+	    					ups.setString(1, hashMap2.get("case_status_old").toString());
+	    	                ups.setString(2, jira_id_new.toString());
+	    	                ups.setString(3, hashMap.get("case_name").toString());
+	    	                ups.addBatch();
+	    	                
+	    					bak=false;
+	    					
+	                		break;
+	                	}
+					}
+	                if(bak) {
+	                	ps.setString(7, case_status);
+	                	ps.setString(8, ct);
+	                }
+					ps.addBatch();
+	                
 				}
 				
 			}
@@ -214,24 +229,15 @@ public class JiraSeleniumService {
 			ps.close();
 			ups.executeBatch();
 			ups.close();
-			
-			
-			
+			rps.executeBatch();
+			rps.close();
 			
 			conn.commit();
-			
-			
-			
-			
-			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			conn.rollback();
 		}
-		
-		
-		
 	}
 	
 	
@@ -243,7 +249,6 @@ public class JiraSeleniumService {
 		PreparedStatement ps = null;
 		PreparedStatement ups = null;
 		PreparedStatement rps = null;
-		PreparedStatement bps = null;
 		try {
 			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 			conn = jdbc.getConnection();
