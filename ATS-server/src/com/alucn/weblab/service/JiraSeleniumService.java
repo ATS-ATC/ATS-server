@@ -391,9 +391,9 @@ public class JiraSeleniumService {
 						rps.setString(2, hashMap.get("case_name").toString());
 						rps.addBatch();
 						String[] cmd={"/bin/sh","-c","sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString()};
-						logger.info(cmd);
-						String result = exeCmd(cmd);
-				        System.out.println(result);
+						logger.info(cmd.toString());
+						exeCmd(cmd);
+				        //System.out.println(result);
 					}
 	                //其余的判断是否有过更新，有-回滚-记录，无-记录
 	                ps.setString(1, hashMap.get("casename").toString());
@@ -451,12 +451,16 @@ public class JiraSeleniumService {
 		Connection conn = jdbc.getConnection();
 		
 		String csql=
-				"select \r\n" + 
-				"group_concat(distinct (casename||'('||case_status_old||'-->'||case_status_new||')')) casename,jira_id_mid \r\n" + 
+				"select group_concat(distinct (casename||'('||case_status_old||'-->'||\r\n" + 
+				"case\r\n" + 
+				"when case_status_new='RT' then 'RT-->'||case_status_old\r\n" + 
+				"else case_status_new\r\n" + 
+				"end\r\n" + 
+				"||')')) casename,jira_id_mid\r\n" + 
 				"from jira_status_tbl\r\n" + 
-				"where stateflag = 0\r\n" + 
+				"where stateflag=0\r\n" + 
 				"and isComment = 0\r\n" + 
-				"group by jira_id_mid";
+				"group by jira_id_mid;";
 		ArrayList<HashMap<String,Object>> comment = jiraSeleniumDaoImpl.query(jdbc, csql);
 		return comment;
 	}
