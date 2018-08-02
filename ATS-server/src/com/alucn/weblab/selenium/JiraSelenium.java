@@ -41,10 +41,10 @@ public class JiraSelenium {
     	
     	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
     	System.out.println(string);
-    	//int num=string.indexOf("WEB-INF");
-    	//String wpath=string.substring(1,num)+"/conf";
-    	int num=string.indexOf("target");                      //java启动
-    	String wpath=string.substring(1,num)+"/WebContent/conf";//java启动
+    	int num=string.indexOf("WEB-INF");
+    	String wpath=string.substring(1,num)+"/conf";
+    	//int num=string.indexOf("target");                      //java启动
+    	//String wpath=string.substring(1,num)+"/WebContent/conf";//java启动
     	//System.out.println(path);
     	Properties properties = new Properties();
     	String configPath = System.getenv("WEBLAB_CONF");
