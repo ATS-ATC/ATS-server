@@ -219,10 +219,15 @@ public class JiraSelenium {
 	    	String substring = vHtml.substring(indexOf, lastIndexOf);//.replace(">", "")
 	    	//System.out.println(substring);
 	    	result.put("Versions", substring);*/
-	    	
-	    	WebElement Versions = driver.findElement(By.id("customfield_10302-val"));
+	    	String versions = "";
+	    	try {
+	    		WebElement Versions = driver.findElement(By.id("customfield_10302-val"));
+	    		versions=Versions.getText().trim();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	    	//logger.info(Versions.getText());
-	    	result.put("Versions", Versions.getText().trim());
+	    	result.put("Versions",versions);
 	    	
 	    	List<WebElement> labels = driver.findElements(By.cssSelector("#wrap-labels .labels"));
 	    	List labelList = new ArrayList<>();
