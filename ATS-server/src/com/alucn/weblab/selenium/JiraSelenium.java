@@ -41,10 +41,10 @@ public class JiraSelenium {
     	
     	String string = Thread.currentThread().getContextClassLoader().getResource("").getPath(); 
     	System.out.println(string);
-    	int num=string.indexOf("WEB-INF");
-    	String wpath=string.substring(1,num)+"/conf";
-    	//int num=string.indexOf("target");                      //java启动
-    	//String wpath=string.substring(1,num)+"/WebContent/conf";//java启动
+    	//int num=string.indexOf("WEB-INF");
+    	//String wpath=string.substring(1,num)+"/conf";
+    	int num=string.indexOf("target");                      //java启动
+    	String wpath=string.substring(1,num)+"/WebContent/conf";//java启动
     	//System.out.println(path);
     	Properties properties = new Properties();
     	String configPath = System.getenv("WEBLAB_CONF");
@@ -204,6 +204,7 @@ public class JiraSelenium {
 	    	//logger.info(caseStatus.getText());
 	    	result.put("caseStatus", caseStatus.getText().trim());
 	    	
+	    	
 	    	WebElement Feature = driver.findElement(By.id("customfield_13636-val"));
 	    	//logger.info(Feature.getText());
 	    	result.put("Feature", Feature.getText().trim());
@@ -211,14 +212,17 @@ public class JiraSelenium {
 	    	WebElement Assignee = driver.findElement(By.id("assignee-val"));
 	    	result.put("Assignee", Assignee.getText().trim());
 	    	
-	    	WebElement versions = driver.findElement(By.id("versions-field"));
+	    	/*WebElement versions = driver.findElement(By.id("versions-field"));
 	    	String vHtml = versions.getAttribute("innerHTML").trim();
 	    	int indexOf = vHtml.indexOf(">")+1;
 	    	int lastIndexOf = vHtml.lastIndexOf("<");
 	    	String substring = vHtml.substring(indexOf, lastIndexOf);//.replace(">", "")
 	    	//System.out.println(substring);
-	    	result.put("Versions", substring);
+	    	result.put("Versions", substring);*/
 	    	
+	    	WebElement Versions = driver.findElement(By.id("customfield_10302-val"));
+	    	//logger.info(Versions.getText());
+	    	result.put("Versions", Versions.getText().trim());
 	    	
 	    	List<WebElement> labels = driver.findElements(By.cssSelector("#wrap-labels .labels"));
 	    	List labelList = new ArrayList<>();
@@ -332,7 +336,7 @@ public class JiraSelenium {
         
         
         JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
-        Map<String, Object> issuesInfo = getIssuesInfo(driver,"SUREPAYRD-19620");
+        Map<String, Object> issuesInfo = getIssuesInfo(driver,"SUREPAYRD-17445");
         System.out.println(issuesInfo);
         try {
 			//setComment(driver,"SUREPAYRD-19904","test return2");
