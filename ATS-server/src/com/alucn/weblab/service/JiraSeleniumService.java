@@ -177,18 +177,7 @@ public class JiraSeleniumService {
 				//2. 更新目标表内数据。
 				//3. 如果之前更新过（jira_status_tbl内有数据），需要回滚为原有数据。
 				if("RT".equals(ct)){
-					//如果releases不同，需要更新表内字段，发送shell命令
-					if(!hashMap.get("releases").toString().equals(hashMap.get("release").toString())){
-						rps.setString(1, hashMap.get("releases").toString());
-						rps.setString(2, jira_id_new.toString());
-						rps.setString(3, hashMap.get("case_name").toString());
-						rps.addBatch();
-						String[] cmd={"/bin/sh","-c","sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString()};
-						logger.info(cmd.toString());
-						exeCmd(cmd);
-				        //System.out.println(result);
-					}
-	                //其余的判断是否有过更新，有-回滚-记录，无-记录
+					
 	                ps.setString(1, hashMap.get("casename").toString());
 					ps.setString(2, hashMap.get("feature").toString());
 					ps.setString(3, hashMap.get("case_name").toString());
@@ -197,6 +186,24 @@ public class JiraSeleniumService {
 					ps.setString(6, jira_id_new.toString());
 					
 					boolean bak=true;
+					
+					
+					//如果releases不同，需要更新表内字段，发送shell命令
+					if(!hashMap.get("releases").toString().equals(hashMap.get("release").toString())){
+						logger.info(hashMap.get("case_name").toString()+":="+hashMap.get("release").toString()+"-->"+hashMap.get("releases").toString());
+						rps.setString(1, hashMap.get("releases").toString());
+						rps.setString(2, jira_id_new.toString());
+						rps.setString(3, hashMap.get("case_name").toString());
+						rps.addBatch();
+						String[] cmd={"/bin/sh","-c","sed -i \"s/\\\"porting_release\\\": \\[.*\\]/\\\"porting_release\\\": \\[\\\""+hashMap.get("releases").toString()+"\\\"\\]/g\" /home/surepayftp/DftCase/"+hashMap.get("case_name").toString()};
+						logger.info(cmd.toString());
+						exeCmd(cmd);
+				        //System.out.println(result);
+						ps.setString(7, hashMap.get("release").toString()+"-->"+hashMap.get("releases").toString());
+	                	ps.setString(8, ct);
+						bak=false;
+					}
+					//其余的判断是否有过更新，有-回滚-记录，无-记录
 	                for (HashMap<String, Object> hashMap2 : jira) {
 	                	String case_name_foregin = hashMap2.get("case_name_foregin").toString();
 	                	if(hashMap.get("case_name").toString().equals(case_name_foregin)) {
