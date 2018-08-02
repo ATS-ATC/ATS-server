@@ -51,12 +51,14 @@ public class JiraSeleniumController {
     }
     @RequestMapping(value="/statusSetJiraCaseTbl")
     @ResponseBody
-    public String statusSetJiraCaseTbl(){
+    public Map<String, Boolean> statusSetJiraCaseTbl(){
     	
-    	String msg="task will be : "+(Flag==false?"off":"on")
-    			+"<br>task is running : "+(running==true?"yes":"no");
-    	
-    	return msg;
+    	/*String msg="task will be : "+(Flag==false?"off":"on")
+    			+"<br>task is running : "+(running==true?"yes":"no");*/
+    	Map<String, Boolean> map =new HashMap();
+    	map.put("Flag", Flag);
+    	map.put("running", running);
+    	return map;
     }
     @RequestMapping(value="/testSetJiraCaseTbl")
     @ResponseBody
@@ -209,7 +211,7 @@ public class JiraSeleniumController {
         Thread.sleep(100);
         Set<Cookie> cookies= driver.manage().getCookies();
         //System.out.println("cookie:====="+cookies);
-        
+        //1. 爬虫抓取jira数据，
         ArrayList<String> issues = JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
 
         Map iMap = new HashedMap();
@@ -285,23 +287,30 @@ public class JiraSeleniumController {
         }*/
         
         //thread end ------------------------------------->
+        //备份数据库文件
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     	String time = sdf.format(new Date());
         String[] command = {"/bin/sh","-c","cp /home/surepayftp/DftCase/dftTag.db /home/surepayftp/DftCase/dftTag.db_"+time};
 		jiraSeleniumService.exeCmd(command);
 		
+		
+		//2. 将数据写入temp，
+		//3. 更新目标表，
+		//4. 存入记录表
         jiraSeleniumService.setTempJiraTbl(iMap);
         
+        //获取要发送comment的jira
         ArrayList<HashMap<String, Object>> commentJira = jiraSeleniumService.getCommentJira();
         if(commentJira.size()>0) {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
         		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>
-        		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
-        		//boolean comment =  true;
+        		//boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
+        		boolean comment =  true;
         		logger.info(jira_id_mid+":="+casename);
         		if(comment) {
+        			//更新记录表
         			jiraSeleniumService.updateCommentJira(jira_id_mid);
         		}
         	}
@@ -345,7 +354,7 @@ public class JiraSeleniumController {
         return sb.toString();
     }
     public static void main(String[] args) {
-    	SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+    	SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
     	String time = sdf.format(new Date());
 		System.out.println(time);
 	}
