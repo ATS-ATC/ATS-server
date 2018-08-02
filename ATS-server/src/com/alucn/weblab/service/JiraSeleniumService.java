@@ -462,16 +462,16 @@ public class JiraSeleniumService {
 		Connection conn = jdbc.getConnection();
 		
 		String csql=
-				"select group_concat(distinct (casename||'('||case_status_old||'-->'||\r\n" + 
-				"case\r\n" + 
-				"when case_status_new='RT' then 'RT-->'||case_status_old\r\n" + 
-				"else case_status_new\r\n" + 
+				"select group_concat(distinct (casename||'('||case_status_old||\r\n" + 
+				"case \r\n" + 
+				"when case_status_new='RT' then ')'\r\n" + 
+				"else '-->'|| case_status_new ||')'\r\n" + 
 				"end\r\n" + 
-				"||')')) casename,jira_id_mid\r\n" + 
-				"from jira_status_tbl\r\n" + 
+				")) casename,jira_id_mid \r\n" + 
+				"from jira_status_tbl \r\n" + 
 				"where stateflag=0\r\n" + 
 				"and isComment = 0\r\n" + 
-				"group by jira_id_mid;";
+				"group by jira_id_mid";
 		ArrayList<HashMap<String,Object>> comment = jiraSeleniumDaoImpl.query(jdbc, csql);
 		return comment;
 	}
