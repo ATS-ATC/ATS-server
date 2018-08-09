@@ -127,7 +127,7 @@ public class JiraSeleniumService {
 			String usql="update DftTag set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			
-			String rsql="update DftTag set release=?,jira_id=? where case_name=?";
+			String rsql="update DftTag set porting_release=?,jira_id=? where case_name=?";
 			rps = conn.prepareStatement(rsql);
 			
 			for (HashMap<String, Object> hashMap : query) {

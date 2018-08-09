@@ -305,7 +305,7 @@ public class JiraSeleniumController {
         	for (HashMap<String, Object> hashMap : commentJira) {
         		String jira_id_mid = (String) hashMap.get("jira_id_mid");
         		String casename = "[**Auto**] { "+(String) hashMap.get("casename")+" }";
-        		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>
+        		//为了方便测试，临时注释掉发送comment ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓<重要>↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
         		boolean comment = JiraSelenium.setComment(driver, jira_id_mid, casename);
         		//boolean comment =  true;
         		logger.info(jira_id_mid+":="+casename);
