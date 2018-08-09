@@ -34,12 +34,13 @@ public class DistributeCase implements Runnable{
 				Thread.sleep(10000);
 				logger.info("[DistributeCase...]");
 				//distribute case
-//				DistriButeCaseToLab disarrayCase = new DistriButeCaseToLab();
+				//DistriButeCaseToLab disarrayCase = new DistriButeCaseToLab();
                 JSONObject caseList = DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
 				if(0 != caseList.size()){
 					logger.info("[case  list :]"+caseList.toString());
 				}
-				clientACK.clear();      //To prevent the lab side from receiving the same caselist, the incoming ack affects the next wave of caselist distribution
+				//To prevent the lab side from receiving the same caselist, the incoming ack affects the next wave of caselist distribution
+				clientACK.clear();      
 				logger.info("[call distributeCase...]");
 				distributeCase(toHashMap(caseList));
 				
@@ -74,8 +75,7 @@ public class DistributeCase implements Runnable{
 	
     public void distributeCase(ConcurrentHashMap<String, String> caseList) throws IOException, InterruptedException{
 
-        while(true)
-        {
+        while(true){
             if(caseList.size() == 0)
                 return;
             boolean IsCaseExist = false;

@@ -24,11 +24,12 @@ public class CaseSearchDaoImpl implements DataAccessInterface{
 	@Override
 	public void update(JdbcUtil jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		
+		jdbc.executeSql(sql);
 	}
 
 	@Override
 	public void delete(JdbcUtil jdbc, String sql) throws Exception {
+		jdbc.executeSql(sql);
 	}
 
 	@Override

@@ -7,10 +7,15 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+
+import com.alucn.casemanager.server.common.CaseConfigurationCache;
+import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.constants.Constants;
 import com.alucn.weblab.xmlconfig.AppConfig;
 import com.alucn.weblab.xmlconfig.WebConfig;
+
+import net.sf.json.JSONArray;
 
 /**
  * @author haiqiw

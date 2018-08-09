@@ -41,13 +41,29 @@ public class CaseConfigurationCache {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * 
+	 * <pre>
+	 * Example: JSONArray singletonCaseProperties = CaseConfigurationCache.getSingletonCaseProperties(CaseConfigurationCache.lock);
+	 * Description: 获取存放server信息的静态共享变量
+	 * Arguments: 锁
+	 * Return: JSONArray
+	 * Variable：null
+	 * </pre>
+	 */
+	public static JSONArray getSingletonCaseProperties(ReadWriteLock lock) {
+		try {
+			lock.readLock().lock(); 
+			return singletonCaseProperties;
+		} finally{
+			 lock.readLock().unlock();  
+		}
+	}
 	public static JSONArray readOrWriteSingletonCaseProperties(ReadWriteLock lock,boolean isCheck,JSONObject body){
 		if (isCheck) {
 			try {
 				lock.readLock().lock(); 
-				JSONArray infos = singletonCaseProperties;
-				return infos;
+				return singletonCaseProperties;
 			} finally{
 				 lock.readLock().unlock();  
 			}
@@ -59,6 +75,7 @@ public class CaseConfigurationCache {
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
 				if(singletonCaseProperties.size()==0){
 					logger.info("[add host "+serverName+" status : "+taskStatus+"]");
+					//System.out.println("0==[add host "+serverName+" status : "+taskStatus+"]");
 					singletonCaseProperties.add(body);
 				}else{
 					for(int i=0; i<singletonCaseProperties.size();i++){
@@ -68,9 +85,11 @@ public class CaseConfigurationCache {
 							singletonCaseProperties.set(i,body);
 							isExist = true;
 							logger.info("[refresh "+serverName+" status : "+taskStatus+"]");
+							//System.out.println("[refresh "+serverName+" status : "+taskStatus+"]");
 						}
 						if(i==singletonCaseProperties.size()-1 && !isExist){
 							logger.info("[add host "+serverName+" status : "+taskStatus+"]");
+							//System.out.println("!0==[add host "+serverName+" status : "+taskStatus+"]");
 							singletonCaseProperties.add(body);
 							break;
 						}

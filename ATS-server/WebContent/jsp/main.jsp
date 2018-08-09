@@ -24,7 +24,7 @@
 		//alert(head)
 		//alert(height)
 		document.getElementById('main-info').style.height=height-head+'px';
-		document.getElementById('fill').style.height=height-282+'px';
+		document.getElementById('fill').style.height=height-316+'px';
 	});
 	function menuClick(menuUrl) {
 		$("#main-info").attr('src',menuUrl); 
@@ -141,6 +141,14 @@
 							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
 										<span class="glyphicon glyphicon-export" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Case Status
+									</button>
+								</a>
+							</li>
+						  	<li id="case-search" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/searchInfo.do')">
+							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
+										<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+										&nbsp;&nbsp;&nbsp;&nbsp;Case Search
 									</button>
 								</a>
 							</li>

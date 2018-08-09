@@ -706,31 +706,35 @@ public class DistriButeCaseToLab {
 		return serverNameTmp;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		DistriButeCaseToLab test = new DistriButeCaseToLab();
-		JSONArray releaseList = test.GetReleaseList();
+		JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
+		System.out.println(getServerInfoFromDB);
+		/*JSONArray releaseList = test.GetReleaseList();
+		System.out.println(releaseList.toString());
 		String porting_release = "SP18.3,SP18.9+";
 		String serverRelease = "SP17.3";
 		boolean isReleaseMath=false;
 		JSONArray portingReleaseList = JSONArray
 				.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
+		System.out.println(portingReleaseList.toString());
 		if (test.IsInJSONArray(serverRelease, portingReleaseList)) {
 			isReleaseMath = true;
 		} else {
 			if (porting_release.endsWith("+")) {
 				int serverReleasePostion = test.postionInJSONArray(serverRelease, releaseList);
-//				logger.error(serverRelease + " --- " + releaseList);
+				//logger.error(serverRelease + " --- " + releaseList);
 				if (serverReleasePostion != -1) {
-					int LastReleasePostion = test.postionInJSONArray(
-							porting_release.substring(porting_release.lastIndexOf(",") + 1,
-									porting_release.length() - 1),
-							releaseList);
+					System.out.println(porting_release.substring(porting_release.lastIndexOf(",") + 1, porting_release.length() - 1));
+					int LastReleasePostion = test.postionInJSONArray( porting_release.substring(porting_release.lastIndexOf(",") + 1, porting_release.length() - 1), releaseList);
+					System.out.println(serverReleasePostion);
 					if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
 						isReleaseMath = true;
 					}
 				}
 			}
-		}
+		}*/
+		
 	}
 
 	private void UpdatedistributeDB(JSONArray KVMList) {
@@ -907,17 +911,17 @@ public class DistriButeCaseToLab {
 	public JSONObject GetDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
-		JSONArray changedKvmList = updateKvmDB();//更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
-		UpdatedistributeDB(changedKvmList);//找到曾经跑过，但是server信息更新了的case和没有跑过的case
+		//更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
+		JSONArray changedKvmList = updateKvmDB();
+		//找到曾经跑过，但是server信息更新了的case和没有跑过的case
+		UpdatedistributeDB(changedKvmList);
 
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
-				null);
+		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		JSONObject ServerMem;
 		int idleServerNum=0;
 		int caseListNull=0;
 		for (int i = 0; i < Servers.size(); i++) {
-			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
-					.equals(Constant.CASESTATUSIDLE)) {
+			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
 				ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = ServerMem.getString(Constant.SERVERNAME);
@@ -1182,5 +1186,4 @@ public class DistriButeCaseToLab {
 	    double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	    return n;
 	}
-	
 }
