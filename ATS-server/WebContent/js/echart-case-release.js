@@ -9,7 +9,7 @@ myReleaseChart.setOption({
       legend: {
           data: ['Successful Count','Fail Count'],
       	  selected: {
-      		'Fail Count' : false
+      		'Fail Count' : true
       	  }
       },
       xAxis: {
