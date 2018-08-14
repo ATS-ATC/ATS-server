@@ -48,7 +48,7 @@ $(document).ready(function(){
 			<div class="col-md-10"  >
 				<%-- <img alt="" src="${pageContext.request.contextPath}/images/Snipaste_2018-06-08_15-56-26.png" class="img-responsive" alt="Responsive image"> --%>
 				&nbsp;&nbsp;&nbsp;<font size="5" style="font-weight:800;">${login },</font></br>
-				&nbsp;&nbsp;&nbsp;Welcome to the management system !
+				&nbsp;&nbsp;&nbsp;Welcome to SurePay Automation Case Management System !
 			</div>
 			<div class="col-md-2"  >
 				<img align="right" style="height: 50px;width: 115px;display: inline;" src="${pageContext.request.contextPath}/images/sunit.gif" class="img-responsive" alt="Responsive image"/>

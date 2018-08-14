@@ -156,7 +156,15 @@ public class DistriButeCaseToLab {
 
 		return -1;
 	}
-
+	/**
+	 * <pre>
+	 * Example: updateKvmDB();
+	 * Description: 去内存中获取server信息，同步到数据库，
+	 * Arguments: null
+	 * Return: JSONArray 返回更新过的server
+	 * Variable：
+	 * </pre>
+	 */
 	private JSONArray updateKvmDB() {
 		JSONArray changedList = new JSONArray();
 		JSONArray changedKvmList = new JSONArray();
@@ -288,7 +296,15 @@ public class DistriButeCaseToLab {
 	 * private boolean isNumeric(String str){ Pattern pattern =
 	 * Pattern.compile("[0-9]*"); return pattern.matcher(str).matches(); }
 	 */
-
+	/**
+	 * <pre>
+	 * Example: GetReleaseList();
+	 * Description: 从一个网站上获取版本信息
+	 * Arguments: null
+	 * Return: JSONArray 版本信息集合
+	 * Variable：
+	 * </pre>
+	 */
 	private JSONArray GetReleaseList() {
 		JSONArray releaseArray = new JSONArray();
 		URL url;
@@ -335,8 +351,8 @@ public class DistriButeCaseToLab {
 		return releaseArray;
 	}
 	
-	private JSONArray RemoveRelease(JSONArray list)
-	{
+	private JSONArray RemoveRelease(JSONArray list){
+		
 	    JSONArray jsonList = new JSONArray();
 	    for(int i = 0; i < list.size(); i++)
 	    {
@@ -346,7 +362,6 @@ public class DistriButeCaseToLab {
 	    			temp = temp.substring(temp.indexOf(specialRelease.split(",")[j]), temp.length());
 	    		}
 	    	}
-	    			
 	        jsonList.add(temp);
 	    }
 	    
@@ -437,8 +452,8 @@ public class DistriButeCaseToLab {
 				porting_release = result2.getString("porting_release");
 				SPA = result2.getString("SPA");
 				RTDB = result2.getString("RTDB");
-//				lineMate = result2.getString("LineMate");
-//				groupMate = result2.getString("GroupMate");
+				//lineMate = result2.getString("LineMate");
+				//groupMate = result2.getString("GroupMate");
 				spaArray = JSONArray.fromObject(SPA.split(","));
 				rtdbArray = JSONArray.fromObject(RTDB.split(","));
 				JSONArray kvmList = new JSONArray();
@@ -854,18 +869,21 @@ public class DistriButeCaseToLab {
 			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 			state = connection.createStatement();
-			String query_case_sql = "select case_name from DistributedCaseTbl;";
+			/*String query_case_sql = "select case_name from DistributedCaseTbl;";
 			ResultSet result2 = state.executeQuery(query_case_sql);
 			JSONArray case_name_list = new JSONArray();
 			while (result2.next()) {
 				String Case_name = result2.getString("case_name");
 				case_name_list.add(Case_name);
 			}
-
+			System.err.println("case_name_list:=========="+case_name_list.toString());
+			*/
 			String query_sql = "select case_name, group_id from toDistributeCases where server like '%" + ServerName
 					+ "%' and case_name not in "
-					+ case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]", ")")
+					+"(select distinct case_name from DistributedCaseTbl)"
+					/*+ case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]", ")")*/
 					+ " order by group_id";
+			System.out.println("query_sql:========"+query_sql);
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {

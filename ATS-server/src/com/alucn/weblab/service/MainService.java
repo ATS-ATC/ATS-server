@@ -10,17 +10,38 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.MainDaoImpl;
 
-/**
- * @author haiqiw
- * 2017��6��6�� ����4:50:45
- * desc:
- */
+
 @Service("mainService")
 public class MainService {
 	
 	@Autowired
 	private MainDaoImpl mainDaoImpl;
 	private Map<String, Integer> caseCounter = new HashMap<String, Integer>();
+	
+	public ArrayList<HashMap<String, Object>> getCustomerCount() throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select a.customer,cc,ff from (\n" + 
+				"select customer,count(1) cc from DftTag where case_status='S' group by customer\n" + 
+				")a\n" + 
+				"join (\n" + 
+				"select customer,count(1) ff from DftTag where case_status='F' group by customer\n" + 
+				") b on a.customer=b.customer";
+		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
+		return query;
+	}
+	public ArrayList<HashMap<String, Object>> getReleaseCount() throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select a.release,cc,ff from (\n" + 
+				"select release,count(1) cc from DftTag where case_status='S' group by release\n" + 
+				")a \n" + 
+				"join (\n" + 
+				"select release,count(1) ff from DftTag where case_status='F' group by release\n" + 
+				") b on a.release=b.release";
+		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
+		return query;
+	}
 
 	public Map<String, Integer> getStatistics() throws Exception {
     	caseCounter.put("S", 0);

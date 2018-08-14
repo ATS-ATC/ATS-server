@@ -9,7 +9,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +209,7 @@ public class CaseSearchService {
 								+query.get(i).get("customer")+"', "
 								+gid+");";
 						System.out.println("disSql:="+disSql);
-						//caseSearchDaoImpl.insert(jdbc, disSql);
+						caseSearchDaoImpl.insert(jdbc, disSql);
 					}
 				}
 			}
@@ -302,12 +304,25 @@ public class CaseSearchService {
 				return returnMap;
 			}
 			
-			String csql = "select * from n_rerunning_case_tbl where 1=1 and case_info ='"+ids+"'";
+			String csql = "select * from n_rerunning_case_tbl where 1=1 and case_info ='"+ids+"' order by datetime desc";
+			System.out.println("csql:============="+csql);
 			ArrayList<HashMap<String,Object>> cquery = caseSearchDaoImpl.query(jdbc, csql);
 			if(cquery.size()>0) {
-				returnMap.put("msg", "you checked case will be running !");
-				returnMap.put("result", false);
-				return returnMap;
+				SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+				String date = (String) cquery.get(0).get("datetime");
+				System.out.println("ddate:========="+date);
+				Date ndate = new Date();
+				long from = simpleFormat.parse(date).getTime();
+				System.out.println("from:========"+from);
+				long to = ndate.getTime();
+				System.out.println("to:========"+to);
+				int minutes = (int) ((to - from)/(1000 * 60));
+				System.out.println("minutes:============"+minutes);
+				if(minutes<=10) {
+					returnMap.put("msg", "you checked case will be running in 10 minutes !");
+					returnMap.put("result", false);
+					return returnMap;
+				}
 			}
 			
 			dataBase = conds[0];
@@ -315,6 +330,11 @@ public class CaseSearchService {
 					+ "select distinct case_name from toDistributeCases)";
 			System.out.println("sql+========="+sql);
 			ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+			if(query.size()==0) {
+				returnMap.put("result", false);
+				returnMap.put("msg", "you checked case will be running !");
+				return returnMap;
+			}
 			
 			String nsql = "select case_name from "+conds[0]+" where 1=1 and case_name in ("+substring+") and case_name in ("
 					+ "select distinct case_name from toDistributeCases)";
@@ -355,20 +375,17 @@ public class CaseSearchService {
 						+query.get(i).get("customer")+"', "
 						+gid+");";
 				System.out.println("disSql:="+disSql);
-				//caseSearchDaoImpl.insert(jdbc, disSql);
+				caseSearchDaoImpl.insert(jdbc, disSql);
 				
 			}
-			String isql ="insert into n_rerunning_case_tbl(title,case_info,condition,server_info,s_case,f_case,author,datetime) values('"
-					+title +"','"+ids+"','"+condition+"','"+Servers.toString()+"','"+query.toString()+"','"+nquery.toString()+"','"+login+"',datetime('now', 'localtime'))";
-			System.err.println("isql+================="+isql);
-			//caseSearchDaoImpl.insert(jdbc, isql);
-			
 			returnMap.put("s_case", query.size());
 			returnMap.put("f_case", nquery.size());
-			if(query.size()==0) {
-				returnMap.put("result", false);
-				returnMap.put("msg", "you checked case will be running !");
-			}
+			
+			String isql ="insert into n_rerunning_case_tbl(title,case_info,condition,server_info,s_case,f_case,author,datetime) values('"
+					+title +"','"+ids+"','"+condition+"','"+Servers.toString()+"','"+query.toString()+"','"+nquery.toString()+"','"+login+"',datetime('now', 'localtime'))";
+			System.out.println("isql+================="+isql);
+			caseSearchDaoImpl.insert(jdbc, isql);
+			
 			returnMap.put("result", true);
 		}
 		

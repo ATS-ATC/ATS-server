@@ -35,7 +35,7 @@ $(document).keyup(function(event){
 				</div>
 				<div class="row">
 				  <div class="col-md-10 col-md-offset-1" style="padding-top:10px;">
-				  	<center><font size="3" style="font-weight:bold;">Automatic Daily Certifcation</font></center>
+				  	<center><font size="3" style="font-weight:bold;">SurePay Automation Case Management System</font></center>
 				  </div>
 				</div>
 				<div class="row">

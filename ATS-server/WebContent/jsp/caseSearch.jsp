@@ -205,19 +205,22 @@ $(function() {
 	
 	  
 	$("#btn_query").click(function(){
-		var oTable = new TableInit();
+		var condition = "";
+		condition = getCondition();
+		var oTable = new TableInit(condition);
 	    oTable.Init();
-    	$('#tb_departments').bootstrapTable('refresh',{
+		$('#tb_departments').bootstrapTable('refresh',{
     		url: 'searchCaseInfo.do',
     		queryParams: oTable.queryParams		
-    	});  
+    	});
     });
 	
 	
-	var TableInit = function (condition) {
+	var TableInit = function (outCondition) {
 	    var oTableInit = new Object();
 	    //初始化Table
 	    oTableInit.Init = function () {
+	    	
 	        $('#tb_departments').bootstrapTable({
 	            url: 'searchCaseInfo.do',   //请求后台的URL（*）
 	            method: 'get',                      //请求方式（*）
@@ -279,14 +282,14 @@ $(function() {
 	            ]
 	        });
 	    };
-
+	   	//var u = Math.random(1000)
 	    //得到查询的参数
 	    oTableInit.queryParams = function (params) {
 	        var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
 	            limit: params.limit,   //页面大小
 	            offset: params.offset,  //页码
 	            caseName:$("#txt_search_case_name").val(),
-	            condition: condition
+	            condition: outCondition
 	        };
 	        return temp;
 	    };
@@ -294,7 +297,7 @@ $(function() {
 	};
 
 
-	var ButtonInit = function () {
+	/* var ButtonInit = function () {
 	    var oInit = new Object();
 	    var postdata = {};
 
@@ -303,20 +306,20 @@ $(function() {
 	    };
 
 	    return oInit;
-	};
+	}; */
+	
 	$("#search").click(function() {
-		
-		var condition = getCondition();
-		
-		var oTable = new TableInit(condition);
-	    oTable.Init();
-	    
+		//$('#tb_departments').bootstrapTable('refreshOptions',{condition: outCondition}); 
+		var outCondition = getCondition();
+		var oTable = new TableInit(outCondition);
+		oTable.Init();
+	     
 	    var ser = $('#server').val();
 	    $("#ser").html(""+ser);
 	    $('#myModal').modal('show');
 		//confirm(condition, "The lib will run case according to this condition, please submit it carefully !");
 	});
-	
+	$("#myModal").on("hide.bs.modal",function(e){window.location.reload()});  
 	var ids="";
 	$("#Rerunning").click(function(){
 		var a  = $('#tb_departments').bootstrapTable('getSelections');
@@ -335,10 +338,10 @@ $(function() {
 		}
 		
     });
+	
 	$("#ids_confirm").click(function(){
 		alert(ids)
 		$('#delcfmModel').modal('hide');
-		$('#myModal').modal('hide');
 		var condition = getCondition();
 		//alert(ids);
 		$.get("rerunning.do", {
@@ -353,6 +356,7 @@ $(function() {
 				alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
 			}
 			$('#loaddingModel').modal('hide');
+			$('#myModal').modal('hide');
 		});
 		ids="";
 		$('#loaddingModel').modal('show');
@@ -390,25 +394,25 @@ $(function() {
 			                    </h4>
 			                </div>
 			                <!-- 折叠panel内容 -->
-			                <div class="collapse in panel-collapse" id="chanel_demo"><!-- 添加一个collapse类会默认隐藏折叠内容 -->
+			                <div class="collapse panel-collapse" id="chanel_demo"><!-- 添加一个collapse类会默认隐藏折叠内容 -->
 			                    <div class="panel-body">
 			                            <div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6">
-												<h4 style="display: inline;">data_source</h4>
-												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
-												    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
-														<c:forEach items="${data_source}" var="ds">
-															<option name='ds' value="${ds}">${ds}</option>
-														</c:forEach>
-													</c:if>
-												</select>
-											</div>
-											<div class="col-md-6">
-												<h4 style="display: inline;">release</h4>
+												<h4 style="display: inline;">Release</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${release!=null && fn:length(release) > 0}">
 														<c:forEach items="${release}" var="r">
 															<option name="r" value="${r}">${r}</option>
+														</c:forEach>
+													</c:if>
+												</select>
+											</div>
+											<div class="col-md-6 ">
+												<h4 style="display: inline;">Case Status</h4>
+												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+												    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
+														<c:forEach items="${case_status}" var="cs">
+															<option name="cs" value="${cs}">${cs}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -418,7 +422,7 @@ $(function() {
 										
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6">
-												<h4 style="display: inline;">customer</h4>
+												<h4 style="display: inline;">Customer</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${customer!=null && fn:length(customer) > 0}">
 														<c:forEach items="${customer}" var="c">
@@ -428,7 +432,7 @@ $(function() {
 												</select>
 											</div>
 											<div class="col-md-6">
-												<h4 style="display: inline;">base_data</h4>
+												<h4 style="display: inline;">Base Data</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${base_data!=null && fn:length(base_data) > 0}">
 														<c:forEach items="${base_data}" var="bd">
@@ -442,7 +446,7 @@ $(function() {
 										
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6">
-												<h4 style="display: inline;">mate</h4>
+												<h4 style="display: inline;">Mate</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${mate!=null && fn:length(mate) > 0}">
 														<c:forEach items="${mate}" var="m">
@@ -452,7 +456,7 @@ $(function() {
 												</select>
 											</div>
 											<div class="col-md-6">
-												<h4 style="display: inline;">lab_number</h4>
+												<h4 style="display: inline;">Lab Number</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${lab_number!=null && fn:length(lab_number) > 0}">
 														<c:forEach items="${lab_number}" var="ln">
@@ -466,7 +470,7 @@ $(function() {
 										
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6 ">
-												<h4 style="display: inline;">special_data</h4>
+												<h4 style="display: inline;">Special Data</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${special_data!=null && fn:length(special_data) > 0}">
 														<c:forEach items="${special_data}" var="sd">
@@ -476,7 +480,7 @@ $(function() {
 												</select>
 											</div>
 											<div class="col-md-6 " >
-												<h4 style="display: inline;">porting_release</h4>
+												<h4 style="display: inline;">Porting Release</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${porting_release!=null && fn:length(porting_release) > 0}">
 														<c:forEach items="${porting_release}" var="pr">
@@ -487,36 +491,36 @@ $(function() {
 											</div>
 											
 										</div>
-										<div class="row" style="margin-bottom: 10px ;margin-right: 10px;">
-											<div class="col-md-6 ">
-												<h4 style="display: inline;">case_status</h4>
-												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
-												    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
-														<c:forEach items="${case_status}" var="cs">
-															<option name="cs" value="${cs}">${cs}</option>
-														</c:forEach>
-													</c:if>
-												</select>
-											</div>
-											<div class="col-md-6 ">
-												<h4 style="display: inline;">Server:</h4>
-												<select id="server" name="server" title="--Please Select--" class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
-													<c:if test="${servers!=null && fn:length(servers) > 0}">
-														<%-- <% if(auth.equals("errorCases")){ %> --%>
-															<c:forEach items="${servers}" var="s">
-																<option name='s' value="${s}">${s}</option>
-															</c:forEach>
-														<%-- <%}%> --%>
-														</c:if>
-												</select>
-											</div>
-										</div>                  
 			                    </div>
 			                </div>              
 			            </div>
 			        </div>
             		</div>
             		<div class="col-md-12">
+            			<div class="row" style="margin-bottom: 10px;margin-right: 13px;">
+            				<div class="col-md-6">
+								<h4 style="display: inline;">Data Source</h4>
+								<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
+								    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
+										<c:forEach items="${data_source}" var="ds">
+											<option name='ds' value="${ds}">${ds}</option>
+										</c:forEach>
+									</c:if>
+								</select>
+							</div>
+            				<div class="col-md-6 ">
+								<h4 style="display: inline;">Lab Cluster:</h4>
+								<select id="server" name="server" title="--Please Select--" class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
+									<c:if test="${servers!=null && fn:length(servers) > 0}">
+										<%-- <% if(auth.equals("errorCases")){ %> --%>
+											<c:forEach items="${servers}" var="s">
+												<option name='s' value="${s}">${s}</option>
+											</c:forEach>
+										<%-- <%}%> --%>
+										</c:if>
+								</select>
+							</div>
+            			</div>
             			<div class="row" style="margin-bottom: 10px">
 							<div class="col-md-6">
 								<h4 style="display: inline;">Feature ID:</h4>
@@ -535,7 +539,7 @@ $(function() {
 					<div class="row">
 						<div class="col-md-12 column text-right">
 							<!-- <button type="button" class="btn btn-danger" id="add" style="margin-right: 10px;">update DB</button> -->
-							<button type="button" class="btn btn-primary " id="search" style="margin-right: 30px;">&nbsp;&nbsp;&nbsp;search&nbsp;&nbsp;&nbsp;</button>
+							<button type="button" class="btn btn-primary " id="search" style="margin-right: 30px;">&nbsp;&nbsp;&nbsp;Search&nbsp;&nbsp;&nbsp;</button>
 						</div>
 					</div>
 				</form>
@@ -567,11 +571,11 @@ $(function() {
 					                	<table id="tb_departments" class="table table-bordered table-striped" style="width:100%;height: 100%;"></table>
 				                	</div>
 				                </div>
-				                <h4>Please select case ,running in <span id="ser"></span></h4>
+				                <h4>Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
 				            </div>
 				            <div class="modal-footer">
 				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				                <button type="button" class="btn btn-primary" id="Rerunning">Rerunning</button>
+				                <button type="button" class="btn btn-primary" id="Rerunning">&nbsp;&nbsp;&nbsp;&nbsp;Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
 				            </div>
 				        </div>
 				        <!-- /.modal-content -->
