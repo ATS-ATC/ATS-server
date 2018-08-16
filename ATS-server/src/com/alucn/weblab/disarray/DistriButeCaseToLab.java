@@ -59,7 +59,15 @@ public class DistriButeCaseToLab {
 		}
 		return instance;
 	}
-	
+	/**
+	 * <pre>
+	 * Example: GetServerInfoFromDB();
+	 * Description: 从数据库里面获取当前server
+	 * Arguments: null
+	 * Return: JSONArray 返回所有数据库内的server
+	 * Variable：null
+	 * </pre>
+	 */
 	private JSONArray GetServerInfoFromDB() {
 
 		Connection connection = null;
@@ -350,12 +358,19 @@ public class DistriButeCaseToLab {
 
 		return releaseArray;
 	}
-	
+	/**
+	 * <pre>
+	 * Example: RemoveRelease(list);
+	 * Description: 从静态变量list的release内剔除传入的list内的release
+	 * Arguments: JSONArray 要剔除的release的集合
+	 * Return: JSONArray
+	 * Variable：specialRelease
+	 * </pre>
+	 */
 	private JSONArray RemoveRelease(JSONArray list){
 		
 	    JSONArray jsonList = new JSONArray();
-	    for(int i = 0; i < list.size(); i++)
-	    {
+	    for(int i = 0; i < list.size(); i++){
 	    	String temp = String.valueOf(list.get(i)).replaceAll("\\d\\w+$", "");
 	    	for(int j=0; j<specialRelease.split(",").length; j++){
 	    		if(temp.endsWith(specialRelease.split(",")[j])){
@@ -604,7 +619,15 @@ public class DistriButeCaseToLab {
 
 		}
 	}
-	
+	/**
+	 * <pre>
+	 * Example: getServers(infos)；
+	 * Description: 解析JSONArray转换成map类型的server
+	 * Arguments: infos 包含server信息的JSONArray
+	 * Return: Map<String,Set<Map<String,JSONObject>>>
+	 * Variable：none
+	 * </pre>
+	 */
 	public Map<String,Set<Map<String,JSONObject>>> getServers(JSONArray infos){
 		Map<String,Set<Map<String,JSONObject>>> setMap = new HashMap<String,Set<Map<String,JSONObject>>>();
 		for(int i=0; i<infos.size(); i++){
@@ -656,7 +679,17 @@ public class DistriButeCaseToLab {
 		}
 		return setMap;
 	}
-	
+	/**
+	 * <pre>
+	 * Example: 
+	 * Description: 这个方法是干啥的？
+	 * 				对比数据库中case的运行条件和现有内存中server的条件，看是否符合
+	 * 				如果符合，返回server名称
+	 * Arguments: 
+	 * Return: String
+	 * Variable：
+	 * </pre>
+	 */
 	public String gerServer(JSONArray Servers,String customer, String release, String porting_release,JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray){
 		String serverName = "";
 		String serverNameTmp = "";
@@ -723,8 +756,10 @@ public class DistriButeCaseToLab {
 	
 	public static void main(String[] args) throws Exception {
 		DistriButeCaseToLab test = new DistriButeCaseToLab();
-		JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
-		System.out.println(getServerInfoFromDB);
+		//JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
+		//System.out.println(getServerInfoFromDB);
+		JSONObject distributeCases = test.GetDistributeCases();
+		System.out.println(distributeCases);
 		/*JSONArray releaseList = test.GetReleaseList();
 		System.out.println(releaseList.toString());
 		String porting_release = "SP18.3,SP18.9+";
@@ -925,7 +960,15 @@ public class DistriButeCaseToLab {
 		}
 		return caseList;
 	}
-
+	/**
+	 * <pre>
+	 * Example: 
+	 * Description: 
+	 * Arguments: 
+	 * Return: JSONObject  {"availableCase":{}}
+	 * Variable：
+	 * </pre>
+	 */
 	public JSONObject GetDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
@@ -933,25 +976,32 @@ public class DistriButeCaseToLab {
 		JSONArray changedKvmList = updateKvmDB();
 		//找到曾经跑过，但是server信息更新了的case和没有跑过的case
 		UpdatedistributeDB(changedKvmList);
-
+		//从内存中读取server信息
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		JSONObject ServerMem;
 		int idleServerNum=0;
 		int caseListNull=0;
 		for (int i = 0; i < Servers.size(); i++) {
+			//判断是否是idle状态
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
 				ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = ServerMem.getString(Constant.SERVERNAME);
 
 				logger.debug("idle server: " + serverName);
+				//            idle server:      BJRMS21C
+				
 				JSONArray caseList = genCaseListToLab(serverName);
+				//select case_name from toDistributeCases where server like '%BJRMS21C%' or server like '%BJRMS21D%' or server like '%BJRMS21A%' or server like '%BJRMS21E%' or server like '%BJRMS21F%' or server like '%BJRMS21B%';
+				//System.err.println("genCaseListToLab caseList:======="+caseList);
+				//                    genCaseListToLab caseList:=======["78232/fs8169.json","78232/fs8170.json","78232/fs8171.json","78232/fs8175.json","78232/fs8177.json","78232/fs8180.json","78232/fs8182.json","78232/fs9146.json","78232/fs9170.json","78232/fs9171.json","78232/fs9175.json","78232/fs9180.json","78232/fs9183.json","78232/fs9185.json","78232/fs9188.json","78232/ft0201.json","78232/ft0202.json","78232/ft0608.json","78232/ft0611.json"]
 				if(caseList.size()==0){
 					caseListNull++;
 				}
 				JSONObject labInfo = new JSONObject();
 				labInfo.put("uuid", UUID.randomUUID().toString());
 				labInfo.put("case_list", caseList);
+				//更新数据库内的分发表(只有两个字段，case_name，server_name)用的replace into方法
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
@@ -973,6 +1023,7 @@ public class DistriButeCaseToLab {
 			counterUninsRS++;
 		}
 		AvailableCases.put("availableCase", Cases);
+		//System.err.println("GetDistributeCases AvailableCases:============"+AvailableCases);
 		return AvailableCases;
 	}
 	

@@ -35,6 +35,7 @@ public class DistributeCase implements Runnable{
 				logger.info("[DistributeCase...]");
 				//distribute case
 				//DistriButeCaseToLab disarrayCase = new DistriButeCaseToLab();
+				//单例模式DistriButeCaseToLab.getDistriButeCaseToLab()用于创建唯一对象
                 JSONObject caseList = DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
 				if(0 != caseList.size()){
 					logger.info("[case  list :]"+caseList.toString());
@@ -72,9 +73,28 @@ public class DistributeCase implements Runnable{
 			}
 		}
 	}
-	
+	/**
+	 * <pre>
+	 * Example: 
+	 * Description: 应该是分发case到不同的server上去，具体细节还需要再研究下
+	 * Arguments: caseList 需要分发的case集合(包含server信息吧？打印一个看看)
+	 * Return: void
+	 * Variable：
+	 * 		queueOfClient 是保存长连接的静态变量么？
+	 * 		clientACK 好像是避免重复运行case的
+	 * </pre>
+	 */
     public void distributeCase(ConcurrentHashMap<String, String> caseList) throws IOException, InterruptedException{
-
+    	//System.err.println("distributeCase caseList:========================="+caseList);
+    	//distributeCase caseList:=========================
+    	/*{
+    		BJRMS21B={"uuid":"781da79d-90b6-4552-85a3-0656dc7338b1","case_list":[]}, 
+    		BJRMS21A={"uuid":"c219bdbf-8f21-4ac3-89d2-717721d093ba","case_list":["732784/fs5422.json","732784/fs5423.json","732784/fs5424.json","732784/fs5425.json","732784/fs5426.json","732784/fs5427.json"]}, 
+    		BJRMS21F={"uuid":"bea82afb-76ee-4f21-8184-24462d464f31","case_list":[]}, 
+    		BJRMS21E={"uuid":"9dcbbec8-36d7-4378-bb3e-83ddc7b7885e","case_list":[]}, 
+    		BJRMS21D={"uuid":"404cd7ad-9196-4b9f-a4df-279261ad2cbf","case_list":[]}, 
+    		BJRMS21C={"uuid":"1f7da1b8-8c51-42b2-aca5-daa266792c20","case_list":["731590/fr0611.json"]}
+    	}*/
         while(true){
             if(caseList.size() == 0)
                 return;
@@ -82,16 +102,20 @@ public class DistributeCase implements Runnable{
             @SuppressWarnings("rawtypes")
             Iterator it = caseList.keySet().iterator();  
             while(it.hasNext()){
+            	//server名称例如：BJRMS21B
                 String key = it.next().toString();
                 JSONArray case_array = JSONObject.fromObject(caseList.get(key)).getJSONArray(Constant.CASELIST);
                 String value = caseList.get(key);
+                //检测这个server是否有长连接
                 if(CaseConfigurationCache.queueOfClient.get(key) != null){
+                	//获取内存中的server信息
                     JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
                     for(int i=0; i<currKeyStatus.size();i++){
                         JSONObject tmpJsonObject = (JSONObject) currKeyStatus.get(i);
                         String serverName = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
                         String status = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
                         if(serverName.equals(key)){
+                        	//判断server状态，如果是Dead就移除
                             if(status.equals(Constant.CASESTATUSDEAD)){
                                 caseList.remove(key);
                             }else{
