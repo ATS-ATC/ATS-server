@@ -247,7 +247,8 @@ var TableInit = function () {
                 title: 'PortingRelease'
             }, {
                 field: 'jira_id',
-                title: 'JiraId'
+                title: 'JiraId',
+                visible: false //默认不显示
             }
             
             ]

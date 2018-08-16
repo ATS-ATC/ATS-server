@@ -304,7 +304,7 @@ public class CaseSearchService {
 				return returnMap;
 			}
 			
-			String csql = "select * from n_rerunning_case_tbl where 1=1 and case_info ='"+ids+"' order by datetime desc";
+			String csql = "select * from n_rerunning_case_tbl where stateflag='0' and case_info ='"+ids+"' order by datetime desc";
 			System.out.println("csql:============="+csql);
 			ArrayList<HashMap<String,Object>> cquery = caseSearchDaoImpl.query(jdbc, csql);
 			if(cquery.size()>0) {
@@ -390,5 +390,31 @@ public class CaseSearchService {
 		}
 		
 		return returnMap;
+	}
+	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType) throws Exception {
+		String sql ="select int_id,title,condition,author,datetime, case when s_case=='[]' then '0' else '1' end s_case, case when f_case =='[]' then '0' else '1' end f_case  from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
+		/*if(auth=="all") {
+			
+		}*/
+		if(retrunType=="rows") {
+			if(""!=param.get("offset")&& ""!=param.get("limit")){
+				sql +=" limit "+param.get("offset")+","+param.get("limit");
+			}
+		}
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+		if(retrunType=="rows") {
+			return query;
+		}
+		if(retrunType=="total") {
+			return query.size()+"";
+		}
+		return "";//"Total record:"+query.size();
+	}
+	public ArrayList<HashMap<String, Object>> searchCaseRunLogInfoById(Map<String, Object> param) throws Exception {
+		String sql ="select *  from n_rerunning_case_tbl where stateflag='0' and int_id= "+param.get("int_id");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+		return query;
 	}
 }

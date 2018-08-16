@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.service.CaseSearchService;
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
 
 import net.sf.json.JSONArray;
 
@@ -70,6 +71,36 @@ public class CaseSearchController {
 		returnMap.put("total",(String)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"total"));
 		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		return returnMap;
+	}
+	@RequestMapping(path = "/searchCaseRunLog")
+	@ResponseBody
+	public Map<String,Object> searchCaseRunLog(HttpSession session,HttpServletRequest request ) throws Exception{
+		//System.err.println(condition);
+		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
+		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
+		
+		Map<String,Object> returnMap = new HashMap<String,Object>();
+		Map<String,Object> paramMap = new HashMap<String,Object>();
+		paramMap.put("limit", limit);
+		paramMap.put("offset", offset);
+		
+		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total"));
+		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows"));
+		return returnMap;
+	}
+	@RequestMapping(path = "/searchCaseRunLogInfo")
+	public String searchCaseRunLogInfo(Model model,HttpServletRequest request ) throws Exception{
+		String int_id = request.getParameter("int_id")==null?"":request.getParameter("int_id").toString().trim();
+		//System.err.println(int_id);
+		if(int_id==null &&"".equals(int_id)) {
+			return "caseSearch";
+		}
+		Map<String,Object> returnMap = new HashMap<String,Object>();
+		Map<String,Object> paramMap = new HashMap<String,Object>();
+		paramMap.put("int_id", int_id);
+		ArrayList<HashMap<String, Object>> searchCaseRunLogInfoById = caseSearchService.searchCaseRunLogInfoById(paramMap);
+		model.addAttribute("searchCaseRunLogInfoById",searchCaseRunLogInfoById);
+		return "caseSearchInfo";
 	}
 	@RequestMapping(path = "/rerunning")
 	@ResponseBody

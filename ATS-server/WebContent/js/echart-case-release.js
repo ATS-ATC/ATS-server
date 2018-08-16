@@ -6,6 +6,16 @@ myReleaseChart.setOption({
           text: 'Case count group by release'
       },
       tooltip: {},
+      toolbox: {
+          show : true,
+          feature : {
+              mark : {show: true},
+              dataView : {show: true, readOnly: false},
+              magicType: {show: true, type: ['line', 'bar']},
+              restore : {show: true},
+              saveAsImage : {show: true}
+          }
+      },
       legend: {
           data: ['Successful Count','Fail Count'],
       	  selected: {
@@ -29,7 +39,18 @@ myReleaseChart.setOption({
               }
           },
           type: 'bar',
-          data: []
+          data: [],
+          markLine : {
+              data : [
+                  {type : 'average', name : 'average'}
+              ]
+          }/*,
+          markPoint : {
+              data : [
+                  {type : 'max', name: 'max'},
+                  {type : 'min', name: 'min'}
+              ]
+          }*/
       },{
           name: 'Successful Count',
           itemStyle:{
@@ -44,7 +65,18 @@ myReleaseChart.setOption({
               }
           },
           type: 'bar',
-          data: []
+          data: [],
+          markLine : {
+              data : [
+                  {type : 'average', name : 'average'}
+              ]
+          }/*,
+          markPoint : {
+              data : [
+                  {type : 'max', name: 'max'},
+                  {type : 'min', name: 'min'}
+              ]
+          }*/
       }]
   });
 

@@ -22,7 +22,7 @@ public class MainService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select a.customer,cc,ff from (\n" + 
-				"select customer,count(1) cc from DftTag where case_status='S' group by customer\n" + 
+				"select customer,count(1) cc from DftTag where case_status='S' group by customer order by cc asc\n" + 
 				")a\n" + 
 				"join (\n" + 
 				"select customer,count(1) ff from DftTag where case_status='F' group by customer\n" + 
@@ -34,7 +34,7 @@ public class MainService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select a.release,cc,ff from (\n" + 
-				"select release,count(1) cc from DftTag where case_status='S' group by release\n" + 
+				"select release,count(1) cc from DftTag where case_status='S' group by release order by release asc\n" + 
 				")a \n" + 
 				"join (\n" + 
 				"select release,count(1) ff from DftTag where case_status='F' group by release\n" + 

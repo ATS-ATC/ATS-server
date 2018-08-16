@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
@@ -21,7 +20,7 @@
 <title>SPA and RTDB</title>
 <style type="text/css">
 .ln {
-margin-right: 10px;
+	margin-right: 10px;
 }
 .dropdown-toggle{
 	padding-top: 3px;
@@ -31,17 +30,92 @@ margin-right: 10px;
     display: none;
 }
 .fixed-table-container{
-	height: 398px; padding-bottom: 41px;
+	height:auto; padding-bottom: 41px;
+}
+.fixed-table-body{
+	height:auto;
 }
 </style>
 <script>
 $(function() {
-	
+	//得到查询的参数
+	queryParams = function (params) {
+	    var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+	        limit: params.limit,   //页面大小
+	        offset: params.offset  //页码
+	    };
+	    return temp;
+	};
+	$('#runLog').bootstrapTable({
+        url: 'searchCaseRunLog.do',   //请求后台的URL（*）
+        method: 'get',                      //请求方式（*）
+        toolbar: '#toolbar',                //工具按钮用哪个容器
+        striped: true,                      //是否显示行间隔色
+        cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+        pagination: true,                   //是否显示分页（*）
+        sortable: false,                     //是否启用排序
+        sortOrder: "asc",                   //排序方式
+        queryParams: queryParams,//传递参数（*）
+        sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+        pageNumber:1,                       //初始化加载第一页，默认第一页
+        pageSize: 10,                       //每页的记录行数（*）
+        pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+        //search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+        strictSearch: true,
+        showColumns: true,                  //是否显示所有的列
+        showRefresh: true,                  //是否显示刷新按钮
+        minimumCountColumns: 2,             //最少允许的列数
+        clickToSelect: true,                //是否启用点击选中行
+        //height: 500,                       //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+        uniqueId: "case_name",               //每一行的唯一标识，一般为主键列
+        showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+        cardView: false,                    //是否显示详细视图
+        detailView: false,                   //是否显示父子表
+        rowStyle: function (row, index) {
+            //这里有5个取值代表5中颜色['active', 'success', 'info', 'warning', 'danger'];
+            var strclass = "";
+            if (row.s_case == '1') {
+            	if(row.f_case == '1'){
+	                strclass = 'warning';//还有一个active
+            	}else if (row.f_case == "0"){
+            		strclass = 'success';//还有一个active
+            	}
+            } else if (row.s_case == "0") {
+            	strclass = 'danger';//还有一个active
+            } else{
+            	return {}
+            }
+            return { classes: strclass }
+        },
+        columns: [ {
+            field: 'int_id',
+            title: 'int_id'
+        }, {
+            field: 'title',
+            title: 'title',
+            formatter:function(value,row,index){
+            	var a = '<a href="./searchCaseRunLogInfo.do?int_id='+row.int_id+'" >'+value+'</a>';
+            	return a;
+            }
+        }, {
+            field: 'condition',
+            title: 'condition'
+        }, {
+            field: 'author',
+            title: 'author'
+        }, {
+            field: 'datetime',
+            title: 'datetime'
+        }
+        ]
+    });
+	//var u = Math.random(1000)
 	
 	
 	var conform = false;
 	
 	function getCondition (){
+		var condition = "";
 		var ds = $('option[name="ds"]:checked');
 		var r = $('option[name="r"]:checked');
 		var c = $('option[name="c"]:checked');
@@ -64,7 +138,6 @@ $(function() {
 			});
 			return;
 		}
-		var condition = "";
 		if (ds.length == 0 && r.length == 0 && c.length == 0 && bd.length == 0 && m.length == 0
 				&& ln.length == 0 && sd.length == 0	&& pr.length == 0 && cs.length == 0 && fi == "" && author == "") {
 			$("#reminder").dialog({
@@ -311,6 +384,9 @@ $(function() {
 	$("#search").click(function() {
 		//$('#tb_departments').bootstrapTable('refreshOptions',{condition: outCondition}); 
 		var outCondition = getCondition();
+		if(outCondition==null){
+			return false;
+		}
 		var oTable = new TableInit(outCondition);
 		oTable.Init();
 	     
@@ -499,7 +575,7 @@ $(function() {
             		<div class="col-md-12">
             			<div class="row" style="margin-bottom: 10px;margin-right: 13px;">
             				<div class="col-md-6">
-								<h4 style="display: inline;">Data Source</h4>
+								<h4 style="display: inline;">Data Source:</h4>
 								<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
 								    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
 										<c:forEach items="${data_source}" var="ds">
@@ -544,6 +620,12 @@ $(function() {
 					</div>
 				</form>
             	</div>
+            	<br>
+            	<div class="row" style="padding-bottom: 5px;padding-top:5px;background-color: #E0E0EB">
+            	</div>
+            	<div class="row" style="margin-left: 10px;margin-right: 13px;margin-top: 10px;">
+					<table id="runLog" ></table>
+				</div>
             	<div id="myModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog">
 				    <div class="modal-dialog modal-lg" role="document">
 				        <div class="modal-content">
@@ -595,7 +677,8 @@ $(function() {
 		        <h4 class="modal-title">attention</h4>  
 		      </div>  
 		      <div class="modal-body">  
-		        <p>Are you sure you want to rerunning case ?</p>
+		      	<p>The lib will run case according to this condition, please submit it carefully !</p>
+		        <p>You are sure to rerun these cases ?</p>
 		      </div>  
 		      <div class="modal-footer">  
 		         <button type="button" class="btn btn-default" data-dismiss="modal">cancel</button>  
@@ -626,5 +709,6 @@ $(function() {
 		    </div><!-- /.modal-content -->  
 		  </div><!-- /.modal-dialog -->  
 		</div><!-- /.modal -->  
+		
 </body>
 </html>

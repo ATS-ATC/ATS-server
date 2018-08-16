@@ -13,6 +13,8 @@
 <script src="./js/dark.js"></script>
 <script src="./js/macarons.js"></script>
 <!-- <meta http-equiv="refresh" content="5*60"> -->
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-customer.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-release.js"></script>
 <script type="text/javascript">
 	setTimeout("self.location.reload();",30000);
 	$(document).ready(function(){
@@ -75,13 +77,13 @@
 	    	                        return colorList[params.dataIndex]
 	    	                    },
 	    	                    label: {
-	    	                        show: true,
+	    	                        show: true, 
 	    	                        position: 'right',
 	    	                        formatter: '{b}\n{c}'
 	    	                    }
 	    	                }
 	    	            },
-	    	            data: [${P},${PP},${O},${R},${I},${F},${S},${T}]
+	    	            data: [${P},${PP},${O},${R},${I},${F},${S},${T}] 
 	    	        }
 	    	    ]
 	    	};
@@ -90,8 +92,7 @@
 	    myChart.setOption(option);
 	 });
 </script>
-<script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-customer.js"></script>
-<script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-release.js"></script>
+
 <title>Home</title>
 </head>
 <body style="background-color:#ECEFF3;padding-top:27px;">
