@@ -227,7 +227,7 @@
 					</iframe>
 				</div>
 				<div class="row">height:597px; -->
-					<iframe  src="jsp/welcome.jsp" id="main-info" style="width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
+					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" style="width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
 <!-- 					<iframe  src="jsp/welcome.jsp" id="main-info" style="height:638px;width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" > -->
 					</iframe>
 				<!-- </div> -->

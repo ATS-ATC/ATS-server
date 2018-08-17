@@ -12,11 +12,6 @@ import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.model.User;
 import com.alucn.weblab.service.LoginService;
 
-/**
- * @author haiqiw
- * 2017��6��2�� ����4:09:28
- * desc: user login
- */
 @Controller
 //@RequestMapping("/login")
 public class LoginController {

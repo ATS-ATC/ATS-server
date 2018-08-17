@@ -455,6 +455,7 @@ $(function() {
 		String auth = session.getAttribute("auth").toString();
 %>
 			<div class="panel panel-default" style="margin-top: 10px;margin-left: 10px;margin-right: 10px;">
+			<font color="while"></font>
 				<div class="panel-body" style="padding-top: 0px;">
             	<div id="reminder"></div>
             	<div class="row">
@@ -472,40 +473,14 @@ $(function() {
 			                <!-- 折叠panel内容 -->
 			                <div class="collapse panel-collapse" id="chanel_demo"><!-- 添加一个collapse类会默认隐藏折叠内容 -->
 			                    <div class="panel-body">
-			                            <div class="row" style="margin-bottom: 10px;margin-right: 10px;">
-											<div class="col-md-6">
-												<h4 style="display: inline;">Release</h4>
-												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
-												    <c:if test="${release!=null && fn:length(release) > 0}">
-														<c:forEach items="${release}" var="r">
-															<option name="r" value="${r}">${r}</option>
-														</c:forEach>
-													</c:if>
-												</select>
-											</div>
-											<div class="col-md-6 ">
-												<h4 style="display: inline;">Case Status</h4>
-												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
-												    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
-														<c:forEach items="${case_status}" var="cs">
-															<option name="cs" value="${cs}">${cs}</option>
-														</c:forEach>
-													</c:if>
-												</select>
-											</div>
-										</div>
+			                            
 										
 										
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6">
-												<h4 style="display: inline;">Customer</h4>
-												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
-												    <c:if test="${customer!=null && fn:length(customer) > 0}">
-														<c:forEach items="${customer}" var="c">
-															<option name="c" value="${c}">${c}</option>
-														</c:forEach>
-													</c:if>
-												</select>
+												<h4 style="display: inline;">Author</h4>
+												<input class="nav navbar-nav navbar-right" type="text" name="author" id="author" value=""
+												style="padding-bottom: 4px; padding-top: 4px;width: 219px;border-radius:4px;">
 											</div>
 											<div class="col-md-6">
 												<h4 style="display: inline;">Base Data</h4>
@@ -573,42 +548,79 @@ $(function() {
 			        </div>
             		</div>
             		<div class="col-md-12">
-            			<div class="row" style="margin-bottom: 10px;margin-right: 13px;">
-            				<div class="col-md-6">
-								<h4 style="display: inline;">Data Source:</h4>
-								<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
-								    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
-										<c:forEach items="${data_source}" var="ds">
-											<option name='ds' value="${ds}">${ds}</option>
-										</c:forEach>
-									</c:if>
-								</select>
-							</div>
-            				<div class="col-md-6 ">
-								<h4 style="display: inline;">Lab Cluster:</h4>
-								<select id="server" name="server" title="--Please Select--" class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
-									<c:if test="${servers!=null && fn:length(servers) > 0}">
-										<%-- <% if(auth.equals("errorCases")){ %> --%>
-											<c:forEach items="${servers}" var="s">
-												<option name='s' value="${s}">${s}</option>
+            			<div class="row" style="margin-bottom: 10px;">
+							<div class="col-md-4">
+								<div style="margin-right: 13px;">
+									<h4 style="display: inline;">Release</h4>
+									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+									    <c:if test="${release!=null && fn:length(release) > 0}">
+											<c:forEach items="${release}" var="r">
+												<option name="r" value="${r}">${r}</option>
 											</c:forEach>
-										<%-- <%}%> --%>
 										</c:if>
-								</select>
+									</select>
+								</div>
 							</div>
-            			</div>
-            			<div class="row" style="margin-bottom: 10px">
-							<div class="col-md-6">
-								<h4 style="display: inline;">Feature ID:</h4>
-								<input class="nav navbar-nav navbar-right" type="text" name="featureid" id="featureid" value=""
-									style="padding-bottom: 4px; padding-top: 4px;width: 219px;margin-right: 0.1px;border-radius:4px;">
+							<div class="col-md-4">
+								<div style="margin-right: 13px;">
+									<h4 style="display: inline;">Case Status</h4>
+									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+									    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
+											<c:forEach items="${case_status}" var="cs">
+												<option name="cs" value="${cs}">${cs}</option>
+											</c:forEach>
+										</c:if>
+									</select>
+								</div>
 							</div>
-							<div class="col-md-6">
-								<h4 style="display: inline;">Author:</h4>
-								<input class="nav navbar-nav navbar-right" type="text" name="author" id="author" value=""
-								style="padding-bottom: 4px; padding-top: 4px;width: 219px;margin-right: 10px;border-radius:4px;">
+							<div class="col-md-4">
+									<div style="margin-right: 28px;">
+									<h4 style="display: inline;">Customer</h4>
+									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+									    <c:if test="${customer!=null && fn:length(customer) > 0}">
+											<c:forEach items="${customer}" var="c">
+												<option name="c" value="${c}">${c}</option>
+											</c:forEach>
+										</c:if>
+									</select>
+									</div>
 							</div>
 						</div>
+            			<div class="row" style="margin-bottom: 10px">
+            				<div class="col-md-4">
+	            				<div style="margin-right: 13px;">
+									<h4 style="display: inline;">Data Source</h4>
+									<select class="selectpicker nav navbar-nav navbar-right" title="--Please Select--" multiple data-live-search="true" data-max-options="1" >
+									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
+											<c:forEach items="${data_source}" var="ds">
+												<option name='ds' value="${ds}">${ds}</option>
+											</c:forEach>
+										</c:if>
+									</select>
+								</div>
+							</div>
+            				<div class="col-md-4">
+            					<div style="margin-right: 13px;">
+									<h4 style="display: inline;">Lab Cluster</h4>
+									<select id="server" name="server" title="--Please Select--" class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
+										<c:if test="${servers!=null && fn:length(servers) > 0}">
+											<%-- <% if(auth.equals("errorCases")){ %> --%>
+												<c:forEach items="${servers}" var="s">
+													<option name='s' value="${s}">${s}</option>
+												</c:forEach>
+											<%-- <%}%> --%>
+											</c:if>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div style="margin-right: 13px;">
+									<h4 style="display: inline;">Feature ID</h4>
+									<input class="nav navbar-nav navbar-right" type="text" name="featureid" id="featureid" value=""
+										style="padding-bottom: 2px; padding-top: 2px;width: 219px;margin-right: 0.1px;border-radius:4px;">
+								</div>
+							</div>
+            			</div>
             		</div>
             		<br/><br/>
 					

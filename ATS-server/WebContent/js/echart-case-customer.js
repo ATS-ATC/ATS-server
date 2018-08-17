@@ -3,7 +3,7 @@ var myFootChart = echarts.init(document.getElementById('foot'));
   // 显示标题，图例和空的坐标轴
 myFootChart.setOption({
       title: {
-          text: 'Case count group by customer'
+          text: 'Case Distribution Per Customer'
       },
       tooltip: {
     	  /*feature: {
@@ -26,7 +26,7 @@ myFootChart.setOption({
       legend: {
           data: ['Successful Count','Fail Count'],
           selected: {
-        		'Fail Count' : false
+        		'Fail Count' : true
         	  }
       },
       xAxis: {
@@ -105,7 +105,11 @@ myFootChart.setOption({
           if (result) {
               for (var i = 0; i < result.length; i++) {
                   //alert(result[i].name);
-                  names.push(result[i].customer);    //挨个取出类别并填入类别数组
+            	  if(result[i].customer=="ALL"){
+            		  names.push("Roadmap");    //挨个取出类别并填入类别数组
+            	  }else{
+            		  names.push(result[i].customer);    //挨个取出类别并填入类别数组
+            	  }
                   nums.push(result[i].cc);    //挨个取出销量并填入销量数组
                   fnums.push(result[i].ff);
               }

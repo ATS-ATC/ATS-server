@@ -382,7 +382,15 @@ public class DistriButeCaseToLab {
 	    
 	    return jsonList;
 	}
-
+	/**
+	 * <pre>
+	 * Example: 
+	 * Description: 
+	 * Arguments: 
+	 * Return: void
+	 * Variable：
+	 * </pre>
+	 */
 	private void UpdateCaseStatusDB(JSONArray caseList) {
 		Connection connection = null;
 		Statement state = null;
@@ -892,7 +900,16 @@ public class DistriButeCaseToLab {
 
 		}
 	}
-
+	/**
+	 * <pre>
+	 * Example: genCaseListToLab('BJRMS21C');
+	 * Description: 获取一定数量的case，从将要运行表（toDistributeCases）内，不在表（DistributedCaseTbl）内
+	 * 		规则是group_id相同的一组，数量不大于配置文件中最大case数
+	 * Arguments: ServerName server名称
+	 * Return: JSONArray
+	 * Variable：
+	 * </pre>
+	 */
 	private JSONArray genCaseListToLab(String ServerName) {
 		JSONArray caseList = new JSONArray();
 
@@ -922,6 +939,7 @@ public class DistriButeCaseToLab {
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {
+				//↓↓↓↓↓↓↓↓↓↓↓只获取一组group_id 相同的一组case↓↓↓↓↓↓↓↓↓↓↓
 				new_group = result.getInt("group_id");
 				if (new_group != old_group) {
 					if (old_group != -1) {
@@ -929,6 +947,7 @@ public class DistriButeCaseToLab {
 					}
 					old_group = new_group;
 				}
+				//↑↑↑↑↑↑↑↑↑↑↑只获取一组group_id 相同的一组case↑↑↑↑↑↑↑↑↑↑↑
 				caseList.add(result.getString("case_name"));
 				CaseCount++;
 				if (CaseCount >= Integer.valueOf(ConfigProperites.getInstance().getMaxCaseSizeForOneLab())) {
@@ -962,9 +981,9 @@ public class DistriButeCaseToLab {
 	}
 	/**
 	 * <pre>
-	 * Example: 
-	 * Description: 
-	 * Arguments: 
+	 * Example: GetDistributeCases();
+	 * Description:这个方法存在的意义？
+	 * Arguments: none
 	 * Return: JSONObject  {"availableCase":{}}
 	 * Variable：
 	 * </pre>

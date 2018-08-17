@@ -3,6 +3,8 @@ package com.alucn.weblab.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.alucn.casemanager.server.common.constant.Constant;
@@ -81,5 +83,16 @@ public class MainService {
 
 	public void setMainDaoImpl(MainDaoImpl mainDaoImpl) {
 		this.mainDaoImpl = mainDaoImpl;
+	}
+	public ArrayList<HashMap<String, Object>> getWelcomeInfo(String useName) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql ="select count(a.case_name) allCase,count(b.case_name) fCase,count(c.case_name) sCase\n" + 
+				"from DftTag a\n" + 
+				"left join DftTag b on a.case_name=b.case_name and b.case_status='F'\n" + 
+				"left join DftTag c on a.case_name=c.case_name and c.case_status='S'\n" + 
+				"where a.author='"+useName+"'";
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		return result;
 	}
 }

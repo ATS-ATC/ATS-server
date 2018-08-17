@@ -3,7 +3,7 @@ var myReleaseChart = echarts.init(document.getElementById('release'));
   // 显示标题，图例和空的坐标轴
 myReleaseChart.setOption({
       title: {
-          text: 'Case count group by release'
+          text: 'Case Distribution Per Release'
       },
       tooltip: {},
       toolbox: {
