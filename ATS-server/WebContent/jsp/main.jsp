@@ -24,37 +24,58 @@
 		//alert(head)
 		//alert(height)
 		document.getElementById('main-info').style.height=height-head+'px';
-		document.getElementById('fill').style.height=height-316+32+'px';
+		document.getElementById('fill').style.height=height-316+'px';
 		
 		$("#config-manage").click(function(){
 			var active = $("#config-info").is(".in");
 			if(active){
-				$("#fill").css("height",height-284+'px');
+				$("#fill").css("height",height-316+'px');
 				//document.getElementById('fill').style.height=height-316+32+'px';
 			}else{
 				//document.getElementById('fill').style.height=height-316-32+'px';
-				$("#fill").css("height",height-345+'px');
+				$("#fill").css("height",height-377+'px');
 			}
 		}); 
 	});
 	function menuClick(menuUrl) {
-		$("#main-info").attr('src',menuUrl); 
+		$("#main-info").attr('src',menuUrl+"?time="+new Date().getTime());
+		/* var flag = $("#home_hidden").attr("hidden");
+		alert(flag!=null)
+		if(flag!=null){
+			$("#home_hidden").attr("hidden","hidden");
+			$("#main-info").attr('src',menuUrl); 
+		}else{
+			$("#main-info").attr('src',menuUrl); 
+			$('#left-menu').hide();
+			$("#home_hidden").removeAttr('hidden');
+		} */
 	}
 	
 	$(document).ready(function () {
 		var auth ="<%=session.getAttribute("auth").toString()%>";
+		//管理员用户可以访问任意菜单：
 		if("all"==auth){
 			
-		}else if("errorCases"==auth){
+		}
+		//普通用户不能访问的菜单：
+		else if("errorCases"==auth){
+			$("#case-search").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#ats-servers").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#spa-and-rtdb").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#config-manage").attr('onclick', "alert('The current user does not have access!');return false;");
-		}else{
+			$("#config-manage_h").attr('onclick', "alert('The current user does not have access!');return false;");
+		}
+		//非正常登陆的所有菜单都不可以访问：
+		else{
+			$("#case-search").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#ats-servers").attr('onclick', "alert('The current user does not have access!');return false;");
+			$("#ats-servers_h").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#spa-and-rtdb").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#config-manage").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#case-status").attr('onclick', "alert('The current user does not have access!');return false;");
+			$("#case-status_h").attr('onclick', "alert('The current user does not have access!');return false;");
 			$("#error-cases").attr('onclick', "alert('The current user does not have access!');return false;");
+			$("#error-cases_h").attr('onclick', "alert('The current user does not have access!');return false;");
 		}
 		
 		$('ul.nav > li').click(function (e) {
@@ -66,12 +87,25 @@
 		$('#hide_left_menu').click(function () {
 			//alert(1)
 			$('#left-menu').hide();
+			$("#home_hidden").removeAttr('hidden');
 			$('#right-info').attr('class','col-md-12');
+			$('#home_right').css('padding-left','30px');
 			$('#main-info').attr('src', $('#main-info').attr('src'));
+			var height=document.documentElement.clientHeight;
+			document.getElementById('fill_hidden').style.height=height-303+'px';
 		});
 		$('#show_left_menu').click(function(){
 			$('#left-menu').show();
+			$('#home_hidden').attr('hidden','hidden');
 			$('#right-info').attr('class','col-md-10');
+			$('#home_right').css('padding-left','0');
+			$('#main-info').attr('src', $('#main-info').attr('src'));
+		});
+		$('#home_hidden').click(function(){
+			$('#left-menu').show();
+			$('#home_hidden').attr('hidden','hidden');
+			$('#right-info').attr('class','col-md-10');
+			$('#home_right').css('padding-left','0');
 			$('#main-info').attr('src', $('#main-info').attr('src'));
 		});
 	});
@@ -147,6 +181,14 @@
 								</center>
 							</a>
 						<ul class="nav nav-pills nav-stacked">
+						  	<li id="home" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcomeInfo.do')">
+							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:132px;">
+										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+										&nbsp;&nbsp;&nbsp;&nbsp;Home
+									</button>
+								</a>
+							</li>
 						  	<li id="case-status" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getStatistics.do')">
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:103px;">
@@ -221,16 +263,71 @@
 					</div>
 			</div>
 			<div id="right-info" class="col-md-10" style="padding-left: 0px; padding-right: 0px;background-color:#ECEFF3" ><!-- style="height:500px" -->
-				<!-- <div class="row">
-					<iframe style="height:28px;width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
-						123
+				<div id="home_hidden" style="background-color: rgb(66,81,95);position: absolute;"hidden="hidden">
+					<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+						<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+							<span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+						</button>
+					</center>
+					<ul class="nav nav-pills nav-stacked">
+						  	<li id="home_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcomeInfo.do')">
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+						  	<li id="case-status_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getStatistics.do')">
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+						  	<li id="case-search_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/searchInfo.do')">
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+							<li id="ats-servers_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getServerInfo.do')"  >
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-object-align-bottom" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+							<li id="error-cases_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getErrorCaseInfo.do')" >
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+							
+							<li id="config-manage_h" role="presentation" ><%-- onclick="menuClick('${pageContext.request.contextPath}/config.do')" --%>
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+						    
+							<li id="releases_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getReleases.do')">
+							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
+									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+										<span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+									</button>
+								</center>
+							</li>
+						  <li id="fill_hidden" role="presentation" ></li>
+						</ul>
+				</div>
+				<div id="home_right">
+					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" name="showList" style="width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
 					</iframe>
 				</div>
-				<div class="row">height:597px; -->
-					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" style="width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
-<!-- 					<iframe  src="jsp/welcome.jsp" id="main-info" style="height:638px;width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" > -->
-					</iframe>
-				<!-- </div> -->
 			</div>
 		</div>
 	</div>

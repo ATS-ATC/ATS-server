@@ -24,6 +24,9 @@
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="controller/*.class" />
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="service/*.class" />
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="dao/impl/*.class" />
+    
+    <context:component-scan base-package="com.alucn.weblab.utils" />
+	<import resource="ActiveMQ.xml" />
 
 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/jsp/"></property>

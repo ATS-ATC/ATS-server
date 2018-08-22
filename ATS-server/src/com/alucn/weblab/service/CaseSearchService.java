@@ -5,10 +5,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +32,7 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.dao.impl.CaseSearchDaoImpl;
+import com.alucn.weblab.model.Case;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -417,4 +424,56 @@ public class CaseSearchService {
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
+	/*public ArrayList searchCaseRunLogInfoById2(Map<String, Object> param) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc =  new JdbcUtil(Constant.DATASOURCE, dbFile);
+		Connection conn =  jdbc.getConnection();
+		String sql ="select *  from n_rerunning_case_tbl where stateflag='0' and int_id= "+param.get("int_id");
+		PreparedStatement ps = conn.prepareStatement(sql);
+		ResultSet resultSet = ps.executeQuery();
+		ps.close();
+		ArrayList populate = Populate(resultSet,Case.class);
+		return populate;
+	}
+	*//**
+     * 将结果集转换成实体对象集合
+     * @param res 结果集
+     * @param c 实体对象映射类
+     * @return
+    * @throws SQLException
+    * @throws IllegalAccessException
+    * @throws InstantiationException
+     *//*
+    public static ArrayList Populate(ResultSet rs,Class cc) throws SQLException, InstantiationException, IllegalAccessException{
+        
+        //结果集 中列的名称和类型的信息
+        ResultSetMetaData rsm = rs.getMetaData();
+        int colNumber = rsm.getColumnCount();
+        ArrayList list = new ArrayList();
+        Field[] fields = cc.getDeclaredFields();
+        
+        //遍历每条记录
+        while(rs.next()){
+            //实例化对象
+            Object obj = cc.newInstance();
+            //取出每一个字段进行赋值
+            for(int i=1;i<=colNumber;i++){
+                Object value = rs.getObject(i);
+                //匹配实体类中对应的属性
+                for(int j = 0;j<fields.length;j++){
+                    Field f = fields[j];
+                    if(f.getName().equals(rsm.getColumnName(i))){
+                        boolean flag = f.isAccessible();
+                        f.setAccessible(true);
+                        f.set(obj, value);
+                        f.setAccessible(flag);
+                        break;
+                    }
+                }
+                 
+            }
+            list.add(obj);
+        }
+        return list;
+    }*/
 }

@@ -1,8 +1,10 @@
 package com.alucn.weblab.controller;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.service.CaseSearchService;
-import com.fasterxml.jackson.annotation.JsonCreator.Mode;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 
 /**
@@ -95,10 +97,63 @@ public class CaseSearchController {
 		if(int_id==null &&"".equals(int_id)) {
 			return "caseSearch";
 		}
-		Map<String,Object> returnMap = new HashMap<String,Object>();
 		Map<String,Object> paramMap = new HashMap<String,Object>();
 		paramMap.put("int_id", int_id);
 		ArrayList<HashMap<String, Object>> searchCaseRunLogInfoById = caseSearchService.searchCaseRunLogInfoById(paramMap);
+		HashMap<String,Object> cMap = new LinkedHashMap();
+		
+		for (HashMap<String, Object> hashMap : searchCaseRunLogInfoById) {
+			String condition = (String) hashMap.get("condition");
+			String[] split = condition.split(";");
+			cMap.put("dataSource", split[0]);
+			cMap.put("release", split[1]);
+			cMap.put("customer", split[2]);
+			cMap.put("base_data", split[3]);
+			cMap.put("mate", split[4]);
+			cMap.put("lab_number", split[5]);
+			cMap.put("special_data", split[6]);
+			cMap.put("porting_release", split[7]);
+			cMap.put("case_status", split[8]);
+			cMap.put("feature_number", split[9]);
+			cMap.put("author", split[10]);
+			cMap.put("server", split[11]);
+			//ccMap.put("condition_info", cMap);
+			hashMap.put("condition", cMap);
+			
+		  	String s_case = (String)hashMap.get("s_case");
+		    if(s_case!="[]") {
+				String[] split2 = s_case.replace("[", "").replace("]", "").replace("{", "").split("},");
+				List<String> asList = Arrays.asList(split2);
+				List<Map<String, Object>> sList = new ArrayList<Map<String, Object>>();
+				for (String string : asList) {
+					//System.out.println("string:============"+string);
+					HashMap<String,Object> ccMap = new HashMap<>();
+					String[] split3 = string.replace("}", "").split(",");
+					
+					for (String string2 : split3) {
+						if(!"".equals(string2)) {
+							String[] split4 = string2.split("=");
+							if(split4.length==1) {
+								ccMap.put(split4[0].trim(), "");
+							}
+							if(split4.length==2) {
+								ccMap.put(split4[0].trim(), split4[1].trim());
+							}
+						}
+					}
+					System.err.println("cc:===="+ccMap);
+					if(!ccMap.isEmpty()) {
+						sList.add(ccMap);
+					}
+				}
+				System.err.println("sList:========"+sList);
+				model.addAttribute("scase", sList);
+			}else {
+				model.addAttribute("scase", "");
+			}
+		}
+		//searchCaseRunLogInfoById.add(ccMap);
+		System.err.println("searchCaseRunLogInfoById:============"+searchCaseRunLogInfoById);
 		model.addAttribute("searchCaseRunLogInfoById",searchCaseRunLogInfoById);
 		return "caseSearchInfo";
 	}
