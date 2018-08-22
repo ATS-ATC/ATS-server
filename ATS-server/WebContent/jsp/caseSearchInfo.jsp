@@ -143,15 +143,21 @@
 	    <div class="panel-body">
 	        <div class="row" >
 	        <div class="table-responsive pre-scrollable"  style="padding-left: 10px;padding-right: 10px; height: 250px;" >
-	        	<table class="table table-bordered" >
+	        	<table class="table table-bordered text-nowrap"  >
 	        		<thead>
 	        			<tr>
-	        				<th>release</th>
-	        				<th>feature_number</th>
-	        				<th>author</th>
 	        				<th>case_name</th>
+	        				<th>case_status</th>
+	        				<th>feature_number</th>
+	        				<th>release</th>
+	        				<th>author</th>
 	        				<th>special_data</th>
 	        				<th>lab_number</th>
+	        				<th>submit_date</th>
+	        				<th>mate</th>
+	        				<th>customer</th>
+	        				<th>base_data</th>
+	        				<th>porting_release</th>
 	        			</tr>
 	        		</thead>
 	        		<tbody>
@@ -161,12 +167,18 @@
 	        				----------------------
 	        				<br> --%>
 	        				<tr>
-	        					<td>${data.release }</td>
-	        					<td>${data.feature_number }</td>
-	        					<td>${data.author }</td>
 	        					<td>${data.case_name }</td>
+	        					<td>${data.case_status }</td>
+	        					<td>${data.feature_number }</td>
+	        					<td>${data.release }</td>
+	        					<td>${data.author }</td>
 	        					<td>${data.special_data }</td>
 	        					<td>${data.lab_number }</td>
+	        					<td>${data.submit_date }</td>
+	        					<td>${data.mate }</td>
+	        					<td>${data.customer }</td>
+	        					<td>${data.base_data }</td>
+	        					<td>${data.porting_release }</td>
 	        				</tr>
 	        			</c:forEach> 
 	        			<%-- <c:forEach items='${scase }' var="s" varStatus="sc">

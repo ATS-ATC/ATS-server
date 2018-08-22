@@ -636,7 +636,7 @@ $(function() {
             	<div class="row" style="padding-bottom: 5px;padding-top:5px;background-color: #E0E0EB">
             	</div>
             	<div class="row" style="margin-left: 10px;margin-right: 13px;margin-top: 10px;">
-					<table id="runLog" ></table>
+					<table id="runLog"  class="text-nowrap"></table>
 				</div>
             	<div id="myModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog">
 				    <div class="modal-dialog modal-lg" role="document">
@@ -662,7 +662,7 @@ $(function() {
 				                </form>
 				                <div class="row">
 				                	<div class="col-md-12 table-responsive" style="height:398px;overflow:scroll">
-					                	<table id="tb_departments" class="table table-bordered table-striped" style="width:100%;height: 100%;"></table>
+					                	<table id="tb_departments" class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;"></table>
 				                	</div>
 				                </div>
 				                <h4>Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>

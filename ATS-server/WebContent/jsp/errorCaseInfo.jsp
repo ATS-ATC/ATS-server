@@ -44,7 +44,7 @@
                 </form>
             </div>
         </div> 
-        <table id="tb_departments"></table>
+        <table id="tb_departments" class="text-nowrap"></table>
     </div>
 </body>
 </html>
