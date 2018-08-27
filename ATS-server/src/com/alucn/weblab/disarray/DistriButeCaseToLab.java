@@ -981,7 +981,7 @@ public class DistriButeCaseToLab {
 	}
 	/**
 	 * <pre>
-	 * Example: GetDistributeCases();
+	 * Example: DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
 	 * Description:这个方法存在的意义？
 	 * Arguments: none
 	 * Return: JSONObject  {"availableCase":{}}

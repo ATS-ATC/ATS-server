@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateInterceptor;
 import org.springframework.stereotype.Service;
+import org.sqlite.SQLiteException;
 
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
@@ -90,83 +92,90 @@ public class CaseSearchService {
 			return "Please select a data source !";
 		}
 		dataBase = conds[0];
-		String sql = "select * from "+conds[0]+" where 1=1 ";
-		if(!"".equals(conds[1])){
-			String [] release = conds[1].split(",");
-			sql += "and release in (";
-			for(int i=0; i<release.length; i++){
-				sql += "'"+release[i]+"'";
-				if(i==(release.length-1)){
-					sql += ") ";
-				}else{
-					sql += ",";
+		String scope = "*";
+		if(retrunType=="total") {
+			scope = "count(1) rcount";
+		}
+		String sql = "select "+scope+" from "+conds[0]+" where 1=1 ";
+		if(conds.length>1) {
+			if(!"".equals(conds[1])){
+				String [] release = conds[1].split(",");
+				sql += "and release in (";
+				for(int i=0; i<release.length; i++){
+					sql += "'"+release[i]+"'";
+					if(i==(release.length-1)){
+						sql += ") ";
+					}else{
+						sql += ",";
+					}
 				}
 			}
-		}
-		if(!"".equals(conds[2])){
-			String [] customer = conds[2].split(",");
-			sql += "and customer in (";
-			for(int i=0; i<customer.length; i++){
-				sql += "'"+customer[i]+"'";
-				if(i==(customer.length-1)){
-					sql += ") ";
-				}else{
-					sql += ",";
+			if(!"".equals(conds[2])){
+				String [] customer = conds[2].split(",");
+				sql += "and customer in (";
+				for(int i=0; i<customer.length; i++){
+					sql += "'"+customer[i]+"'";
+					if(i==(customer.length-1)){
+						sql += ") ";
+					}else{
+						sql += ",";
+					}
 				}
 			}
-		}
-		if(!"".equals(conds[3])){
-			String [] base_data = conds[3].split(",");
-			sql += "and base_data in (";
-			for(int i=0; i<base_data.length; i++){
-				sql += "'"+base_data[i]+"'";
-				if(i==(base_data.length-1)){
-					sql += ") ";
-				}else{
-					sql += ",";
+			if(!"".equals(conds[3])){
+				String [] base_data = conds[3].split(",");
+				sql += "and base_data in (";
+				for(int i=0; i<base_data.length; i++){
+					sql += "'"+base_data[i]+"'";
+					if(i==(base_data.length-1)){
+						sql += ") ";
+					}else{
+						sql += ",";
+					}
 				}
 			}
-		}
-		if(!"".equals(conds[4])){
-			sql += "and mate='"+conds[4]+"' ";
-		}
-		if(!"".equals(conds[5])){
-			sql += "and lab_number='"+conds[5]+"' ";
-		}
-		if(!"".equals(conds[6])){
-			sql += "and special_data='"+conds[6]+"' ";
-		}
-		if(!"".equals(conds[7])){
-			String [] porting_release = conds[7].split(",");
-			sql += "and porting_release in (";
-			for(int i=0; i<porting_release.length; i++){
-				sql += "'"+porting_release[i]+"'";
-				if(i==(porting_release.length-1)){
-					sql += ") ";
-				}else{
-					sql += ",";
+			if(!"".equals(conds[4])){
+				sql += "and mate='"+conds[4]+"' ";
+			}
+			if(!"".equals(conds[5])){
+				sql += "and lab_number='"+conds[5]+"' ";
+			}
+			if(!"".equals(conds[6])){
+				sql += "and special_data='"+conds[6]+"' ";
+			}
+			if(!"".equals(conds[7])){
+				String [] porting_release = conds[7].split(",");
+				sql += "and porting_release in (";
+				for(int i=0; i<porting_release.length; i++){
+					sql += "'"+porting_release[i]+"'";
+					if(i==(porting_release.length-1)){
+						sql += ") ";
+					}else{
+						sql += ",";
+					}
 				}
 			}
-		}
-		if(!"".equals(conds[8])){
-			String [] case_status = conds[8].split(",");
-			sql += "and case_status in (";
-			for(int i=0; i<case_status.length; i++){
-				sql += "'"+case_status[i].toUpperCase().charAt(0)+"'";
-				if(i==(case_status.length-1)){
-					sql += ") ";
-				}else{
-					sql += ",";
+			if(!"".equals(conds[8])){
+				String [] case_status = conds[8].split(",");
+				sql += "and case_status in (";
+				for(int i=0; i<case_status.length; i++){
+					sql += "'"+case_status[i].toUpperCase().charAt(0)+"'";
+					if(i==(case_status.length-1)){
+						sql += ") ";
+					}else{
+						sql += ",";
+					}
 				}
 			}
+			if(!"".equals(conds[9])){
+				sql += "and feature_number='"+conds[9]+"' ";
+			}
+			if(!"".equals(conds[10])){
+				sql += "and author='"+conds[10]+"' ";
+			}
 		}
-		if(!"".equals(conds[9])){
-			sql += "and feature_number='"+conds[9]+"' ";
-		}
-		if(!"".equals(conds[10])){
-			sql += "and author='"+conds[10]+"' ";
-		}
-		if(""!=param.get("caseName")) {
+		//System.err.println("caseName:+++++++["+param.get("caseName")+"]");
+		if(""!=param.get("caseName")&&param.get("caseName")!=null) {
 			sql += "and case_name='"+param.get("caseName")+"' ";
 		}
 		if(retrunType=="rows") {
@@ -180,9 +189,12 @@ public class CaseSearchService {
 		}else if(conds[0].equals(Constant.DFTTAG)){
 			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
 		}
-		ArrayList<HashMap<String, Object>> query = new ArrayList<HashMap<String, Object>>();
+		//query_sql:===select * from DailyCase where 1=1 and feature_number='731590' and case_name='null'  limit null,null
+		System.err.println("query_sql:==="+sql);
+		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+				//new ArrayList<HashMap<String, Object>>();
 		
-		if(!"".equals(conds[11]) && !"0".equals(conds[11])){
+		/*if(!"".equals(conds[11]) && !"0".equals(conds[11])){
 			query = caseSearchDaoImpl.query(jdbc, sql);
 			if(retrunType=="insert") {
 				if(query!=null && query.size()!=0){
@@ -224,12 +236,12 @@ public class CaseSearchService {
 			sqlAdmin=sql;
 			sqlAdmin+=" order by lab_number asc,special_data asc;";
 			query = caseSearchDaoImpl.query(jdbc, sql);
-		}
-		if(retrunType=="rows") {
+		}*/
+		if(retrunType=="rows" || retrunType=="condition") {
 			return query;
 		}
 		if(retrunType=="total") {
-			return query.size()+"";
+			return query.get(0).get("rcount");
 		}
 		return "";//"Total record:"+query.size();
 	}
@@ -286,7 +298,7 @@ public class CaseSearchService {
 		String condition = (String)paramMap.get("condition");
 		String login = (String)paramMap.get("login");
 		String title ="["+login+"]"+ids.split(",")[0]+"...";
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		
 		
 		if(!"".equals(ids)&&!"".equals(condition)&&!"".equals(login)) {
 			JSONArray Servers = CaseConfigurationCache.getSingletonCaseProperties(CaseConfigurationCache.lock);
@@ -305,14 +317,18 @@ public class CaseSearchService {
 			System.out.println("substring============="+substring);
 			
 			String [] conds = condition.split(";");
+			JdbcUtil jdbc = null;
 			if("".equals(conds[0])){
 				returnMap.put("msg", "Please select a data source !");
 				returnMap.put("result", false);
 				return returnMap;
 			}
 			
-			String csql = "select * from n_rerunning_case_tbl where stateflag='0' and case_info ='"+ids+"' order by datetime desc";
+			/*
+			 * 不做任何校验
+			 * String csql = "select * from n_rerunning_case_tbl where stateflag='0' and case_info ='"+ids+"' order by datetime desc";
 			System.out.println("csql:============="+csql);
+			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 			ArrayList<HashMap<String,Object>> cquery = caseSearchDaoImpl.query(jdbc, csql);
 			if(cquery.size()>0) {
 				SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
@@ -325,16 +341,38 @@ public class CaseSearchService {
 				System.out.println("to:========"+to);
 				int minutes = (int) ((to - from)/(1000 * 60));
 				System.out.println("minutes:============"+minutes);
-				if(minutes<=10) {
+				Object object = cquery.get(0).get("server_info");
+				JSONObject server_info = JSONObject.fromObject(object);
+				String serverName = (String) server_info.get("serverName");
+				System.out.println("serverName:===="+serverName );
+				//如果数据库的server_info字段为空，那么下面的代码会报空指针异常java.lang.NullPointerException
+				System.out.println("conds[11]:===="+conds[11]+"  :"+serverName.equals(conds[11]));
+				if(minutes<=10 && serverName.equals(conds[11])) {
 					returnMap.put("msg", "you checked case will be running in 10 minutes !");
 					returnMap.put("result", false);
 					return returnMap;
 				}
-			}
+			}*/
 			
+			
+			/*String tsql ="select distinct case_name from toDistributeCases";
+			ArrayList<HashMap<String,Object>> tquery = caseSearchDaoImpl.query(jdbc, tsql);
+			String str = "";
+			for (int i=0;i<tquery.size();i++) {
+				if(i!=tquery.size()&&i!=0) {
+					str=str+",";
+				}
+				String case_name = "'"+(String)tquery.get(i).get("case_name")+"'";
+				str=str+case_name;
+			}
+			System.err.println("str:======="+str);*/
+			if(conds[0].equals(Constant.DAILYCASE)){
+				jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+			}else if(conds[0].equals(Constant.DFTTAG)){
+				jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
+			}
 			dataBase = conds[0];
-			String sql = "select * from "+conds[0]+" where 1=1 and case_name in ("+substring+") and case_name not in ("
-					+ "select distinct case_name from toDistributeCases)";
+			String sql = "select * from "+conds[0]+" where 1=1 and case_name in ("+substring+")";// and case_name not in ("+str+")";
 			System.out.println("sql+========="+sql);
 			ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 			if(query.size()==0) {
@@ -343,10 +381,9 @@ public class CaseSearchService {
 				return returnMap;
 			}
 			
-			String nsql = "select case_name from "+conds[0]+" where 1=1 and case_name in ("+substring+") and case_name in ("
-					+ "select distinct case_name from toDistributeCases)";
+			/*String nsql = "select case_name from "+conds[0]+" where 1=1 and case_name in ("+substring+")";// and case_name in ("+str+")";
 			System.out.println("nsql+========="+nsql);
-			ArrayList<HashMap<String,Object>> nquery = caseSearchDaoImpl.query(jdbc, nsql);
+			ArrayList<HashMap<String,Object>> nquery = caseSearchDaoImpl.query(jdbc, nsql);*/
 			
 			
 			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
@@ -356,18 +393,35 @@ public class CaseSearchService {
 			
 			JSONArray spaList=new JSONArray();
 			JSONArray rtdbList=new JSONArray();
-			String server = "[\""+conds[11]+"\"]";
+			String server = "";
+			if(conds[11].contains(",")) {
+				String[] servers = conds[11].split(",");
+				server = server+"[";
+				for (int i=0; i<servers.length;i++) {
+					if(i==servers.length-1) {
+						server = server+"\""+servers[i]+"\"";
+					}else {
+						server = server+"\""+servers[i]+"\",";
+					}
+				}
+				server = server+"]";
+			}else {
+				server = server+"[\""+conds[11]+"\"]";
+			}
+			
+			JSONObject serverMemDb = new JSONObject();
 			for (int i = 0; i < Servers.size(); i++) {
 				JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = serverMem.getString(Constant.SERVERNAME);
 				if(serverName.equals(conds[11])){
 					spaList=serverMem.getJSONArray(Constant.SERVERSPA);
 					rtdbList=serverMem.getJSONArray(Constant.SERVERRTDB);
+					serverMemDb=serverMem;
+					System.err.println("serverMemDb:===="+serverMemDb);
 				}
 			}
-			
 			for(int i=0; i<query.size(); i++){
-				String disSql="INSERT INTO toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
+				String disSql="REPLACE INTO toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
 						+query.get(i).get("case_name")+"', '"
 						+query.get(i).get("lab_number")+"', '"
 						+query.get(i).get("mate")+"', '"
@@ -382,24 +436,64 @@ public class CaseSearchService {
 						+query.get(i).get("customer")+"', "
 						+gid+");";
 				System.out.println("disSql:="+disSql);
-				caseSearchDaoImpl.insert(jdbc, disSql);
+				//caseSearchDaoImpl.insert(jdbc, disSql);
 				
 			}
 			returnMap.put("s_case", query.size());
-			returnMap.put("f_case", nquery.size());
+			returnMap.put("f_case", 0);
+			int i=0;
 			
-			String isql ="insert into n_rerunning_case_tbl(title,case_info,condition,server_info,s_case,f_case,author,datetime) values('"
-					+title +"','"+ids+"','"+condition+"','"+Servers.toString()+"','"+query.toString()+"','"+nquery.toString()+"','"+login+"',datetime('now', 'localtime'))";
-			System.out.println("isql+================="+isql);
-			caseSearchDaoImpl.insert(jdbc, isql);
 			
-			returnMap.put("result", true);
+			PreparedStatement ps = null;
+			PreparedStatement ups = null;
+			Connection conn = jdbc.getConnection();
+			conn.setAutoCommit(false);
+			
+			while(i<10) {
+				String idsql="select max(int_id)+1 max_id from n_rerunning_case_tbl";
+				ArrayList<HashMap<String, Object>> idList = caseSearchDaoImpl.query(jdbc, idsql);
+				String s_max_id = (String) idList.get(0).get("max_id");
+				int max_id = 1;
+				if(s_max_id!=null) {
+					max_id = Integer.parseInt(s_max_id);
+				}
+				try {
+					String isql ="insert into n_rerunning_case_tbl(int_id,title,condition,server_info,author,datetime) values("
+							+max_id+",'"+title +"','"+condition+"','"+serverMemDb.toString()+"','"+login+"',datetime('now', 'localtime'))";
+					System.out.println("isql+================="+isql);
+					ps = conn.prepareStatement(isql);
+					ps.execute();
+					ps.close();
+					//caseSearchDaoImpl.insert(jdbc, isql);
+					String baksql="insert into n_case_bak_tbl(case_name,case_status,rerunning_id) values(?,?,?)";
+					ups = conn.prepareStatement(baksql);
+					for (HashMap<String, Object> bMap : query) {
+						ups.setString(1, (String)bMap.get("case_name"));
+						ups.setString(2, (String)bMap.get("case_status"));
+						ups.setString(3, max_id+"");
+						ups.addBatch();
+						//caseSearchDaoImpl.insert(jdbc, baksql);
+					}
+					ups.executeBatch();
+					ups.close();
+					conn.commit();
+					returnMap.put("result", true);
+					break;
+				} catch (Exception e) {
+					e.printStackTrace();
+					conn.rollback();
+					i++;
+					Thread.sleep(10000);
+				}finally {
+					conn.close();
+				}
+			}
+			
 		}
-		
 		return returnMap;
 	}
 	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType) throws Exception {
-		String sql ="select int_id,title,condition,author,datetime, case when s_case=='[]' then '0' else '1' end s_case, case when f_case =='[]' then '0' else '1' end f_case  from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
+		String sql ="select int_id,title,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
 		/*if(auth=="all") {
 			
 		}*/
@@ -423,6 +517,26 @@ public class CaseSearchService {
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
+	}
+	public ArrayList<HashMap<String, Object>> searchCaseRunLogCaseInfoById(Map<String, Object> param) throws Exception {
+		String sql ="select * from n_case_bak_tbl where stateflag='0' and rerunning_id= "+param.get("int_id");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+		ArrayList<HashMap<String, Object>> arrayList = new ArrayList<HashMap<String, Object>>();
+		String case_str = "";
+		if(query.size()>0) {
+			for (HashMap<String, Object> hashMap : query) {
+				String case_name = (String) hashMap.get("case_name");
+				case_str=case_str+"'"+case_name+"',";
+			}
+			int lastIndexOf = case_str.lastIndexOf(",");
+			String substring = case_str.substring(0, lastIndexOf);
+			System.err.println(substring);
+			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
+			sql ="select * from DftTag where case_name in ("+substring+")";
+			arrayList = caseSearchDaoImpl.query(jdbc, sql);
+		}
+		return arrayList;
 	}
 	/*public ArrayList searchCaseRunLogInfoById2(Map<String, Object> param) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");

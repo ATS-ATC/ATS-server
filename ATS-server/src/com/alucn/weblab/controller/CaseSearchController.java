@@ -1,6 +1,7 @@
 package com.alucn.weblab.controller;
 
 import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,8 +21,8 @@ import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.service.CaseSearchService;
 
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author haiqiw
@@ -59,7 +60,7 @@ public class CaseSearchController {
 	@RequestMapping(path = "/searchCaseInfo")
 	@ResponseBody
 	public Map<String,Object> searchCaseInfo(HttpSession session, String condition,HttpServletRequest request ) throws Exception{
-		//System.err.println(condition);
+		System.err.println(condition);
 		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
 		String caseName = request.getParameter("caseName")==null?"":request.getParameter("caseName").toString().trim();
@@ -119,8 +120,11 @@ public class CaseSearchController {
 			cMap.put("server", split[11]);
 			//ccMap.put("condition_info", cMap);
 			hashMap.put("condition", cMap);
+			ArrayList<HashMap<String, Object>> case_bak = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
+			model.addAttribute("scase", case_bak);
+			model.addAttribute("scase_count", case_bak.size());
 			
-		  	String s_case = (String)hashMap.get("s_case");
+		  	/*String s_case = (String)hashMap.get("s_case");
 		    if(s_case!="[]") {
 				String[] split2 = s_case.replace("[", "").replace("]", "").replace("{", "").split("},");
 				List<String> asList = Arrays.asList(split2);
@@ -148,10 +152,21 @@ public class CaseSearchController {
 				}
 				System.err.println("sList:========"+sList);
 				model.addAttribute("scase", sList);
+				model.addAttribute("scase_count", sList.size());
 			}else {
 				model.addAttribute("scase", "");
-			}
+				model.addAttribute("scase_count", 0);
+			}*/
+		    
+		    String server_info_str = (String)hashMap.get("server_info");
+		    JSONObject server_info = JSONObject.fromObject(server_info_str.trim());
+		    System.err.println("server_info:========="+server_info);
+		    model.addAttribute("server_info",server_info);
+		    
+		    
 		}
+		
+		
 		//searchCaseRunLogInfoById.add(ccMap);
 		System.err.println("searchCaseRunLogInfoById:============"+searchCaseRunLogInfoById);
 		model.addAttribute("searchCaseRunLogInfoById",searchCaseRunLogInfoById);
@@ -164,9 +179,12 @@ public class CaseSearchController {
 		
 		String ids = request.getParameter("ids")==null?"":request.getParameter("ids").toString().trim();
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
+		String selectAllflag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
 		System.out.println("ids============="+ids);
 		System.out.println("condition============="+condition);
-		if("".equals(ids)) {
+		System.out.println("selectAllflag============="+selectAllflag);
+		System.out.println("\"false\".endsWith(selectAllflag)============="+"false".endsWith(selectAllflag));
+		if("".equals(ids)&&"false".endsWith(selectAllflag)) {
 			returnMap.put("msg", "please checked some case");
 			return returnMap;
 		}
@@ -181,8 +199,28 @@ public class CaseSearchController {
 		paramMap.put("ids", ids);
 		paramMap.put("condition", condition);
 		paramMap.put("login", login);
-		
+		paramMap.put("selectAllflag", selectAllflag);
+		paramMap.put("limit", "");
+		paramMap.put("offset", "");
+		paramMap.put("caseName", "");
 		try {
+			if("true".endsWith(selectAllflag)) {
+				Map<String,Object> queryMap = new HashMap<String,Object>();
+				ArrayList<HashMap<String, Object>> caseInfo = (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseInfo(queryMap,condition, session.getAttribute("auth").toString(),"condition");
+				int i=0;
+				ids="";
+				for (HashMap<String, Object> hashMap : caseInfo) {
+					String case_name = (String) hashMap.get("case_name");
+					if(i==0){
+						ids+=case_name;
+					}else{
+						ids+=","+case_name;
+					}
+					i++;
+				}
+				paramMap.put("ids", ids);
+			}
+			
 			Map<String, Object> casesTbl = caseSearchService.insertToDistributeCasesTbl(paramMap);
 			if((boolean) casesTbl.get("result")) {
 				returnMap.put("s_case", casesTbl.get("s_case"));

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -8,7 +9,9 @@
 <script src="./jquery/jquery-3.2.1.js"></script>
 <script src="./bootstrap/js/bootstrap.min.js"></script>
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
+<script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+<link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
 <title>caseSearchInfo</title>
 </head>
 <body style="background-color:#ECEFF3;padding-top:27px;">
@@ -48,14 +51,14 @@
 	        </div>
 	    </div>
 	</div>
-	<div class="panel panel-info">
+	<div class="panel panel-primary">
 	    <div class="panel-heading" data-toggle="collapse" data-target="#condition">
-	        <h3 class="panel-title" style="display: inline;">query condition</h3>
+	        <h3 class="panel-title" style="display: inline;">Query Condition</h3>
 	        <div class="nav navbar-nav navbar-right">
 	        	<span class="glyphicon glyphicon-chevron-down " aria-hidden="true" style="display: inline;padding-right: 10px;"></span>
 	        </div>
 	    </div>
-	    <div class="panel-body collapse" id="condition">
+	    <div class="panel-body collapse in" id="condition">
 	        <div class="row">
 	        	<div class="col-md-3">
 	        		<div class="form-group">
@@ -136,9 +139,101 @@
 	        </div>
         </div>
 	</div>
+	<%-- --%>
+	<div class="panel panel-primary">
+	    <div class="panel-heading" data-toggle="collapse" data-target="#server_info">
+	        <h3 class="panel-title" style="display: inline;">Server Info</h3>
+	        <div class="nav navbar-nav navbar-right">
+	        	<span class="glyphicon glyphicon-chevron-down " aria-hidden="true" style="display: inline;padding-right: 10px;"></span>
+	        </div>
+	    </div>
+	    <div class="panel-body collapse in" id="server_info">
+	        <div class="row">
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					    <label for="serverName">serverName</label>
+					    <strong>
+						    <input type="text" class="form-control" id="serverName" style="display: inline;border-radius:4px;color: red;" disabled 
+						    value="${server_info.serverName }">
+					    </strong>
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="serverIp">serverIp</label>
+					    <input type="text" class="form-control" id="serverIp" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.serverIp }">
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="serverRelease">serverRelease</label>
+					    <input type="text" class="form-control" id="serverRelease" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.serverRelease }">
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="serverProtocol">serverProtocol</label>
+					    <input type="text" class="form-control" id="serverProtocol" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.serverProtocol }">
+					 </div>
+	        	</div>
+	        </div>	
+	        <div class="row">
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="serverType">serverType</label>
+					    <input type="text" class="form-control" id="serverType" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.serverType }">
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="serverMate">serverMate</label>
+					    <input type="text" class="form-control" id="serverMate" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.serverMate }">
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="mateServer">mateServer</label>
+					    <input type="text" class="form-control" id="mateServer" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.mateServer }">
+					 </div>
+	        	</div>
+	        	<div class="col-md-3">
+	        		 <div class="form-group">
+					     <label for="setName">setName</label>
+					    <input type="text" class="form-control" id="setName" style="display: inline;border-radius:4px;" disabled 
+					    value="${server_info.setName }">
+					 </div>
+	        	</div>
+	        </div>	
+	        <div class="row">
+	        	<div class="col-md-12">
+	        		<div class="form-group">
+					     <label for="serverSPA">serverSPA</label>
+					    <input type="text" data-role="tagsinput" class="form-control" id="serverSPA" style="display: inline;border-radius:4px;" disabled 
+					    value='${fn:replace(fn:replace(server_info.serverSPA,"[",""),"]","") }'>
+					 </div>
+	        	</div>
+	        	<div class="col-md-12">
+	        		<div class="form-group">
+					     <label for="serverRTDB">serverRTDB</label>
+					    <input type="text" data-role="tagsinput" class="form-control" id="serverRTDB" style="display: inline;border-radius:4px;" disabled 
+					    value='${fn:replace(fn:replace(server_info.serverRTDB,"[",""),"]","") }'>
+					 </div>
+	        	</div>
+	        </div>
+        </div>
+	</div>
+		
+	
+	<%-- --%>
 	<div class="panel panel-primary">
 	    <div class="panel-heading">
-	        <h3 class="panel-title">Will Running Case</h3>
+	        <h3 class="panel-title">Running Case ${scase_count }</h3>
 	    </div>
 	    <div class="panel-body">
 	        <div class="row" >
@@ -197,12 +292,59 @@
 	        </div>
         </div>
   	</div>
-	<script type="text/javascript">
-		$(function(){
-			//alert('${scase }')
-			var scase = '${scase }';
-		})
-	</script>
+  	<%--下一个面板开始 
+  	<div class="panel panel-primary">
+	    <div class="panel-heading">
+	        <h3 class="panel-title">Occupy Case</h3>
+	    </div>
+	    <div class="panel-body">
+	        <div class="row" >
+	        <div class="table-responsive pre-scrollable"  style="padding-left: 10px;padding-right: 10px; height: 250px;" >
+	        	<table class="table table-bordered text-nowrap"  >
+	        		<thead>
+	        			<tr>
+	        				<th>case_name</th>
+	        				<th>case_status</th>
+	        				<th>feature_number</th>
+	        				<th>release</th>
+	        				<th>author</th>
+	        				<th>special_data</th>
+	        				<th>lab_number</th>
+	        				<th>submit_date</th>
+	        				<th>mate</th>
+	        				<th>customer</th>
+	        				<th>base_data</th>
+	        				<th>porting_release</th>
+	        			</tr>
+	        		</thead>
+	        		<tbody>
+	        			<c:forEach items="${fcase }" var="data" >
+	        				<tr>
+	        					<td>${data.case_name }</td>
+	        					<td>${data.case_status }</td>
+	        					<td>${data.feature_number }</td>
+	        					<td>${data.release }</td>
+	        					<td>${data.author }</td>
+	        					<td>${data.special_data }</td>
+	        					<td>${data.lab_number }</td>
+	        					<td>${data.submit_date }</td>
+	        					<td>${data.mate }</td>
+	        					<td>${data.customer }</td>
+	        					<td>${data.base_data }</td>
+	        					<td>${data.porting_release }</td>
+	        				</tr>
+	        			</c:forEach> 
+	        		</tbody>
+	        	</table>
+	        </div>
+	        </div>
+        </div>
+  	</div>
+  	下一个面板开始 --%>
+  	
+  	
+  	
+  	
 </div>
 </body>
 </html>

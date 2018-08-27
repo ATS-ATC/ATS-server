@@ -49,7 +49,6 @@ $(function() {
 	$('#runLog').bootstrapTable({
         url: 'searchCaseRunLog.do',   //请求后台的URL（*）
         method: 'get',                      //请求方式（*）
-        toolbar: '#toolbar',                //工具按钮用哪个容器
         striped: true,                      //是否显示行间隔色
         cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
         pagination: true,                   //是否显示分页（*）
@@ -71,7 +70,7 @@ $(function() {
         showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
         cardView: false,                    //是否显示详细视图
         detailView: false,                   //是否显示父子表
-        rowStyle: function (row, index) {
+        /* rowStyle: function (row, index) {
             //这里有5个取值代表5中颜色['active', 'success', 'info', 'warning', 'danger'];
             var strclass = "";
             if (row.s_case == '1') {
@@ -86,7 +85,7 @@ $(function() {
             	return {}
             }
             return { classes: strclass }
-        },
+        }, */
         columns: [ {
             field: 'int_id',
             title: 'int_id'
@@ -114,7 +113,7 @@ $(function() {
 	
 	var conform = false;
 	
-	function getCondition (){
+	function getCondition (server){
 		var condition = "";
 		var ds = $('option[name="ds"]:checked');
 		var r = $('option[name="r"]:checked');
@@ -128,7 +127,7 @@ $(function() {
 		var fi = document.getElementById("featureid").value;
 		var author = document.getElementById("author").value;
 		//var server = document.getElementById("server").options[document.getElementById("server").selectedIndex].value;
-		var server =$('#server').val(); 
+		/* var server =$('#server').val(); 
 		if(server.length==0){
 			$("#reminder").dialog({
 				open : function(event, ui) {
@@ -137,7 +136,7 @@ $(function() {
 				}
 			});
 			return;
-		}
+		} */
 		if (ds.length == 0 && r.length == 0 && c.length == 0 && bd.length == 0 && m.length == 0
 				&& ln.length == 0 && sd.length == 0	&& pr.length == 0 && cs.length == 0 && fi == "" && author == "") {
 			$("#reminder").dialog({
@@ -279,7 +278,7 @@ $(function() {
 	  
 	$("#btn_query").click(function(){
 		var condition = "";
-		condition = getCondition();
+		condition = getCondition("placeholder");
 		var oTable = new TableInit(condition);
 	    oTable.Init();
 		$('#tb_departments').bootstrapTable('refresh',{
@@ -383,23 +382,29 @@ $(function() {
 	
 	$("#search").click(function() {
 		//$('#tb_departments').bootstrapTable('refreshOptions',{condition: outCondition}); 
-		var outCondition = getCondition();
+		var outCondition = getCondition("placeholder");
 		if(outCondition==null){
 			return false;
 		}
 		var oTable = new TableInit(outCondition);
 		oTable.Init();
 	     
-	    var ser = $('#server').val();
-	    $("#ser").html(""+ser);
+	    /* var ser = $('#server').val();
+	    $("#ser").html(""+ser); */
 	    $('#myModal').modal('show');
 		//confirm(condition, "The lib will run case according to this condition, please submit it carefully !");
 	});
 	$("#myModal").on("hide.bs.modal",function(e){window.location.reload()});  
 	var ids="";
 	$("#Rerunning").click(function(){
+		var server =$('#server').val(); 
+		if(server.length==0){
+			alert("Please select a server to run case !");
+			return false;
+		}
 		var a  = $('#tb_departments').bootstrapTable('getSelections');
-		if(a.length==0){
+		var flag = $("#select_all").is(":checked");
+		if(a.length==0 && !flag){
 			alert("At least checked one line");
 			return false;
 		}else{
@@ -410,19 +415,34 @@ $(function() {
 					ids+=","+a[i].case_name;
 				}
 			}
+			if(flag){
+				$("#cases_count").html("<font style='color:red;'><stong> Warning : All Case Selected !!! </stong></font>");
+			}else {
+				$("#cases_count").html("<font style='color:red;'><stong>"+a.length+" Case Selected</stong></font>");
+			}
 			$('#delcfmModel').modal("show");
 		}
 		
     });
 	
 	$("#ids_confirm").click(function(){
-		alert(ids)
+		
 		$('#delcfmModel').modal('hide');
-		var condition = getCondition();
+		var server = $('#server').val(); 
+		var flag = $("#select_all").is(":checked");
+		if(!flag){
+			alert(ids)
+		}
+		if(server.length==0){
+			alert("Please select a server to run case !");
+			return false;
+		}
+		var condition = getCondition(server);
 		//alert(ids);
 		$.get("rerunning.do", {
 			ids : ids,
-			condition: condition
+			condition: condition,
+			flag:flag
 		}, function(data) {
 			if(data.msg != null){
 				alert(data.msg);
@@ -442,6 +462,19 @@ $(function() {
 		
 	});
 	
+	
+	$("#select_all").click(function(event){
+		if($("#select_all").is(":checked")){
+			$("#tb_departments").find('input').prop('checked',$(this).prop('checked'));
+			/*阻止向上冒泡，以防再次触发点击操作*/
+			event.stopPropagation();
+
+		}else{
+			$("#tb_departments").find('input').prop('checked',$("#tb_departments").find('input:checked').length == $("#tb_departments").length ? true : false);
+			/*阻止向上冒泡，以防再次触发点击操作*/
+			event.stopPropagation();
+		}
+	})
 	
 	
 	
@@ -599,22 +632,8 @@ $(function() {
 									</select>
 								</div>
 							</div>
-            				<div class="col-md-4">
-            					<div style="margin-right: 13px;">
-									<h4 style="display: inline;">Lab Cluster</h4>
-									<select id="server" name="server" title="--Please Select--" class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
-										<c:if test="${servers!=null && fn:length(servers) > 0}">
-											<%-- <% if(auth.equals("errorCases")){ %> --%>
-												<c:forEach items="${servers}" var="s">
-													<option name='s' value="${s}">${s}</option>
-												</c:forEach>
-											<%-- <%}%> --%>
-											</c:if>
-									</select>
-								</div>
-							</div>
 							<div class="col-md-4">
-								<div style="margin-right: 13px;">
+								<div style="margin-right: 0;">
 									<h4 style="display: inline;">Feature ID</h4>
 									<input class="nav navbar-nav navbar-right" type="text" name="featureid" id="featureid" value=""
 										style="padding-bottom: 2px; padding-top: 2px;width: 219px;margin-right: 0.1px;border-radius:4px;">
@@ -648,7 +667,7 @@ $(function() {
 				 
 				            </div>
 				            <div class="modal-body">
-				            	<form id="formSearch" class="form-horizontal">
+				            	<!-- <form id="formSearch" class="form-horizontal">
 				                    <div class="form-group" style="margin-top:15px">
 				                        <label class="control-label col-sm-2" for="txt_search_feature">case_name</label>
 				                        <div class="col-sm-3">
@@ -659,13 +678,33 @@ $(function() {
 				                            <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary ">Search</button>
 				                        </div>
 				                    </div>
-				                </form>
+				                </form> -->
 				                <div class="row">
 				                	<div class="col-md-12 table-responsive" style="height:398px;overflow:scroll">
+					                	 <div id="toolbar" class="btn-group">
+								         	<div class="checkbox form-group">
+											    <label>
+											      <input id="select_all" type="checkbox" style="margin-top: 10px;">Select All Case
+											    </label>
+											</div>
+								        </div>
 					                	<table id="tb_departments" class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;"></table>
 				                	</div>
 				                </div>
-				                <h4>Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
+				                <div class="row">
+					                <div class="col-md-12">
+					                	<h4 style="display: inline;">Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
+										<select id="server" name="server" title="--Please Select--" class="selectpicker" multiple data-live-search="true" data-max-options="1">
+											<c:if test="${servers!=null && fn:length(servers) > 0}">
+												<%-- <% if(auth.equals("errorCases")){ %> --%>
+													<c:forEach items="${servers}" var="s">
+														<option name='s' value="${s}">${s}</option>
+													</c:forEach>
+												<%-- <%}%> --%>
+												</c:if>
+										</select>
+									</div>
+								</div>
 				            </div>
 				            <div class="modal-footer">
 				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -691,6 +730,7 @@ $(function() {
 		      <div class="modal-body">  
 		      	<p>The lib will run case according to this condition, please submit it carefully !</p>
 		        <p>You are sure to rerun these cases ?</p>
+		        <p id="cases_count"></p>
 		      </div>  
 		      <div class="modal-footer">  
 		         <button type="button" class="btn btn-default" data-dismiss="modal">cancel</button>  
