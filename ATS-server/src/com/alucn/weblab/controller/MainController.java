@@ -1,7 +1,10 @@
 package com.alucn.weblab.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -43,7 +46,22 @@ public class MainController {
 	@RequestMapping(value = "/getReleaseCount")
 	@ResponseBody
 	public ArrayList<HashMap<String, Object>> getReleaseCount(Model model) throws Exception {
-		return mainService.getReleaseCount();
+		ArrayList<HashMap<String, Object>> releases = mainService.getReleaseCount();
+		ArrayList<HashMap<String, Object>> temp_fixation = new ArrayList<HashMap<String, Object>>();
+		ArrayList<HashMap<String, Object>> temp_active = new ArrayList<HashMap<String, Object>>();
+		for (HashMap<String, Object> release : releases) {
+			String releaseName = (String) release.get("release");
+			String[] arr = {"SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2"};
+			List<String> list=Arrays.asList(arr);
+			if(list.contains(releaseName)) {
+				temp_fixation.add(release);
+			}else {
+				temp_active.add(release);
+			}
+		}
+		temp_fixation.addAll(temp_active);
+		
+		return temp_fixation;
 	}
 	@RequestMapping(value = "/getMain")
 	public String getMain(Model model) throws Exception {

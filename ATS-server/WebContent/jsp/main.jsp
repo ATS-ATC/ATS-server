@@ -10,6 +10,7 @@
 <script src="./bootstrap/js/bootstrap.min.js"></script>
 <script src="./highcharts/highcharts.js"></script>
 <script src="./highcharts/modules/exporting.js"></script>
+<link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
 <!-- <script src="./js/echarts.js"></script>
 <script src="./js/echarts-gl.js"></script> -->
 <!-- <meta http-equiv="refresh" content="5*60"> -->
@@ -157,6 +158,7 @@
 				        </div> 
 				        <ul class="nav navbar-nav navbar-right">
 				        	<li>
+				        		<a href="#"><span class="glyphicon glyphicon-bell"></span>&nbsp;<span class="badge">0</span></a>
 					        	<!-- <form class="navbar-form navbar-left" role="search" action="">
 						            <div class="form-group">
 						                <input type="text" class="form-control" placeholder="Search">
@@ -185,6 +187,7 @@
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:132px;">
 										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+										<!-- <i class="icon-home"></i> -->
 										&nbsp;&nbsp;&nbsp;&nbsp;Home
 									</button>
 								</a>
@@ -233,14 +236,14 @@
 							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/config.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
-												&nbsp;&nbsp;&nbsp;&nbsp;** Certification Server
+												&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Certification Server
 											</button>
 										</a>
 									</li>
 							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getSpaAndRtdbInfo.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
-												&nbsp;&nbsp;&nbsp;&nbsp;** SPA & RTDB
+												&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; SPA & RTDB
 											</button>
 										</a>
 									</li>

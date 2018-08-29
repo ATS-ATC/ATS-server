@@ -16,7 +16,7 @@
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-customer.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-release.js"></script>
 <script type="text/javascript">
-	setTimeout("self.location.reload();",30000);
+	setTimeout("self.location.reload();",1000*60*10);
 	$(document).ready(function(){
 	    // 基于准备好的dom，初始化echarts实例
 	    var myChart = echarts.init(document.getElementById('main'),"macarons");
