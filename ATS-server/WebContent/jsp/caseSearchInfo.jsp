@@ -242,7 +242,8 @@
 	        		<thead>
 	        			<tr>
 	        				<th>case_name</th>
-	        				<th>case_status</th>
+	        				<th>now_case_status</th>
+	        				<th>per_case_status</th>
 	        				<th>feature_number</th>
 	        				<th>release</th>
 	        				<th>author</th>
@@ -264,6 +265,7 @@
 	        				<tr>
 	        					<td>${data.case_name }</td>
 	        					<td>${data.case_status }</td>
+	        					<td>${data.per_case_status }</td>
 	        					<td>${data.feature_number }</td>
 	        					<td>${data.release }</td>
 	        					<td>${data.author }</td>

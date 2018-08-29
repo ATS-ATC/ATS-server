@@ -395,6 +395,9 @@ $(function() {
 		//confirm(condition, "The lib will run case according to this condition, please submit it carefully !");
 	});
 	$("#myModal").on("hide.bs.modal",function(e){window.location.reload()});  
+	
+	
+	
 	var ids="";
 	$("#Rerunning").click(function(){
 		var server =$('#server').val(); 
@@ -449,17 +452,13 @@ $(function() {
 			}
 			//alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
 			if(data.s_case != null){
-				alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
+				alert("submit case count:"+data.s_case)
 			}
 			$('#loaddingModel').modal('hide');
 			$('#myModal').modal('hide');
 		});
 		ids="";
 		$('#loaddingModel').modal('show');
-		
-		
-		
-		
 	});
 	
 	
@@ -506,14 +505,11 @@ $(function() {
 			                <!-- 折叠panel内容 -->
 			                <div class="collapse panel-collapse" id="chanel_demo"><!-- 添加一个collapse类会默认隐藏折叠内容 -->
 			                    <div class="panel-body">
-			                            
-										
-										
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-6">
 												<h4 style="display: inline;">Author</h4>
 												<input class="nav navbar-nav navbar-right" type="text" name="author" id="author" value=""
-												style="padding-bottom: 4px; padding-top: 4px;width: 219px;border-radius:4px;">
+												style="padding-bottom: 2px; padding-top: 2px;width: 219px;border-radius:4px;">
 											</div>
 											<div class="col-md-6">
 												<h4 style="display: inline;">Base Data</h4>
@@ -708,7 +704,8 @@ $(function() {
 				            </div>
 				            <div class="modal-footer">
 				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				                <button type="button" class="btn btn-primary" id="Rerunning">&nbsp;&nbsp;&nbsp;&nbsp;Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
+				                <button type="button" class="btn btn-default" id="RunOnly">&nbsp;&nbsp;&nbsp;&nbsp;Only Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
+				                <button type="button" class="btn btn-primary" id="Rerunning">&nbsp;&nbsp;&nbsp;&nbsp;Update Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
 				            </div>
 				        </div>
 				        <!-- /.modal-content -->
@@ -744,7 +741,7 @@ $(function() {
 		  <div class="modal-dialog">  
 		    <div class="modal-content message_align">  
 		      <div class="modal-header">  
-		        <h4 class="modal-title"><center>loadding</center></h4>  
+		        <h4 class="modal-title"><center>Being submitted</center></h4>  
 		      </div>  
 		      <div class="modal-body">  
 		        <center>
@@ -756,6 +753,7 @@ $(function() {
 					  </div>
 					  <div class="spinner spinnerFive"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
 					  </div>
+					  <h4 style="color: red;"><strong>Being submitted , Please don't close the page !</strong></h4>
 		        </center>
 		      </div>  
 		    </div><!-- /.modal-content -->  

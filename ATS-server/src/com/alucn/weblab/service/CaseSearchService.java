@@ -421,7 +421,7 @@ public class CaseSearchService {
 				}
 			}
 			for(int i=0; i<query.size(); i++){
-				String disSql="REPLACE INTO toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
+				String disSql="replace into toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
 						+query.get(i).get("case_name")+"', '"
 						+query.get(i).get("lab_number")+"', '"
 						+query.get(i).get("mate")+"', '"
@@ -464,7 +464,6 @@ public class CaseSearchService {
 					ps = conn.prepareStatement(isql);
 					ps.execute();
 					ps.close();
-					//caseSearchDaoImpl.insert(jdbc, isql);
 					String baksql="insert into n_case_bak_tbl(case_name,case_status,rerunning_id) values(?,?,?)";
 					ups = conn.prepareStatement(baksql);
 					for (HashMap<String, Object> bMap : query) {
@@ -472,7 +471,6 @@ public class CaseSearchService {
 						ups.setString(2, (String)bMap.get("case_status"));
 						ups.setString(3, max_id+"");
 						ups.addBatch();
-						//caseSearchDaoImpl.insert(jdbc, baksql);
 					}
 					ups.executeBatch();
 					ups.close();
@@ -535,6 +533,13 @@ public class CaseSearchService {
 			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
 			sql ="select * from DftTag where case_name in ("+substring+")";
 			arrayList = caseSearchDaoImpl.query(jdbc, sql);
+		}
+		for (HashMap<String, Object> hashMap : arrayList) {
+			for (HashMap<String, Object> qMap : query) {
+				if(qMap.get("case_name").equals(hashMap.get("case_name"))) {
+					hashMap.put("per_case_status", qMap.get("case_status"));
+				}
+			}
 		}
 		return arrayList;
 	}
