@@ -169,11 +169,9 @@ public class JiraSeleniumController {
 					break;
 				}
 	    		logger.info("==================loopSetJiraCaseTbl waiting!!!==================");
-<<<<<<< HEAD
+
 	    		Thread.sleep(1000*60*60*6);
-=======
-	    		Thread.sleep(1000*60*1);
->>>>>>> dev
+
 	    		if (!Flag) {
 					break;
 				}
