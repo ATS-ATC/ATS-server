@@ -8,10 +8,24 @@
 <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
 <script src="./jquery/jquery-3.2.1.js"></script>
 <script src="./bootstrap/js/bootstrap.min.js"></script>
+
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
 <script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
+<script src="${pageContext.request.contextPath}/js/bootstrap-tabdrop.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
+<link href="${pageContext.request.contextPath}/css/tabdrop.css" rel="stylesheet" />
+
+<script src="${pageContext.request.contextPath}/google-code-prettify/prettify.js"></script>
+<link href="${pageContext.request.contextPath}/google-code-prettify/prettify.css" rel="stylesheet" />
+<script>
+$(function(){
+	window.prettyPrint && prettyPrint();
+	//$('.nav-tabs:first').tabdrop();
+	//$('.nav-tabs:last').tabdrop({text: 'More options'});
+	$('.nav-pills').tabdrop({text: 'With pills'});
+});
+</script>
 <title>caseSearchInfo</title>
 </head>
 <body style="background-color:#ECEFF3;padding-top:27px;">
@@ -147,14 +161,29 @@
 	        	<span class="glyphicon glyphicon-chevron-down " aria-hidden="true" style="display: inline;padding-right: 10px;"></span>
 	        </div>
 	    </div>
-	    <div class="panel-body collapse in" id="server_info">
-	        <div class="row">
+	    <div class="panel-body collapse in tabbable" id="server_info">
+	    
+	    	<ul class="nav nav-pills">
+	    	 <c:forEach items="${server_info }" var="data" varStatus="status">
+	    	 	
+	    	 	<li <c:if test="${status.index==0}">class="active"</c:if> >
+    				<a href="#${data.serverName }" data-toggle="tab" style="padding-top: 5px;padding-bottom: 5px;">${data.serverName }</a>
+    			</li>
+    		 </c:forEach> 
+    		</ul>
+    		
+    		<div class="tab-content">
+    		<c:forEach items="${server_info }" var="data" varStatus="status">
+    			<div <c:if test="${status.index!=0}">class="tab-pane"</c:if> <c:if test="${status.index==0}">class="tab-pane active"</c:if> id="${data.serverName }">
+    			
+    			
+	        <div class="row" style="margin-top: 30px;">
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					    <label for="serverName">serverName</label>
 					    <strong>
 						    <input type="text" class="form-control" id="serverName" style="display: inline;border-radius:4px;color: red;" disabled 
-						    value="${server_info.serverName }">
+						    value="${data.serverName }">
 					    </strong>
 					 </div>
 	        	</div>
@@ -162,21 +191,21 @@
 	        		 <div class="form-group">
 					     <label for="serverIp">serverIp</label>
 					    <input type="text" class="form-control" id="serverIp" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.serverIp }">
+					    value="${data.serverIp }">
 					 </div>
 	        	</div>
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					     <label for="serverRelease">serverRelease</label>
 					    <input type="text" class="form-control" id="serverRelease" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.serverRelease }">
+					    value="${data.serverRelease }">
 					 </div>
 	        	</div>
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					     <label for="serverProtocol">serverProtocol</label>
 					    <input type="text" class="form-control" id="serverProtocol" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.serverProtocol }">
+					    value="${data.serverProtocol }">
 					 </div>
 	        	</div>
 	        </div>	
@@ -185,28 +214,28 @@
 	        		 <div class="form-group">
 					     <label for="serverType">serverType</label>
 					    <input type="text" class="form-control" id="serverType" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.serverType }">
+					    value="${data.serverType }">
 					 </div>
 	        	</div>
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					     <label for="serverMate">serverMate</label>
 					    <input type="text" class="form-control" id="serverMate" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.serverMate }">
+					    value="${data.serverMate }">
 					 </div>
 	        	</div>
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					     <label for="mateServer">mateServer</label>
 					    <input type="text" class="form-control" id="mateServer" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.mateServer }">
+					    value="${data.mateServer }">
 					 </div>
 	        	</div>
 	        	<div class="col-md-3">
 	        		 <div class="form-group">
 					     <label for="setName">setName</label>
 					    <input type="text" class="form-control" id="setName" style="display: inline;border-radius:4px;" disabled 
-					    value="${server_info.setName }">
+					    value="${data.setName }">
 					 </div>
 	        	</div>
 	        </div>	
@@ -215,17 +244,21 @@
 	        		<div class="form-group">
 					     <label for="serverSPA">serverSPA</label>
 					    <input type="text" data-role="tagsinput" class="form-control" id="serverSPA" style="display: inline;border-radius:4px;" disabled 
-					    value='${fn:replace(fn:replace(server_info.serverSPA,"[",""),"]","") }'>
+					    value='${fn:replace(fn:replace(data.serverSPA,"[",""),"]","") }'>
 					 </div>
 	        	</div>
 	        	<div class="col-md-12">
 	        		<div class="form-group">
 					     <label for="serverRTDB">serverRTDB</label>
 					    <input type="text" data-role="tagsinput" class="form-control" id="serverRTDB" style="display: inline;border-radius:4px;" disabled 
-					    value='${fn:replace(fn:replace(server_info.serverRTDB,"[",""),"]","") }'>
+					    value='${fn:replace(fn:replace(data.serverRTDB,"[",""),"]","") }'>
 					 </div>
 	        	</div>
 	        </div>
+			</div>
+	        </c:forEach> 
+	        </div>
+	        
         </div>
 	</div>
 		

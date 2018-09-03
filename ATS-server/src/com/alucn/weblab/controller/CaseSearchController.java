@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -158,11 +162,12 @@ public class CaseSearchController {
 				model.addAttribute("scase_count", 0);
 			}*/
 		    
-		    String server_info_str = (String)hashMap.get("server_info");
+		    /*String server_info_str = (String)hashMap.get("server_info");
 		    JSONObject server_info = JSONObject.fromObject(server_info_str.trim());
 		    System.err.println("server_info:========="+server_info);
-		    model.addAttribute("server_info",server_info);
-		    
+		    model.addAttribute("server_info",server_info);*/
+		    ArrayList<HashMap<String, Object>> serverById = caseSearchService.searchCaseRunLogCaseServerById(paramMap);
+		    model.addAttribute("server_info",serverById);
 		    
 		}
 		
@@ -220,7 +225,24 @@ public class CaseSearchController {
 				}
 				paramMap.put("ids", ids);
 			}
-			
+			/*ExecutorService executor = Executors.newCachedThreadPool();
+			Callable task = new Callable<Map<String, Object>>() {
+				@Override
+				public Map<String, Object> call() throws Exception {
+					return caseSearchService.insertToDistributeCasesTbl(paramMap);
+				}
+			};
+			Map<String, Object> casesTbl = new HashMap<String, Object>();
+			try {
+				Future<Map<String, Object>> future = executor.submit(task);
+				if(future.get().size()>0) {
+					casesTbl=future.get();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally {
+				executor.shutdown();
+			}*/
 			Map<String, Object> casesTbl = caseSearchService.insertToDistributeCasesTbl(paramMap);
 			if((boolean) casesTbl.get("result")) {
 				returnMap.put("s_case", casesTbl.get("s_case"));

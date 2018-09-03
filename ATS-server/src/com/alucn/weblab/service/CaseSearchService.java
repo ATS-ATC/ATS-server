@@ -5,27 +5,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateInterceptor;
 import org.springframework.stereotype.Service;
-import org.sqlite.SQLiteException;
 
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
@@ -34,7 +29,6 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.dao.impl.CaseSearchDaoImpl;
-import com.alucn.weblab.model.Case;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -52,6 +46,7 @@ public class CaseSearchService {
 	private Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
 	public static volatile String sqlAdmin = "";
 	public static volatile String dataBase = "DailyCase";
+	//private Lock lock = new ReentrantLock(true);
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
@@ -292,6 +287,7 @@ public class CaseSearchService {
 	 * @throws Exception 
 	 */
 	public Map<String,Object> insertToDistributeCasesTbl(Map<String,Object> paramMap) throws Exception {
+		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		
 		String ids = (String)paramMap.get("ids").toString();
@@ -391,8 +387,7 @@ public class CaseSearchService {
 			String gid = caseSearchDaoImpl.query(jdbc, query_sql).get(0).get("gid").toString();
 			
 			
-			JSONArray spaList=new JSONArray();
-			JSONArray rtdbList=new JSONArray();
+			
 			String server = "";
 			if(conds[11].contains(",")) {
 				String[] servers = conds[11].split(",");
@@ -408,8 +403,12 @@ public class CaseSearchService {
 			}else {
 				server = server+"[\""+conds[11]+"\"]";
 			}
-			
-			JSONObject serverMemDb = new JSONObject();
+			//此处代码只允许一个server的spa和rtdb
+			//明显没有考虑多个server的情况
+			//当前问题是如果取每个server的spa和rtdb的交集是否会有影响
+			/*JSONObject serverMemDb = new JSONObject();
+			JSONArray spaList=new JSONArray();
+			JSONArray rtdbList=new JSONArray();
 			for (int i = 0; i < Servers.size(); i++) {
 				JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = serverMem.getString(Constant.SERVERNAME);
@@ -419,8 +418,25 @@ public class CaseSearchService {
 					serverMemDb=serverMem;
 					System.err.println("serverMemDb:===="+serverMemDb);
 				}
-			}
+			}*/
+			
+			
+			
+			
+			
+			
+			
 			for(int i=0; i<query.size(); i++){
+				
+				String dpendSql = "select * from CaseDepends where case_name='"+query.get(i).get("case_name")+"'";
+				ArrayList<HashMap<String, Object>> dpendList = caseSearchDaoImpl.query(jdbc, dpendSql);
+				String spa = "";
+				String db = "";
+				if(dpendList.size()>0) {
+					spa = (String) dpendList.get(0).get("SPA");
+					db = (String) dpendList.get(0).get("DB");
+				}
+				
 				String disSql="replace into toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
 						+query.get(i).get("case_name")+"', '"
 						+query.get(i).get("lab_number")+"', '"
@@ -430,8 +446,10 @@ public class CaseSearchService {
 						+query.get(i).get("second_data")+"', '"
 						+query.get(i).get("release")+"', '"
 						+query.get(i).get("porting_release")+"', '"
-						+spaList.toString()+"', '"
-						+rtdbList.toString()+"', '"
+						/*+spaList.toString()+"', '"
+						+rtdbList.toString()+"', '"*/
+						+spa+"', '"
+						+db+"', '"
 						+server+"', '"
 						+query.get(i).get("customer")+"', "
 						+gid+");";
@@ -446,10 +464,12 @@ public class CaseSearchService {
 			
 			PreparedStatement ps = null;
 			PreparedStatement ups = null;
+			PreparedStatement sps = null;
 			Connection conn = jdbc.getConnection();
 			conn.setAutoCommit(false);
 			
 			while(i<10) {
+				//lock.lock();
 				String idsql="select max(int_id)+1 max_id from n_rerunning_case_tbl";
 				ArrayList<HashMap<String, Object>> idList = caseSearchDaoImpl.query(jdbc, idsql);
 				String s_max_id = (String) idList.get(0).get("max_id");
@@ -458,22 +478,82 @@ public class CaseSearchService {
 					max_id = Integer.parseInt(s_max_id);
 				}
 				try {
-					String isql ="insert into n_rerunning_case_tbl(int_id,title,condition,server_info,author,datetime) values("
-							+max_id+",'"+title +"','"+condition+"','"+serverMemDb.toString()+"','"+login+"',datetime('now', 'localtime'))";
+					String isql ="insert into n_rerunning_case_tbl(int_id,title,server_info,condition,author,datetime) values("
+							+max_id+",'"+title +"','"+server+"','"+condition+"','"+login+"',datetime('now', 'localtime'))";
 					System.out.println("isql+================="+isql);
 					ps = conn.prepareStatement(isql);
 					ps.execute();
 					ps.close();
-					String baksql="insert into n_case_bak_tbl(case_name,case_status,rerunning_id) values(?,?,?)";
+					
+					
+					
+					String baksql="insert into n_case_bak_tbl(case_name,case_status,spa,db,rerunning_id) values(?,?,?,?,?)";
 					ups = conn.prepareStatement(baksql);
 					for (HashMap<String, Object> bMap : query) {
+						String dpendSql = "select * from CaseDepends where case_name='"+(String)bMap.get("case_name")+"'";
+						ArrayList<HashMap<String, Object>> dpendList = caseSearchDaoImpl.query(jdbc, dpendSql);
+						String spa = "";
+						String db = "";
+						if(dpendList.size()>0) {
+							spa = (String) dpendList.get(0).get("SPA");
+							db = (String) dpendList.get(0).get("DB");
+						}
 						ups.setString(1, (String)bMap.get("case_name"));
 						ups.setString(2, (String)bMap.get("case_status"));
-						ups.setString(3, max_id+"");
+						ups.setString(3, spa);
+						ups.setString(4, db);
+						ups.setString(5, max_id+"");
 						ups.addBatch();
 					}
 					ups.executeBatch();
 					ups.close();
+					
+					
+					
+					String serverSql ="insert into n_case_server_tbl(rerunning_id,serverName,serverIp,serverRelease,serverProtocol,serverType,serverMate,mateServer,setName,serverSPA,serverRTDB) "
+							+ "values(?,?,?,?,?,?,?,?,?,?,?) ";
+					sps = conn.prepareStatement(serverSql);
+					
+					
+					for (int j = 0; j < Servers.size(); j++) {
+						JSONObject serverMem = Servers.getJSONObject(j).getJSONObject(Constant.LAB);
+						String serverName = serverMem.getString(Constant.SERVERNAME);
+						boolean flag =false;
+						if(conds[11].contains(",")) {
+							String[] servers = conds[11].split(",");
+							List<String> list=Arrays.asList(servers);
+							if(list.contains(serverName)) {
+								flag=true;
+							}
+						}else {
+							if(serverName.equals(conds[11])) {
+								flag=true;
+							}
+						}
+						
+						if(flag){
+							sps.setString(1, max_id+"");
+							sps.setString(2, (String)serverMem.get("serverName"));
+							sps.setString(3, (String)serverMem.get("serverIp"));
+							sps.setString(4, (String)serverMem.get("serverRelease"));
+							sps.setString(5, (String)serverMem.get("serverProtocol"));
+							sps.setString(6, (String)serverMem.get("serverType"));
+							sps.setString(7, (String)serverMem.get("serverMate"));
+							sps.setString(8, (String)serverMem.get("mateServer"));
+							sps.setString(9, (String)serverMem.get("setName"));
+							sps.setString(10, serverMem.get("serverSPA").toString());
+							sps.setString(11, serverMem.get("serverRTDB").toString());
+							sps.addBatch();
+						}
+					}
+					sps.executeBatch();
+					sps.close();
+					
+					
+					
+					
+					
+					
 					conn.commit();
 					returnMap.put("result", true);
 					break;
@@ -481,9 +561,10 @@ public class CaseSearchService {
 					e.printStackTrace();
 					conn.rollback();
 					i++;
-					Thread.sleep(10000);
+					Thread.sleep(1000);
 				}finally {
 					conn.close();
+					//lock.unlock();
 				}
 			}
 			
@@ -543,6 +624,14 @@ public class CaseSearchService {
 		}
 		return arrayList;
 	}
+	public ArrayList<HashMap<String, Object>> searchCaseRunLogCaseServerById(Map<String, Object> param) throws Exception {
+		String sql ="select * from n_case_server_tbl where stateflag='0' and rerunning_id= "+param.get("int_id");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+		return query;
+	}
+	
+	
 	/*public ArrayList searchCaseRunLogInfoById2(Map<String, Object> param) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc =  new JdbcUtil(Constant.DATASOURCE, dbFile);

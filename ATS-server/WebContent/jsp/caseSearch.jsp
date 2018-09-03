@@ -690,7 +690,7 @@ $(function() {
 				                <div class="row">
 					                <div class="col-md-12">
 					                	<h4 style="display: inline;">Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
-										<select id="server" name="server" title="--Please Select--" class="selectpicker" multiple data-live-search="true" data-max-options="1">
+										<select id="server" name="server" title="--Please Select--" class="selectpicker" multiple data-live-search="true" ><!-- data-max-options="1" -->
 											<c:if test="${servers!=null && fn:length(servers) > 0}">
 												<%-- <% if(auth.equals("errorCases")){ %> --%>
 													<c:forEach items="${servers}" var="s">
