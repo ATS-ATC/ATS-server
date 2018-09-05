@@ -166,6 +166,7 @@ public class CaseSearchController {
 		    JSONObject server_info = JSONObject.fromObject(server_info_str.trim());
 		    System.err.println("server_info:========="+server_info);
 		    model.addAttribute("server_info",server_info);*/
+			
 		    ArrayList<HashMap<String, Object>> serverById = caseSearchService.searchCaseRunLogCaseServerById(paramMap);
 		    model.addAttribute("server_info",serverById);
 		    

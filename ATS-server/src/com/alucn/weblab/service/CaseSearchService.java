@@ -572,7 +572,7 @@ public class CaseSearchService {
 		return returnMap;
 	}
 	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType) throws Exception {
-		String sql ="select int_id,title,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
+		String sql ="select int_id,title,server_info,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
 		/*if(auth=="all") {
 			
 		}*/

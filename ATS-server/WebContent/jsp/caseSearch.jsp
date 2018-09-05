@@ -97,8 +97,8 @@ $(function() {
             	return a;
             }
         }, {
-            field: 'condition',
-            title: 'condition'
+            field: 'server_info',
+            title: 'server_info'
         }, {
             field: 'author',
             title: 'author'
