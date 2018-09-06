@@ -26,7 +26,7 @@ public class MainService {
 		String sql = "select a.customer,cc,ff from (\n" + 
 				"select customer,count(1) cc from DftTag where case_status='S' group by customer order by cc asc\n" + 
 				")a\n" + 
-				"join (\n" + 
+				"left join (\n" + 
 				"select customer,count(1) ff from DftTag where case_status='F' group by customer\n" + 
 				") b on a.customer=b.customer";
 		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
@@ -38,7 +38,7 @@ public class MainService {
 		String sql = "select a.release,cc,ff from (\n" + 
 				"select release,count(1) cc from DftTag where case_status='S' group by release order by release asc\n" + 
 				")a \n" + 
-				"join (\n" + 
+				"left join (\n" + 
 				"select release,count(1) ff from DftTag where case_status='F' group by release\n" + 
 				") b on a.release=b.release";
 		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
