@@ -35,6 +35,7 @@ import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.model.ServerMate;
 import com.alucn.casemanager.server.common.model.ServerType;
+import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.SendMail;
@@ -45,20 +46,24 @@ import net.sf.json.JSONObject;
 
 public class DistriButeCaseToLab {
 	public static Logger logger = Logger.getLogger(DistriButeCaseToLab.class);
-	
-	String specialRelease = "28A,28C,28F,28G,28H";
 
+	String specialRelease = "28A,28C,28F,28G,28H";
+	
 	int counterUninsRS=0;
-	
+	Map<String, Integer> idleNum = new HashMap<String, Integer>();
+	List<String> reInstallFailList = new ArrayList<String>();
+	boolean reInstallNext = true;
 	private DistriButeCaseToLab(){};
+
 	static DistriButeCaseToLab instance = null;
-	
-	public static DistriButeCaseToLab getDistriButeCaseToLab(){
-		if(instance == null){
+
+	public static DistriButeCaseToLab getDistriButeCaseToLab() {
+		if (instance == null) {
 			instance = new DistriButeCaseToLab();
 		}
 		return instance;
 	}
+
 	/**
 	 * <pre>
 	 * Example: GetServerInfoFromDB();
@@ -138,7 +143,11 @@ public class DistriButeCaseToLab {
 	private boolean IsInJSONArrayWithoutCase(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
 			String A_value = String.valueOf(list.get(i));
-			if (A_value.equalsIgnoreCase(String.valueOf(value)) || A_value.equalsIgnoreCase(String.valueOf(value)+"DB")|| A_value.equalsIgnoreCase(String.valueOf(value)+"RTDB") || A_value.equalsIgnoreCase(String.valueOf(value)+"V7") || A_value.equalsIgnoreCase(String.valueOf(value)+"7")) {
+			if (A_value.equalsIgnoreCase(String.valueOf(value))
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "DB")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "RTDB")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "V7")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "7")) {
 				return true;
 			}
 		}
@@ -164,6 +173,7 @@ public class DistriButeCaseToLab {
 
 		return -1;
 	}
+
 	/**
 	 * <pre>
 	 * Example: updateKvmDB();
@@ -358,6 +368,7 @@ public class DistriButeCaseToLab {
 
 		return releaseArray;
 	}
+
 	/**
 	 * <pre>
 	 * Example: RemoveRelease(list);
@@ -367,21 +378,22 @@ public class DistriButeCaseToLab {
 	 * Variable：specialRelease
 	 * </pre>
 	 */
-	private JSONArray RemoveRelease(JSONArray list){
-		
-	    JSONArray jsonList = new JSONArray();
-	    for(int i = 0; i < list.size(); i++){
-	    	String temp = String.valueOf(list.get(i)).replaceAll("\\d\\w+$", "");
-	    	for(int j=0; j<specialRelease.split(",").length; j++){
-	    		if(temp.endsWith(specialRelease.split(",")[j])){
-	    			temp = temp.substring(temp.indexOf(specialRelease.split(",")[j]), temp.length());
-	    		}
-	    	}
-	        jsonList.add(temp);
-	    }
-	    
-	    return jsonList;
+	private JSONArray RemoveRelease(JSONArray list) {
+
+		JSONArray jsonList = new JSONArray();
+		for (int i = 0; i < list.size(); i++) {
+			String temp = String.valueOf(list.get(i)).replaceAll("\\d\\w+$", "");
+			for (int j = 0; j < specialRelease.split(",").length; j++) {
+				if (temp.endsWith(specialRelease.split(",")[j])) {
+					temp = temp.substring(temp.indexOf(specialRelease.split(",")[j]), temp.length());
+				}
+			}
+			jsonList.add(temp);
+		}
+
+		return jsonList;
 	}
+
 	/**
 	 * <pre>
 	 * Example: 
@@ -394,10 +406,10 @@ public class DistriButeCaseToLab {
 	private void UpdateCaseStatusDB(JSONArray caseList) {
 		Connection connection = null;
 		Statement state = null;
-		
+
 		Connection connection_DftCaseDB = null;
 		Statement state_DftCaseDB = null;
-		
+
 		String QuerySql = null;
 		String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		String DftCaseDB = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
@@ -410,7 +422,7 @@ public class DistriButeCaseToLab {
 			connection_DftCaseDB = DriverManager.getConnection("jdbc:sqlite:" + DftCaseDB);
 			state = connection.createStatement();
 			state_DftCaseDB = connection_DftCaseDB.createStatement();
-			
+
 			QuerySql = "select max(group_id) from toDistributeCases where case_name not in " + caseListStr;
 			try {
 				ResultSet result = state.executeQuery(QuerySql);
@@ -430,8 +442,8 @@ public class DistriButeCaseToLab {
 			}
 
 			QuerySql = "select D.case_name, D.base_data, D.special_data, D.lab_number, D.mate, D.customer, D.release, D.porting_release, C.SPA, C.DB as RTDB, C.SecData as second_data "
-					+ "from "+CaseSearchService.dataBase+" as D, CaseDepends as C where D.case_name = C.case_name and D.case_name in "
-					+ caseListStr
+					+ "from " + CaseSearchService.dataBase
+					+ " as D, CaseDepends as C where D.case_name = C.case_name and D.case_name in " + caseListStr
 					+ " order by D.lab_number, D.mate, D.special_data,  D.base_data, C.SecData, D.case_name;";
 			// int change_num = state.executeUpdate(UpdateSql);
 			// logger.error(QuerySql);
@@ -445,19 +457,19 @@ public class DistriButeCaseToLab {
 			String customer, release, porting_release;
 			JSONArray spaArray, rtdbArray;
 			boolean IsSame = true;
-			
+
 			JSONArray releaseList = GetReleaseList();
-			logger.debug("releaseList: " +  releaseList.toString());
+			logger.debug("releaseList: " + releaseList.toString());
 
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
 					true, null);
 			ResultSet result2 = null;
-			if(CaseSearchService.dataBase.equals("DailyCase")){
+			if (CaseSearchService.dataBase.equals("DailyCase")) {
 				result2 = state.executeQuery(QuerySql);
-			}else{
+			} else {
 				result2 = state_DftCaseDB.executeQuery(QuerySql);
 			}
-			
+
 			PreparedStatement prep = connection
 					.prepareStatement("replace into toDistributeCases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 
@@ -469,89 +481,102 @@ public class DistriButeCaseToLab {
 				new_mate = result2.getString("mate");
 				new_special_data = result2.getString("special_data");
 				new_base_data = result2.getString("base_data");
-				new_second_data = caseName.split("/")[0]+"/"+result2.getString("second_data");
+				new_second_data = caseName.split("/")[0] + "/" + result2.getString("second_data");
 				customer = result2.getString("customer");
 				release = result2.getString("release");
 				porting_release = result2.getString("porting_release");
 				SPA = result2.getString("SPA");
 				RTDB = result2.getString("RTDB");
-				//lineMate = result2.getString("LineMate");
-				//groupMate = result2.getString("GroupMate");
+				// lineMate = result2.getString("LineMate");
+				// groupMate = result2.getString("GroupMate");
 				spaArray = JSONArray.fromObject(SPA.split(","));
 				rtdbArray = JSONArray.fromObject(RTDB.split(","));
 				JSONArray kvmList = new JSONArray();
 				String serverName = null;
-				Map<String,Set<Map<String,JSONObject>>> serversMap =  getServers(Servers);
+				Map<String, Set<Map<String, JSONObject>>> serversMap = getServers(Servers);
 				JSONArray infos = new JSONArray();
-				
-				if(new_mate.equals(Constant.MATEN)){
-					if(new_lab_number.equals("2")){//L/G  >=3 do not
-						for(String key : serversMap.keySet()){
+
+				if (new_mate.equals(Constant.MATEN)) {
+					if (new_lab_number.equals("2")) {// L/G >=3 do not
+						for (String key : serversMap.keySet()) {
 							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
-							while(iterator.hasNext()){
-								for(JSONObject value : iterator.next().values()){
-									if(ServerType.LINE.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))){
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))) {
 										infos.add(value);
 									}
 								}
 							}
 						}
-						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
-					}else if(new_lab_number.equals("1")){//lab 1
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+					} else if (new_lab_number.equals("1")) {// lab 1
 						JSONArray infosLine = new JSONArray();
-						for(String key : serversMap.keySet()){
+						for (String key : serversMap.keySet()) {
 							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
-							while(iterator.hasNext()){
-								for(JSONObject value : iterator.next().values()){
-									if(ServerType.STANDALONE.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE)) && ServerMate.N.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
-										infos.add(value);//Standalone
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.STANDALONE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))
+											&& ServerMate.N.getName().equals(
+													value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))) {
+										infos.add(value);// Standalone
 									}
-									if(ServerType.LINE.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))){
-										infosLine.add(value);//L/G nomate
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))) {
+										infosLine.add(value);// L/G nomate
 									}
 								}
 							}
 						}
-						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
-						if("".equals(serverName)){
-							serverName = gerServer(infosLine, customer, release, porting_release, releaseList, spaArray, rtdbArray);
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+						if ("".equals(serverName)) {
+							serverName = gerServer(infosLine, customer, release, porting_release, releaseList, spaArray,
+									rtdbArray);
 						}
 					}
-				}else if(new_mate.equals(Constant.MATEY)){
-					if(Integer.parseInt(new_lab_number)>=3){
-//						if(groupMate.equals("N")){
-							for(String key : serversMap.keySet()){
-								Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
-								while(iterator.hasNext()){
-									for(JSONObject value : iterator.next().values()){
-										if(ServerType.LINE.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE)) && ServerMate.PRIMARY.getName().equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
-											infos.add(value);
-										}
+				} else if (new_mate.equals(Constant.MATEY)) {
+					if (Integer.parseInt(new_lab_number) >= 3) {
+						// if(groupMate.equals("N")){
+						for (String key : serversMap.keySet()) {
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))
+											&& ServerMate.PRIMARY.getName().equals(
+													value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))) {
+										infos.add(value);
 									}
 								}
 							}
-							serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
-						/*}else {
-							JSONArray infos = new JSONArray();
-							for(String key : serversMap.keySet()){
-								Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
-								while(iterator.hasNext()){
-									for(JSONObject value : iterator.next().values()){
-										if("L".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).getString(Constant.SERVERTPYE)) && "P".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))){
-											infos.add(value);
-										}
-									}
-								}
-							}
-							serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray, rtdbArray);
-						}*/
+						}
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+						/*
+						 * }else { JSONArray infos = new JSONArray(); for(String key :
+						 * serversMap.keySet()){ Iterator<Map<String, JSONObject>> iterator =
+						 * serversMap.get(key).iterator(); while(iterator.hasNext()){ for(JSONObject
+						 * value : iterator.next().values()){
+						 * if("L".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).
+						 * getString(Constant.SERVERTPYE)) &&
+						 * "P".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).
+						 * getString(Constant.SERVERMATE))){ infos.add(value); } } } } serverName =
+						 * gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+						 * rtdbArray); }
+						 */
 					}
 				}
-				if("".equals(serverName)){
+				if ("".equals(serverName)) {
 					continue;
 				}
-				
-//				logger.error("ServerName:"+serverName + "---" + "CaseName:"+caseName + "new_lab_number:"+new_lab_number + "new_mate:"+new_mate + "customer:"+customer + "release:"+release+ "porting_release:"+porting_release);
+
+				// logger.error("ServerName:"+serverName + "---" + "CaseName:"+caseName +
+				// "new_lab_number:"+new_lab_number + "new_mate:"+new_mate +
+				// "customer:"+customer + "release:"+release+
+				// "porting_release:"+porting_release);
 				kvmList.add(serverName);
 				if (!new_lab_number.equals(old_lab_number)) {
 					IsSame = false;
@@ -627,6 +652,7 @@ public class DistriButeCaseToLab {
 
 		}
 	}
+
 	/**
 	 * <pre>
 	 * Example: getServers(infos)；
@@ -636,48 +662,48 @@ public class DistriButeCaseToLab {
 	 * Variable：none
 	 * </pre>
 	 */
-	public Map<String,Set<Map<String,JSONObject>>> getServers(JSONArray infos){
-		Map<String,Set<Map<String,JSONObject>>> setMap = new HashMap<String,Set<Map<String,JSONObject>>>();
-		for(int i=0; i<infos.size(); i++){
+	public Map<String, Set<Map<String, JSONObject>>> getServers(JSONArray infos) {
+		Map<String, Set<Map<String, JSONObject>>> setMap = new HashMap<String, Set<Map<String, JSONObject>>>();
+		for (int i = 0; i < infos.size(); i++) {
 			JSONObject info = infos.getJSONObject(i);
 			JSONObject lib = info.getJSONObject(Constant.LAB);
 			String setName = lib.getString(Constant.SETNAME);
 			String serverName = lib.getString(Constant.SERVERNAME);
 			String mateServer = lib.getString(Constant.MATESERVER);
-			if(setMap.get(setName)==null){
-				Set<Map<String,JSONObject>> serverSet = new HashSet<Map<String,JSONObject>>();
-				if(mateServer.equals("N")){
-					Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+			if (setMap.get(setName) == null) {
+				Set<Map<String, JSONObject>> serverSet = new HashSet<Map<String, JSONObject>>();
+				if (mateServer.equals("N")) {
+					Map<String, JSONObject> serverMap = new HashMap<String, JSONObject>();
 					serverMap.put(serverName, info);
 					serverSet.add(serverMap);
 					setMap.put(setName, serverSet);
-				}else{
-					Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+				} else {
+					Map<String, JSONObject> mateMap = new HashMap<String, JSONObject>();
 					mateMap.put(mateServer, info);
 					serverSet.add(mateMap);
 					setMap.put(setName, serverSet);
 				}
-			}else{
-				Set<Map<String,JSONObject>> serverSet = setMap.get(setName);
+			} else {
+				Set<Map<String, JSONObject>> serverSet = setMap.get(setName);
 				Iterator<Map<String, JSONObject>> iterator = serverSet.iterator();
 				boolean isMate = false;
-				while(iterator.hasNext()){
-					Map<String,JSONObject> mateOrServerMap = iterator.next();
-					if(mateOrServerMap.get(serverName)!=null){
+				while (iterator.hasNext()) {
+					Map<String, JSONObject> mateOrServerMap = iterator.next();
+					if (mateOrServerMap.get(serverName) != null) {
 						JSONObject mateinfo = mateOrServerMap.get(serverName);
 						mateOrServerMap.put(mateServer, mateinfo);
 						mateOrServerMap.put(serverName, info);
 						isMate = true;
 					}
 				}
-				if(!isMate){
-					if(mateServer.equals("N")){
-						Map<String,JSONObject> serverMap = new HashMap<String,JSONObject>();
+				if (!isMate) {
+					if (mateServer.equals("N")) {
+						Map<String, JSONObject> serverMap = new HashMap<String, JSONObject>();
 						serverMap.put(serverName, info);
 						serverSet.add(serverMap);
 						setMap.put(setName, serverSet);
-					}else{
-						Map<String,JSONObject> mateMap = new HashMap<String,JSONObject>();
+					} else {
+						Map<String, JSONObject> mateMap = new HashMap<String, JSONObject>();
 						mateMap.put(mateServer, info);
 						serverSet.add(mateMap);
 						setMap.put(setName, serverSet);
@@ -687,6 +713,7 @@ public class DistriButeCaseToLab {
 		}
 		return setMap;
 	}
+
 	/**
 	 * <pre>
 	 * Example: 
@@ -698,50 +725,52 @@ public class DistriButeCaseToLab {
 	 * Variable：
 	 * </pre>
 	 */
-	public String gerServer(JSONArray Servers,String customer, String release, String porting_release,JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray){
+	public String gerServer(JSONArray Servers, String customer, String release, String porting_release,
+			JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray) {
 		String serverName = "";
 		String serverNameTmp = "";
-		for (int i=0; i < Servers.size(); i++) {
+		for (int i = 0; i < Servers.size(); i++) {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			serverName = ServerMem.getString(Constant.SERVERNAME);
 			JSONArray spaList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
 			JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
 			String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
 			String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
-			//logger.error("Server: " + spaList.toString() + " ---- " + rtdbList.toString());
-			//logger.error(" ---------------------------- " + serverName + " ------------------------------");
+			// logger.error("Server: " + spaList.toString() + " ---- " +
+			// rtdbList.toString());
+			// logger.error(" ---------------------------- " + serverName + "
+			// ------------------------------");
 			if (!isLabListContainsCaseList(spaList, spaArray)) {
 				continue;
 			}
 			if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
-				//logger.error("Server: " + rtdbList.toString() + "case: " + rtdbArray.toString());
+				// logger.error("Server: " + rtdbList.toString() + "case: " +
+				// rtdbArray.toString());
 				continue;
 			}
 			if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
 					|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
-			   //logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
+				// logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
 				continue;
 			}
 			boolean isReleaseMath = false;
-			//logger.error(serverRelease + " --- " + release);
+			// logger.error(serverRelease + " --- " + release);
 			if (serverRelease.equals(release)) {
 				isReleaseMath = true;
 				return serverName;
 			} else {
 				JSONArray portingReleaseList = JSONArray
 						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
-				//logger.error(serverRelease + " --- " + portingReleaseList);
+				// logger.error(serverRelease + " --- " + portingReleaseList);
 				if (IsInJSONArray(serverRelease, portingReleaseList)) {
 					isReleaseMath = true;
 				} else {
 					if (porting_release.endsWith("+")) {
 						int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
-						//logger.error(serverRelease + " --- " + releaseList);
+						// logger.error(serverRelease + " --- " + releaseList);
 						if (serverReleasePostion != -1) {
-							int LastReleasePostion = postionInJSONArray(
-									porting_release.substring(porting_release.lastIndexOf(",") + 1,
-											porting_release.length() - 1),
-									releaseList);
+							int LastReleasePostion = postionInJSONArray(porting_release.substring(
+									porting_release.lastIndexOf(",") + 1, porting_release.length() - 1), releaseList);
 							if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
 								isReleaseMath = true;
 							}
@@ -753,46 +782,42 @@ public class DistriButeCaseToLab {
 
 			if (isReleaseMath) {
 				serverNameTmp = serverName;
-			}else{
-//			    logger.debug("case_name: " + caseName + " Server: " + serverName);
+			} else {
+				// logger.debug("case_name: " + caseName + " Server: " + serverName);
 				continue;
 			}
 		}
-		
+
 		return serverNameTmp;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		DistriButeCaseToLab test = new DistriButeCaseToLab();
-		//JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
-		//System.out.println(getServerInfoFromDB);
+		// JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
+		// System.out.println(getServerInfoFromDB);
 		JSONObject distributeCases = test.GetDistributeCases();
 		System.out.println(distributeCases);
-		/*JSONArray releaseList = test.GetReleaseList();
-		System.out.println(releaseList.toString());
-		String porting_release = "SP18.3,SP18.9+";
-		String serverRelease = "SP17.3";
-		boolean isReleaseMath=false;
-		JSONArray portingReleaseList = JSONArray
-				.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
-		System.out.println(portingReleaseList.toString());
-		if (test.IsInJSONArray(serverRelease, portingReleaseList)) {
-			isReleaseMath = true;
-		} else {
-			if (porting_release.endsWith("+")) {
-				int serverReleasePostion = test.postionInJSONArray(serverRelease, releaseList);
-				//logger.error(serverRelease + " --- " + releaseList);
-				if (serverReleasePostion != -1) {
-					System.out.println(porting_release.substring(porting_release.lastIndexOf(",") + 1, porting_release.length() - 1));
-					int LastReleasePostion = test.postionInJSONArray( porting_release.substring(porting_release.lastIndexOf(",") + 1, porting_release.length() - 1), releaseList);
-					System.out.println(serverReleasePostion);
-					if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
-						isReleaseMath = true;
-					}
-				}
-			}
-		}*/
-		
+		/*
+		 * JSONArray releaseList = test.GetReleaseList();
+		 * System.out.println(releaseList.toString()); String porting_release =
+		 * "SP18.3,SP18.9+"; String serverRelease = "SP17.3"; boolean
+		 * isReleaseMath=false; JSONArray portingReleaseList = JSONArray
+		 * .fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") +
+		 * "\"]"); System.out.println(portingReleaseList.toString()); if
+		 * (test.IsInJSONArray(serverRelease, portingReleaseList)) { isReleaseMath =
+		 * true; } else { if (porting_release.endsWith("+")) { int serverReleasePostion
+		 * = test.postionInJSONArray(serverRelease, releaseList);
+		 * //logger.error(serverRelease + " --- " + releaseList); if
+		 * (serverReleasePostion != -1) {
+		 * System.out.println(porting_release.substring(porting_release.lastIndexOf(",")
+		 * + 1, porting_release.length() - 1)); int LastReleasePostion =
+		 * test.postionInJSONArray(
+		 * porting_release.substring(porting_release.lastIndexOf(",") + 1,
+		 * porting_release.length() - 1), releaseList);
+		 * System.out.println(serverReleasePostion); if (LastReleasePostion != -1 &&
+		 * serverReleasePostion >= LastReleasePostion) { isReleaseMath = true; } } } }
+		 */
+
 	}
 
 	private void UpdatedistributeDB(JSONArray KVMList) {
@@ -800,11 +825,10 @@ public class DistriButeCaseToLab {
 
 		Connection connection = null;
 		Statement state = null;
-		
-		
+
 		Connection connection_DftCaseDB = null;
 		Statement state_DftCaseDB = null;
-		
+
 		try {
 			Class.forName("org.sqlite.JDBC");
 			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
@@ -827,7 +851,7 @@ public class DistriButeCaseToLab {
 				}
 			}
 
-			if(CaseSearchService.sqlAdmin.equals("")){
+			if (CaseSearchService.sqlAdmin.equals("")) {
 				query_sql = "select case_name from DailyCase where case_status = 'I' order by lab_number asc,special_data asc;";
 				// query_sql = "select case_name from DailyCase where case_name not
 				// in (select case_name from toDistributeCases);";
@@ -838,18 +862,18 @@ public class DistriButeCaseToLab {
 
 				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
 				state.executeUpdate(query_sql);
-			}else{
+			} else {
 				try {
-					String attachDatabase = "ATTACH '"+DftCaseDB+"' As dt;";
+					String attachDatabase = "ATTACH '" + DftCaseDB + "' As dt;";
 					state.execute(attachDatabase);
 				} catch (Exception e) {
-				}finally{
+				} finally {
 					String syncCaseDepends = "replace Into CaseDepends(case_name, SPA, DB, SecData) select case_name, SPA, DB, SecData from dt.CaseDepends;";
 					state.execute(syncCaseDepends);
 				}
-				
+
 				query_sql = CaseSearchService.sqlAdmin;
-				if(query_sql.contains("DailyCase")){
+				if (query_sql.contains("DailyCase")) {
 					// query_sql = "select case_name from DailyCase where case_name not
 					// in (select case_name from toDistributeCases);";
 					ResultSet result2 = state.executeQuery(query_sql);
@@ -857,9 +881,10 @@ public class DistriButeCaseToLab {
 						caseList.add(result2.getString("case_name"));
 					}
 
-					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+CaseSearchService.sqlAdmin+"));";
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
+							+ CaseSearchService.sqlAdmin + "));";
 					state.executeUpdate(query_sql);
-				}else if(query_sql.contains("DftTag")){
+				} else if (query_sql.contains("DftTag")) {
 					ResultSet result2 = state_DftCaseDB.executeQuery(query_sql);
 					String tmp = "";
 					while (result2.next()) {
@@ -869,13 +894,14 @@ public class DistriButeCaseToLab {
 						tmp += "\"";
 						tmp += ",";
 					}
-					tmp = tmp.substring(0,tmp.length() - 1);
-					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("+tmp+"));";
+					tmp = tmp.substring(0, tmp.length() - 1);
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
+							+ tmp + "));";
 					state.executeUpdate(query_sql);
 				}
 			}
-			
-			//caselist里面放的是曾经跑过的case但是现在serverinfo改动了，和一直没有跑的case
+
+			// caselist里面放的是曾经跑过的case但是现在serverinfo改动了，和一直没有跑的case
 			if (caseList.size() > 0) {
 				UpdateCaseStatusDB(caseList);
 			}
@@ -900,6 +926,7 @@ public class DistriButeCaseToLab {
 
 		}
 	}
+
 	/**
 	 * <pre>
 	 * Example: genCaseListToLab('BJRMS21C');
@@ -921,25 +948,25 @@ public class DistriButeCaseToLab {
 			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 			state = connection.createStatement();
-			/*String query_case_sql = "select case_name from DistributedCaseTbl;";
-			ResultSet result2 = state.executeQuery(query_case_sql);
-			JSONArray case_name_list = new JSONArray();
-			while (result2.next()) {
-				String Case_name = result2.getString("case_name");
-				case_name_list.add(Case_name);
-			}
-			System.err.println("case_name_list:=========="+case_name_list.toString());
-			*/
+			/*
+			 * String query_case_sql = "select case_name from DistributedCaseTbl;";
+			 * ResultSet result2 = state.executeQuery(query_case_sql); JSONArray
+			 * case_name_list = new JSONArray(); while (result2.next()) { String Case_name =
+			 * result2.getString("case_name"); case_name_list.add(Case_name); }
+			 * System.err.println("case_name_list:=========="+case_name_list.toString());
+			 */
 			String query_sql = "select case_name, group_id from toDistributeCases where server like '%" + ServerName
-					+ "%' and case_name not in "
-					+"(select distinct case_name from DistributedCaseTbl)"
-					/*+ case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]", ")")*/
+					+ "%' and case_name not in " + "(select distinct case_name from DistributedCaseTbl)"
+					/*
+					 * + case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]",
+					 * ")")
+					 */
 					+ " order by group_id";
-			System.out.println("query_sql:========"+query_sql);
+			System.out.println("query_sql:========" + query_sql);
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {
-				//↓↓↓↓↓↓↓↓↓↓↓只获取一组group_id 相同的一组case↓↓↓↓↓↓↓↓↓↓↓
+				// ↓↓↓↓↓↓↓↓↓↓↓只获取一组group_id 相同的一组case↓↓↓↓↓↓↓↓↓↓↓
 				new_group = result.getInt("group_id");
 				if (new_group != old_group) {
 					if (old_group != -1) {
@@ -947,7 +974,7 @@ public class DistriButeCaseToLab {
 					}
 					old_group = new_group;
 				}
-				//↑↑↑↑↑↑↑↑↑↑↑只获取一组group_id 相同的一组case↑↑↑↑↑↑↑↑↑↑↑
+				// ↑↑↑↑↑↑↑↑↑↑↑只获取一组group_id 相同的一组case↑↑↑↑↑↑↑↑↑↑↑
 				caseList.add(result.getString("case_name"));
 				CaseCount++;
 				if (CaseCount >= Integer.valueOf(ConfigProperites.getInstance().getMaxCaseSizeForOneLab())) {
@@ -979,6 +1006,7 @@ public class DistriButeCaseToLab {
 		}
 		return caseList;
 	}
+
 	/**
 	 * <pre>
 	 * Example: DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
@@ -991,47 +1019,55 @@ public class DistriButeCaseToLab {
 	public JSONObject GetDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
-		//更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
+		// 更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
 		JSONArray changedKvmList = updateKvmDB();
-		//找到曾经跑过，但是server信息更新了的case和没有跑过的case
+		// 找到曾经跑过，但是server信息更新了的case和没有跑过的case
 		UpdatedistributeDB(changedKvmList);
-		//从内存中读取server信息
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
+		// 从内存中读取server信息
+		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
+				null);
 		JSONObject ServerMem;
-		int idleServerNum=0;
-		int caseListNull=0;
+		int idleServerNum = 0;
+		int caseListNull = 0;
 		for (int i = 0; i < Servers.size(); i++) {
-			//判断是否是idle状态
-			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
+			// 判断是否是idle状态
+			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
+					.equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
 				ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = ServerMem.getString(Constant.SERVERNAME);
 
 				logger.debug("idle server: " + serverName);
-				//            idle server:      BJRMS21C
-				
+				// idle server: BJRMS21C
+
 				JSONArray caseList = genCaseListToLab(serverName);
-				//select case_name from toDistributeCases where server like '%BJRMS21C%' or server like '%BJRMS21D%' or server like '%BJRMS21A%' or server like '%BJRMS21E%' or server like '%BJRMS21F%' or server like '%BJRMS21B%';
-				//System.err.println("genCaseListToLab caseList:======="+caseList);
-				//                    genCaseListToLab caseList:=======["78232/fs8169.json","78232/fs8170.json","78232/fs8171.json","78232/fs8175.json","78232/fs8177.json","78232/fs8180.json","78232/fs8182.json","78232/fs9146.json","78232/fs9170.json","78232/fs9171.json","78232/fs9175.json","78232/fs9180.json","78232/fs9183.json","78232/fs9185.json","78232/fs9188.json","78232/ft0201.json","78232/ft0202.json","78232/ft0608.json","78232/ft0611.json"]
-				if(caseList.size()==0){
+				// select case_name from toDistributeCases where server like '%BJRMS21C%' or
+				// server like '%BJRMS21D%' or server like '%BJRMS21A%' or server like
+				// '%BJRMS21E%' or server like '%BJRMS21F%' or server like '%BJRMS21B%';
+				// System.err.println("genCaseListToLab caseList:======="+caseList);
+				// genCaseListToLab
+				// caseList:=======["78232/fs8169.json","78232/fs8170.json","78232/fs8171.json","78232/fs8175.json","78232/fs8177.json","78232/fs8180.json","78232/fs8182.json","78232/fs9146.json","78232/fs9170.json","78232/fs9171.json","78232/fs9175.json","78232/fs9180.json","78232/fs9183.json","78232/fs9185.json","78232/fs9188.json","78232/ft0201.json","78232/ft0202.json","78232/ft0608.json","78232/ft0611.json"]
+				if (caseList.size() == 0) {
 					caseListNull++;
 				}
 				JSONObject labInfo = new JSONObject();
 				labInfo.put("uuid", UUID.randomUUID().toString());
 				labInfo.put("case_list", caseList);
-				//更新数据库内的分发表(只有两个字段，case_name，server_name)用的replace into方法
+				// 更新数据库内的分发表(只有两个字段，case_name，server_name)用的replace into方法
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
 		}
-		if(idleServerNum==Servers.size() && caseListNull==Servers.size() ){
-			if(counterUninsRS==8640){
+		// Original send email logic reservation,Change == to > never go.
+		if (idleServerNum > Servers.size() && caseListNull == Servers.size()) {
+			if (counterUninsRS == 8640) {
 				logger.debug("send e-mail of Missing spa and rtdb!");
-				counterUninsRS=0;
-				Map<String,Map<String,Map<String,Map<String,String>>>> uninstallRSANSI = getUninstallRS2(Servers, "ANSI");
-				Map<String,Map<String,Map<String,Map<String,String>>>> uninstallRSITU = getUninstallRS2(Servers, "ITU");
-				//send mail
+				counterUninsRS = 0;
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSANSI = getUninstallRS2(Servers,
+						"ANSI");
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSITU = getUninstallRS2(Servers,
+						"ITU");
+				// send mail
 				JSONArray cc_list = new JSONArray();
 				JSONArray to_list = new JSONArray();
 				cc_list.add("lei.k.huang@alcatel-lucent.com");
@@ -1041,186 +1077,273 @@ public class DistriButeCaseToLab {
 			}
 			counterUninsRS++;
 		}
+		// Automatically determine case dependencies and send installed requests.
+		for (String serverName : idleNum.keySet()) {
+			int currentServerNum = idleNum.get(serverName);
+			logger.error(serverName + " is checked idle num +++++++++++++++++++++++++++" + currentServerNum);
+			if (currentServerNum > 5 && reInstallNext) {
+				reInstallNext = false;
+				for (int i = 0; i < Servers.size(); i++) {
+					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+					String serverName2 = serverMem.getString(Constant.SERVERNAME);
+					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS)
+							.getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
+						/*
+						 * String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL); String
+						 * serverRelease = serverMem.getString(Constant.SERVERRELEASE); JSONArray
+						 * serverSpa = serverMem.getJSONArray(Constant.SERVERSPA); JSONArray serverRtdb
+						 * = serverMem.getJSONArray(Constant.SERVERRTDB); JSONArray tempArray = new
+						 * JSONArray(); tempArray.add(Servers.getJSONObject(i));
+						 * Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI =
+						 * getUninstallRS2(tempArray, serverProtocol); Set<String> unInstallSpa =
+						 * unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet(); Set<String>
+						 * unInstallRtdb =
+						 * unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
+						 * if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){
+						 */
+						logger.debug("no matching case can run on " + serverName);
+						Thread installLabThread = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									String reqData = "";
+									if (reInstallFailList.size() == 0) {
+										String[] cmd = new String[] { "/bin/sh", "-c",
+												"python /home/huanglei/DB/QueryCaseDepends.py /home/huanglei/DB/caseinfo.db "
+														+ serverName };
+										Process ps = Runtime.getRuntime().exec(cmd);
+										BufferedReader br = new BufferedReader(
+												new InputStreamReader(ps.getInputStream()));
+										StringBuffer sb = new StringBuffer();
+										String line;
+										while ((line = br.readLine()) != null) {
+											sb.append(line);
+										}
+										JSONObject resultCaseDepends = JSONObject
+												.fromObject(sb.toString().replace("u'", "'"));
+										logger.error(
+												"resultCaseDepends +++++++++++++++++++++++++++" + resultCaseDepends);
+										reqData = "{'protocol': '" + resultCaseDepends.getString("protocl")
+												+ "', 'labname': ['" + serverName + "'], 'DB': "
+												+ resultCaseDepends.getString("DB") + ", 'mate': 'N', 'release': '"
+												+ resultCaseDepends.getString("release") + "', 'SPA': "
+												+ resultCaseDepends.getString("SPA") + "}";
+									} else {
+										reqData = reInstallFailList.get(0);
+										reInstallFailList.clear();
+									}
+									logger.error("reqData +++++++++++++++++++++++++++" + reqData);
+									String resResult = HttpReq.reqUrl(
+											"http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+									logger.debug("lab reinstall... " + serverName + " response result " + resResult);
+									if ("OK".equals(resResult)) {
+										while (true) {
+											String installLabResult = HttpReq
+													.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"
+															+ serverName + ".json")
+													.getJSONArray("content").getJSONObject(0).getString("status");
+											logger.debug("lab reinstall response is " + installLabResult);
+											if ("SUCCESS".equals(installLabResult)) {
+												idleNum.put(serverName, 0);
+												reInstallNext = true;
+												logger.debug("lab reinstall completed... " + serverName
+														+ " response result " + installLabResult);
+												break;
+											} else if ("Failed".equals(installLabResult)) {
+												reInstallNext = true;
+												reInstallFailList.add(reqData);
+											}
+											Thread.sleep(100000);
+										}
+									} else {
+										reInstallNext = true;
+										reInstallFailList.add(reqData);
+									}
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						});
+						installLabThread.start();
+						/*
+						 * }else{ Iterator<String> iteratorSpa = unInstallSpa.iterator();
+						 * while(iteratorSpa.hasNext()){ serverSpa.add(iteratorSpa.next()); }
+						 * Iterator<String> iteratorRtdb = unInstallSpa.iterator();
+						 * while(iteratorRtdb.hasNext()){ serverRtdb.add(iteratorRtdb.next()); } String
+						 * reqData =
+						 * "{'protocol': '"+serverProtocol+"', 'labname': ['"+serverName+"'], 'DB': "
+						 * +serverRtdb.toString()+", 'mate': 'N', 'release': '"
+						 * +serverRelease+"', 'SPA': "+unInstallSpa.toString()+"}"; String resResult =
+						 * HttpReq.reqUrl(
+						 * "http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+						 * while("OK".equals(resResult)){ String installLabResult =
+						 * HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+
+						 * serverName+".json").getJSONArray("content").getJSONObject(0).getString(
+						 * "status"); logger.debug("lab reinstall response is "+installLabResult);
+						 * if("SUCCESS".equals(installLabResult) ||
+						 * !"Installing".equals(installLabResult)){ idleNum.put(serverName, 0);
+						 * logger.debug("lab reinstall completed... " +
+						 * serverName+" response result "+installLabResult); break; }
+						 * Thread.sleep(100000); } }
+						 */
+					}
+				}
+			}
+			Thread.sleep(100000);
+		}
 		AvailableCases.put("availableCase", Cases);
-		//System.err.println("GetDistributeCases AvailableCases:============"+AvailableCases);
+		// System.err.println("GetDistributeCases
+		// AvailableCases:============"+AvailableCases);
 		return AvailableCases;
 	}
-	
-	/*private Map<String,Map<String,String>> getUninstallRS(JSONArray Servers, String protocol) throws Exception{
-		Map<String,String> rtdbMap = new HashMap<String,String>();
-		Map<String,String> spaMap = new HashMap<String,String>();
-		Map<String,Map<String,String>> unInstallRS = new HashMap<String,Map<String,String>>();
-		Map<String,String> unInstallRtdb = new HashMap<String,String>();
-		Map<String,String> unInstallSpa = new HashMap<String,String>();
-		String sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'";
-		for (int i = 0; i < Servers.size(); i++) {
-			JSONObject serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-			String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
-			if(protocol.equals(serverProtocol)){
-				JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
-				for (int m=0; m<serverSpa.size(); m++) {
-					String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
-					if(!serSpa.equals("")){
-						spaMap.put(serSpa, "");
-					}else{
-						continue;
-					}
-				}
-				JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
-				for (int n=0; n<serverRtdb.size(); n++) {
-					String serRtdb = mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)");
-					if(!serRtdb.equals("")){
-						rtdbMap.put(serRtdb, "");
-					}else{
-						continue;
-					}
-				}
-			}
+
+	/*
+	 * private Map<String,Map<String,String>> getUninstallRS(JSONArray Servers,
+	 * String protocol) throws Exception{ Map<String,String> rtdbMap = new
+	 * HashMap<String,String>(); Map<String,String> spaMap = new
+	 * HashMap<String,String>(); Map<String,Map<String,String>> unInstallRS = new
+	 * HashMap<String,Map<String,String>>(); Map<String,String> unInstallRtdb = new
+	 * HashMap<String,String>(); Map<String,String> unInstallSpa = new
+	 * HashMap<String,String>(); String
+	 * sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'"; for
+	 * (int i = 0; i < Servers.size(); i++) { JSONObject
+	 * serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB); String
+	 * serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
+	 * if(protocol.equals(serverProtocol)){ JSONArray serverSpa =
+	 * serverMem.getJSONArray(Constant.SERVERSPA); for (int m=0; m<serverSpa.size();
+	 * m++) { String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
+	 * if(!serSpa.equals("")){ spaMap.put(serSpa, ""); }else{ continue; } }
+	 * JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB); for (int
+	 * n=0; n<serverRtdb.size(); n++) { String serRtdb =
+	 * mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)"); if(!serRtdb.equals("")){
+	 * rtdbMap.put(serRtdb, ""); }else{ continue; } } } }
+	 * if(protocol.equals("ANSI")){ sql+=" and customer='VZW'"; }else{
+	 * sql+=" and customer!='VZW'"; } JdbcUtil jdbc = new
+	 * JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal(
+	 * "CaseInfoDB")); ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
+	 * for (int i = 0; i < list.size(); i++) { JSONArray serverSpa =
+	 * JSONArray.fromObject(list.get(i).get("SPA")); for (int m=0;
+	 * m<serverSpa.size(); m++) { String serSpa = mattch(serverSpa.getString(m),
+	 * "(^[A-Z,a-z]+)"); if(!serSpa.equals("")){ if(!spaMap.containsKey(serSpa)){
+	 * unInstallSpa.put(serSpa,""); } }else{ continue; } }
+	 * 
+	 * JSONArray serverRtdb = JSONArray.fromObject(list.get(i).get("RTDB")); for
+	 * (int n=0; n<serverRtdb.size(); n++) { String serRtdb =
+	 * mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)"); if(!serRtdb.equals("")){
+	 * if(!rtdbMap.containsKey(serRtdb)){ unInstallRtdb.put(serRtdb, ""); } }else{
+	 * continue; } }
+	 * 
+	 * } unInstallRS.put("SPA", unInstallSpa); unInstallRS.put("RTDB",
+	 * unInstallRtdb); return unInstallRS; }
+	 */
+	private Map<String, Map<String, Map<String, Map<String, String>>>> getUninstallRS2(JSONArray Servers,
+			String protocol) throws Exception {
+		Map<String, Map<String, Map<String, Map<String, String>>>> unInstallRS = new HashMap<String, Map<String, Map<String, Map<String, String>>>>();
+		Map<String, Map<String, Map<String, String>>> unInstallRtdb = new HashMap<String, Map<String, Map<String, String>>>();
+		Map<String, Map<String, Map<String, String>>> unInstallSpa = new HashMap<String, Map<String, Map<String, String>>>();
+		String sql = "SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'";
+		if (protocol.equals("ANSI")) {
+			sql += " and customer='VZW'";
+		} else {
+			sql += " and customer!='VZW'";
 		}
-		if(protocol.equals("ANSI")){
-			sql+=" and customer='VZW'";
-		}else{
-			sql+=" and customer!='VZW'";
-		}
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
-		for (int i = 0; i < list.size(); i++) {
-			JSONArray serverSpa = JSONArray.fromObject(list.get(i).get("SPA"));
-			for (int m=0; m<serverSpa.size(); m++) {
-				String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
-				if(!serSpa.equals("")){
-					if(!spaMap.containsKey(serSpa)){
-						unInstallSpa.put(serSpa,"");
-					}
-				}else{
-					continue;
-				}
-			}
-			
-			JSONArray serverRtdb = JSONArray.fromObject(list.get(i).get("RTDB"));
-			for (int n=0; n<serverRtdb.size(); n++) {
-				String serRtdb = mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)");
-				if(!serRtdb.equals("")){
-					if(!rtdbMap.containsKey(serRtdb)){
-						unInstallRtdb.put(serRtdb, "");
-					}
-				}else{
-					continue;
-				}
-			}
-			
-		}
-		unInstallRS.put("SPA", unInstallSpa);
-		unInstallRS.put("RTDB", unInstallRtdb);
-		return unInstallRS;
-	}
-	*/
-	private Map<String,Map<String,Map<String,Map<String,String>>>> getUninstallRS2(JSONArray Servers, String protocol) throws Exception{
-		Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRS = new HashMap<String,Map<String,Map<String,Map<String,String>>>>();
-		Map<String,Map<String,Map<String,String>>> unInstallRtdb = new HashMap<String,Map<String,Map<String,String>>>();
-		Map<String,Map<String,Map<String,String>>> unInstallSpa = new HashMap<String,Map<String,Map<String,String>>>();
-		String sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'";
-		if(protocol.equals("ANSI")){
-			sql+=" and customer='VZW'";
-		}else{
-			sql+=" and customer!='VZW'";
-		}
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-		ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
-		for(int j=0; j<list.size(); j++){
-			Map<String,String> caseRtdbMap = new HashMap<String,String>();
-			Map<String,String> caseSpaMap = new HashMap<String,String>();
+		for (int j = 0; j < list.size(); j++) {
+			Map<String, String> caseRtdbMap = new HashMap<String, String>();
+			Map<String, String> caseSpaMap = new HashMap<String, String>();
 			List<String> caseSpaAndRtdbList = new ArrayList<String>();
 			JSONArray caseSpa = JSONArray.fromObject(list.get(j).get("SPA"));
-			for (int m=0; m<caseSpa.size(); m++) {
+			for (int m = 0; m < caseSpa.size(); m++) {
 				String serSpa = mattch(caseSpa.getString(m), "(^[A-Z,a-z]+)");
-				if(!serSpa.equals("")){
+				if (!serSpa.equals("")) {
 					caseSpaAndRtdbList.add(serSpa);
 					caseSpaMap.put(serSpa, "");
-				}else{
+				} else {
 					continue;
 				}
 			}
-			
+
 			JSONArray caseRtdb = JSONArray.fromObject(list.get(j).get("RTDB"));
-			for (int n=0; n<caseRtdb.size(); n++) {
+			for (int n = 0; n < caseRtdb.size(); n++) {
 				String serRtdb = mattch(caseRtdb.getString(n), "(^[A-Z,a-z]+)");
-				if(!serRtdb.equals("")){
+				if (!serRtdb.equals("")) {
 					caseSpaAndRtdbList.add(serRtdb);
 					caseRtdbMap.put(serRtdb, "");
-				}else{
+				} else {
 					continue;
 				}
 			}
-			
-			Map<String,Double> maxMap = new HashMap<String,Double>();
-			Map<String,Map<String,Map<String,String>>> serverLaRSMap = new HashMap<String,Map<String,Map<String,String>>>();
+
+			Map<String, Double> maxMap = new HashMap<String, Double>();
+			Map<String, Map<String, Map<String, String>>> serverLaRSMap = new HashMap<String, Map<String, Map<String, String>>>();
 			for (int i = 0; i < Servers.size(); i++) {
-				Map<String,String> rtdbMap = new HashMap<String,String>();
-				Map<String,String> spaMap = new HashMap<String,String>();
-				JSONObject serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+				Map<String, String> rtdbMap = new HashMap<String, String>();
+				Map<String, String> spaMap = new HashMap<String, String>();
+				JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 				String serverName = serverMem.getString(Constant.SERVERNAME);
 				String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
-				if(protocol.equals(serverProtocol)){
+				if (protocol.equals(serverProtocol)) {
 					List<String> spaAndRtdbList = new ArrayList<String>();
 					JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
-					for (int m=0; m<serverSpa.size(); m++) {
+					for (int m = 0; m < serverSpa.size(); m++) {
 						String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
-						if(!serSpa.equals("")){
+						if (!serSpa.equals("")) {
 							spaMap.put(serSpa, "");
 							spaAndRtdbList.add(serSpa);
-						}else{
+						} else {
 							continue;
 						}
 					}
 					JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
-					for (int n=0; n<serverRtdb.size(); n++) {
+					for (int n = 0; n < serverRtdb.size(); n++) {
 						String serRtdb = mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)");
-						if(!serRtdb.equals("")){
+						if (!serRtdb.equals("")) {
 							rtdbMap.put(serRtdb, "");
 							spaAndRtdbList.add(serRtdb);
-						}else{
+						} else {
 							continue;
 						}
 					}
-					Map<String,Map<String,String>> SPAandRTDB = new HashMap<String,Map<String,String>>();
+					Map<String, Map<String, String>> SPAandRTDB = new HashMap<String, Map<String, String>>();
 					SPAandRTDB.put("SPA", spaMap);
 					SPAandRTDB.put("RTDB", rtdbMap);
-					serverLaRSMap.put(serverName,SPAandRTDB);
+					serverLaRSMap.put(serverName, SPAandRTDB);
 					spaAndRtdbList.retainAll(caseSpaAndRtdbList);
 					double inters = getIntersection(spaAndRtdbList, caseSpaAndRtdbList).size();
 					double union = getUnion(spaAndRtdbList, caseSpaAndRtdbList).size();
-					double num = getTwo(inters/union);
+					double num = getTwo(inters / union);
 					maxMap.put(serverName, num);
 				}
 			}
 			String serverName = getMaxValue(maxMap);
-			Map<String,String> serverSpa = serverLaRSMap.get(serverName).get("SPA");
-			Map<String,String> serverRTDB = serverLaRSMap.get(serverName).get("RTDB");
+			Map<String, String> serverSpa = serverLaRSMap.get(serverName).get("SPA");
+			Map<String, String> serverRTDB = serverLaRSMap.get(serverName).get("RTDB");
 			for (String key : caseSpaMap.keySet()) {
-				if(!serverSpa.containsKey(key)){
-					if(null == unInstallSpa.get(serverName)){
-						Map<String,String> unInSpaList = new HashMap<String,String>();
+				if (!serverSpa.containsKey(key)) {
+					if (null == unInstallSpa.get(serverName)) {
+						Map<String, String> unInSpaList = new HashMap<String, String>();
 						unInSpaList.put(key, "");
-						Map<String,Map<String,String>> unInSpa = new HashMap<String,Map<String,String>>();
+						Map<String, Map<String, String>> unInSpa = new HashMap<String, Map<String, String>>();
 						unInSpa.put("SPA", unInSpaList);
 						unInstallSpa.put(serverName, unInSpa);
-					}else{
-						unInstallSpa.get(serverName).get("SPA").put(key,"");
+					} else {
+						unInstallSpa.get(serverName).get("SPA").put(key, "");
 					}
 				}
 			}
-			
+
 			for (String key : caseRtdbMap.keySet()) {
-				if(!serverRTDB.containsKey(key)){
-					if(null == unInstallRtdb.get(serverName)){
-						Map<String,String> unInRtdbList = new HashMap<String,String>();
+				if (!serverRTDB.containsKey(key)) {
+					if (null == unInstallRtdb.get(serverName)) {
+						Map<String, String> unInRtdbList = new HashMap<String, String>();
 						unInRtdbList.put(key, "");
-						Map<String,Map<String,String>> unInRtdb = new HashMap<String,Map<String,String>>();
+						Map<String, Map<String, String>> unInRtdb = new HashMap<String, Map<String, String>>();
 						unInRtdb.put("RTDB", unInRtdbList);
 						unInstallRtdb.put(serverName, unInRtdb);
-					}else{
-						unInstallRtdb.get(serverName).get("RTDB").put(key,"");
+					} else {
+						unInstallRtdb.get(serverName).get("RTDB").put(key, "");
 					}
 				}
 			}
@@ -1229,49 +1352,49 @@ public class DistriButeCaseToLab {
 		unInstallRS.put("RTDB", unInstallRtdb);
 		return unInstallRS;
 	}
-	
+
 	public static String getMaxValue(Map<String, Double> map) {
-		double value=0;
-	    String maxKey = null;
-	    List<Double> list = new ArrayList<Double>();
-	    Iterator<Entry<String, Double>> ite = map.entrySet().iterator();
-	    while(ite.hasNext()){
-			   Map.Entry<String, Double> entry =(Map.Entry<String, Double>)ite.next();
-			   value = Double.parseDouble(entry.getValue().toString());
-			   list.add(entry.getValue());
-			   Collections.sort(list);
-			    
-			   if(value == Double.parseDouble(list.get(list.size()-1).toString())){
-			        maxKey = entry.getKey().toString();
-			   }
-	    }
-	    return maxKey;
+		double value = 0;
+		String maxKey = null;
+		List<Double> list = new ArrayList<Double>();
+		Iterator<Entry<String, Double>> ite = map.entrySet().iterator();
+		while (ite.hasNext()) {
+			Map.Entry<String, Double> entry = (Map.Entry<String, Double>) ite.next();
+			value = Double.parseDouble(entry.getValue().toString());
+			list.add(entry.getValue());
+			Collections.sort(list);
+
+			if (value == Double.parseDouble(list.get(list.size() - 1).toString())) {
+				maxKey = entry.getKey().toString();
+			}
+		}
+		return maxKey;
 	}
-	
-	private String mattch(String input, String regex){
+
+	private String mattch(String input, String regex) {
 		String mattchString = "";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(input);
-		if(matcher.find()){
+		if (matcher.find()) {
 			mattchString = matcher.group(1);
 		}
 		return mattchString;
 	}
-	
-	private List<String> getIntersection(List<String> listOne, List<String> listTwo){
+
+	private List<String> getIntersection(List<String> listOne, List<String> listTwo) {
 		listOne.retainAll(listTwo);
-		return  listOne;
+		return listOne;
 	}
-	
-	private List<String> getUnion(List<String> listOne, List<String> listTwo){
+
+	private List<String> getUnion(List<String> listOne, List<String> listTwo) {
 		listTwo.removeAll(listOne);
 		listOne.addAll(listTwo);
 		return listOne;
 	}
- 	
-	private double getTwo(double num){
+
+	private double getTwo(double num) {
 		BigDecimal bigd = new BigDecimal(num);
-	    double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-	    return n;
+		double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		return n;
 	}
 }
