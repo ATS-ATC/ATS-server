@@ -27,6 +27,7 @@ public class MainService {
     	caseCounter.put("F", 0);
     	caseCounter.put("P", 0);
     	caseCounter.put("O", 0);
+    	caseCounter.put("PP", 0);
     	caseCounter.put("I", 0);
     	caseCounter.put("R", 0);
     	String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
