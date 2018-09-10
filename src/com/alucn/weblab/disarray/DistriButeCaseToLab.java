@@ -35,6 +35,7 @@ import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.model.ServerMate;
 import com.alucn.casemanager.server.common.model.ServerType;
+import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.SendMail;
@@ -49,7 +50,9 @@ public class DistriButeCaseToLab {
 	String specialRelease = "28A,28C,28F,28G,28H";
 
 	int counterUninsRS=0;
-	
+	Map<String, Integer> idleNum = new HashMap<String, Integer>();
+	List<String> reInstallFailList = new ArrayList<String>();
+	boolean reInstallNext = true;
 	private DistriButeCaseToLab(){};
 	static DistriButeCaseToLab instance = null;
 	
@@ -916,12 +919,17 @@ public class DistriButeCaseToLab {
 		int idleServerNum=0;
 		int caseListNull=0;
 		for (int i = 0; i < Servers.size(); i++) {
+			ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			String serverName = ServerMem.getString(Constant.SERVERNAME);
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
-				ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-				String serverName = ServerMem.getString(Constant.SERVERNAME);
-
+				if (null == idleNum.get(serverName)){
+					idleNum.put(serverName, 1);
+				}else{
+					int numTmp = idleNum.get(serverName)+1;
+					idleNum.put(serverName, numTmp);
+				}
 				logger.debug("idle server: " + serverName);
 				JSONArray caseList = genCaseListToLab(serverName);
 				if(caseList.size()==0){
@@ -932,9 +940,12 @@ public class DistriButeCaseToLab {
 				labInfo.put("case_list", caseList);
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
+			}else{
+				idleNum.put(serverName, 0);
 			}
 		}
-		if(idleServerNum==Servers.size() && caseListNull==Servers.size() ){
+		//Original send email logic reservation,Change == to > never go.
+		if(idleServerNum > Servers.size() && caseListNull==Servers.size()){
 			if(counterUninsRS==8640){
 				logger.debug("send e-mail of Missing spa and rtdb!");
 				counterUninsRS=0;
@@ -949,6 +960,103 @@ public class DistriButeCaseToLab {
 				SendMail.genReport(cc_list, to_list, uninstallRSANSI, uninstallRSITU);
 			}
 			counterUninsRS++;
+		}
+		//Automatically determine case dependencies and send installed requests.
+		for(String serverName: idleNum.keySet()){
+			int currentServerNum = idleNum.get(serverName);
+            if(currentServerNum > 5 && reInstallNext){
+				reInstallNext = false;
+				for (int i = 0; i < Servers.size(); i++) {
+					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+					String serverName2 = serverMem.getString(Constant.SERVERNAME);
+					logger.error("serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)"+(serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)));
+					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
+						/*String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
+						String serverRelease = serverMem.getString(Constant.SERVERRELEASE);
+						JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
+						JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
+						JSONArray tempArray = new JSONArray();
+						tempArray.add(Servers.getJSONObject(i));
+						Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI = getUninstallRS2(tempArray, serverProtocol);
+						Set<String> unInstallSpa = unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet();
+						Set<String> unInstallRtdb = unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
+						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){*/
+							logger.debug("no matching case can run on " + serverName);
+							Thread installLabThread = new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										String reqData = "";
+										if(reInstallFailList.size() == 0){
+											String[] cmd = new String[] { "/bin/sh", "-c", "python /home/huanglei/DB/QueryCaseDepends.py /home/huanglei/DB/caseinfo.db "+serverName };
+								            Process ps = Runtime.getRuntime().exec(cmd);
+								            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+								            StringBuffer sb = new StringBuffer();
+								            String line;
+								            while ((line = br.readLine()) != null) {
+								                sb.append(line);
+								            }
+								            JSONObject resultCaseDepends = JSONObject.fromObject(sb.toString().replace("u'", "'"));
+								            reqData = "{\"protocol\": \""+resultCaseDepends.getString("protocl")+"\", \"labname\": [\""+serverName+"\"], \"DB\": "+resultCaseDepends.getString("DB")+", \"mate\": \"N\", \"release\": \""+resultCaseDepends.getString("release")+"\", \"SPA\": "+resultCaseDepends.getString("SPA")+", \"ins_flag\": \"1\"}";
+										}else{
+											reqData = reInstallFailList.get(0);
+											reInstallFailList.clear();
+										}
+							            String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+										logger.debug("lab reinstall... " + serverName+" response result "+resResult);
+										if("OK".equals(resResult)){
+											while(true){
+												String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
+												logger.debug("lab reinstall response is "+installLabResult);
+												if("SUCCESS".equals(installLabResult)){
+													idleNum.put(serverName, 0);
+													reInstallNext = true;
+													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													break;
+												}else if("Failed".equals(installLabResult)){
+													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													reInstallNext = true;
+													reInstallFailList.add(reqData);
+												}
+													Thread.sleep(100000);
+											}
+										}else{
+											reInstallNext = true;
+											reInstallFailList.add(reqData);
+										}
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+							});
+							installLabThread.start();
+						/*}else{
+							Iterator<String> iteratorSpa = unInstallSpa.iterator();
+							while(iteratorSpa.hasNext()){
+								serverSpa.add(iteratorSpa.next());
+							}
+							Iterator<String> iteratorRtdb = unInstallSpa.iterator();
+							while(iteratorRtdb.hasNext()){
+								serverRtdb.add(iteratorRtdb.next());
+							}
+							String reqData = "{'protocol': '"+serverProtocol+"', 'labname': ['"+serverName+"'], 'DB': "+serverRtdb.toString()+", 'mate': 'N', 'release': '"+serverRelease+"', 'SPA': "+unInstallSpa.toString()+"}";
+							String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+							while("OK".equals(resResult)){
+								String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
+								logger.debug("lab reinstall response is "+installLabResult);
+								if("SUCCESS".equals(installLabResult) || !"Installing".equals(installLabResult)){
+									idleNum.put(serverName, 0);
+									logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+									break;
+								}
+								Thread.sleep(100000);
+							}
+						}*/
+					}
+				}
+			}
+			Thread.sleep(100000);
 		}
 		AvailableCases.put("availableCase", Cases);
 		return AvailableCases;
