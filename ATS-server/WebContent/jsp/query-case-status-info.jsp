@@ -57,6 +57,7 @@
         	<form id="export" action="getExportCaseInfoTable.do">
         		<input value="${qtype }" name="qtype" type="hidden" />
         		<input id="etype" name="etype" type="hidden" />
+        		<input id="ftype" name="ftype" type="hidden" />
         		<div id="dropdown" class="dropdown" >
 				  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 				   	<span class="glyphicon glyphicon-export" aria-hidden="true"></span>&nbsp;&nbsp;Export
@@ -64,8 +65,11 @@
 				    <span class="caret"></span>
 				  </button>
 				  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-				    <li><a href="#" onclick="exportcase('current')">Export Current Column</a></li>
-				    <li><a href="#" onclick="exportcase('all')">Export All Column</a></li>
+				    <li><a href="#" onclick="exportcase('current','csv')"><code>csv</code> Export Current Column </a></li>
+				    <li><a href="#" onclick="exportcase('all','csv')"><code>csv</code> Export All Column </a></li>
+				    <li class="divider"></li>
+				    <li><a href="#" onclick="exportcase('current','json')"><code>json</code> Export Current Column </a></li>
+				    <li><a href="#" onclick="exportcase('all','json')"><code>json</code> Export All Column</a></li>
 				  </ul>
 				</div>
 		        <!-- <button id="export" class="btn btn-default" type="submit">
@@ -80,12 +84,13 @@
 </body>
 <script type="text/javascript">
 
-	function exportcase(type){
+	function exportcase(etype,ftype){
 		var stop;
 		//alert(type)
 		//$("#dropdown").css("display","none");
 		$("#dropdownMenu1").attr("disabled","disabled");
-		$("#etype").attr("value",type);
+		$("#etype").attr("value",etype);
+		$("#ftype").attr("value",ftype);
 		$("#export").submit();
 		var second = 10;
 		stop = setInterval(function(){

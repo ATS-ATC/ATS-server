@@ -389,10 +389,12 @@ public class CaseSearchService {
 			
 			
 			String server = "";
+			List serverList = new ArrayList<>();
 			if(conds[11].contains(",")) {
 				String[] servers = conds[11].split(",");
 				server = server+"[";
 				for (int i=0; i<servers.length;i++) {
+					serverList.add(servers[i]);
 					if(i==servers.length-1) {
 						server = server+"\""+servers[i]+"\"";
 					}else {
@@ -401,6 +403,7 @@ public class CaseSearchService {
 				}
 				server = server+"]";
 			}else {
+				serverList.add(conds[11]);
 				server = server+"[\""+conds[11]+"\"]";
 			}
 			//此处代码只允许一个server的spa和rtdb
@@ -420,45 +423,147 @@ public class CaseSearchService {
 				}
 			}*/
 			
+			//[变更]将符合条件的case指定服务器运行 4需求修改<1>
+			//4. check case & lab match status for case list before running.
+		    //   for matched partial list, continue to execute;
+		    //   for unmatched partial list, mark separate list
+			
+			Map<String,Object> serverMap = new HashMap<String,Object>();
+			
+			for (int z = 0; z < Servers.size(); z++) {
+				Map<String,Object> serverAttr = new HashMap<String,Object>();
+				JSONObject serverMem = Servers.getJSONObject(z).getJSONObject(Constant.LAB);
+				String serverName = serverMem.getString(Constant.SERVERNAME);
+				if(serverList.contains(serverName)){
+					serverAttr.put("spaList", serverMem.getJSONArray(Constant.SERVERSPA));
+					serverAttr.put("rtdbList", serverMem.getJSONArray(Constant.SERVERRTDB));
+					serverMap.put(serverName, serverAttr);
+				}
+			}
 			
 			
 			
-			
-			
-			
+			Map<String,Object> csMap = new HashMap<String,Object>();
+			Map<String,Object> cfMap = new HashMap<String,Object>();
 			for(int i=0; i<query.size(); i++){
 				
 				String dpendSql = "select * from CaseDepends where case_name='"+query.get(i).get("case_name")+"'";
 				ArrayList<HashMap<String, Object>> dpendList = caseSearchDaoImpl.query(jdbc, dpendSql);
 				String spa = "";
 				String db = "";
+				String t_spa ="[";
+				String t_db="[";
+				List l_spa = new ArrayList<>();
+				List l_db = new ArrayList<>();
+				
+				//DIAMCL,ENWTPPS,NWTCOM,EPAY
+				//["DIAMCL","ENWTPPS","NWTCOM","EPAY"]
 				if(dpendList.size()>0) {
 					spa = (String) dpendList.get(0).get("SPA");
 					db = (String) dpendList.get(0).get("DB");
 				}
+				if(spa!=null&&!"".equals(spa)) {
+					if(spa.contains(",")) {
+						String[] split = spa.split(",");
+						int j = 0;
+						for (String str : split) {
+							l_spa.add(str);
+							if(j==split.length-1) {
+								t_spa=t_spa + "\""+str+"\"]";
+							}else {
+								t_spa=t_spa + "\""+str+"\",";
+							}
+							j++;
+						}
+					}else {
+						l_spa.add(spa);
+						t_spa=t_spa + "\""+spa+"\"]";
+					}
+				}else {
+					t_spa="";
+				}
+				if(db!=null&&!"".equals(db)) {
+					if(db.contains(",")) {
+						String[] split = db.split(",");
+						int j = 0;
+						for (String str : split) {
+							l_db.add(str);
+							if(j==split.length-1) {
+								t_db=t_db + "\""+str+"\"]";
+							}else {
+								t_db=t_db + "\""+str+"\",";
+							}
+							j++;
+						}
+					}else {
+						l_db.add(db);
+						t_db=t_db + "\""+db+"\"]";
+					}
+				}else {
+					t_db="";
+				}
 				
-				String disSql="replace into toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
-						+query.get(i).get("case_name")+"', '"
-						+query.get(i).get("lab_number")+"', '"
-						+query.get(i).get("mate")+"', '"
-						+query.get(i).get("special_data")+"', '"
-						+query.get(i).get("base_data")+"', '"
-						+query.get(i).get("second_data")+"', '"
-						+query.get(i).get("release")+"', '"
-						+query.get(i).get("porting_release")+"', '"
-						/*+spaList.toString()+"', '"
-						+rtdbList.toString()+"', '"*/
-						+spa+"', '"
-						+db+"', '"
-						+server+"', '"
-						+query.get(i).get("customer")+"', "
-						+gid+");";
-				System.out.println("disSql:="+disSql);
-				//caseSearchDaoImpl.insert(jdbc, disSql);
+				//System.err.println("t_spa:===="+t_spa);
+				//System.err.println("t_db:===="+t_db);
 				
+				//[变更]将符合条件的case指定服务器运行 4需求修改<2>
+				//4. check case & lab match status for case list before running.
+			    //   for matched partial list, continue to execute;
+			    //   for unmatched partial list, mark separate list
+				
+				
+				List csList = new ArrayList<>();
+				List cfList = new ArrayList<>();
+				for(String serverName :serverMap.keySet()) {
+					Map<String,Object> serverAttr = (Map<String, Object>) serverMap.get(serverName);
+					JSONArray spaArray = (JSONArray) serverAttr.get("spaList");
+					JSONArray rtdbArray = (JSONArray) serverAttr.get("rtdbList");
+					List spaList = JSONArray.toList(spaArray);
+					List rtdbList = JSONArray.toList(rtdbArray);
+					//满足条件的case
+					System.err.println(spaList.containsAll(l_spa));
+					System.err.println(rtdbList.containsAll(l_db));
+					System.err.println(spaList+"\n"+l_spa);
+					System.err.println(rtdbList+"\n"+l_db);
+					if(spaList.containsAll(l_spa) && rtdbList.containsAll(l_db)) {
+						csList.add("\""+serverName+"\"");
+					}else {
+						cfList.add(serverName+"(check_spa:"+spaList.containsAll(l_spa)+"|check_db:"+rtdbList.containsAll(l_db)+")");
+					}
+				}
+				if(csList.size()>0) {
+					System.out.println("csList:========="+csList);
+					csMap.put(query.get(i).get("case_name").toString(), csList);
+					String disSql="replace into toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, release, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
+							+query.get(i).get("case_name")+"', '"
+							+query.get(i).get("lab_number")+"', '"
+							+query.get(i).get("mate")+"', '"
+							+query.get(i).get("special_data")+"', '"
+							+query.get(i).get("base_data")+"', '"
+							+query.get(i).get("second_data")+"', '"
+							+query.get(i).get("release")+"', '"
+							+query.get(i).get("porting_release")+"', '"
+							/*+spaList.toString()+"', '"
+							+rtdbList.toString()+"', '"*/
+							+t_spa+"', '"
+							+t_db+"', '"
+							+csList.toString().trim()+"', '"
+							+query.get(i).get("customer")+"', "
+							+gid+");";
+					System.out.println("disSql:="+disSql);
+					//caseSearchDaoImpl.insert(jdbc, disSql);
+				}else {
+					cfMap.put(query.get(i).get("case_name").toString(), cfList);
+				}
+				//csMap:=-=-=-=--={731590/fr0589.json=[BJRMS21B, BJRMS21A, BJRMS21F, BJRMS21E, BJRMS21D, BJRMS21C]}
+				System.err.println("csMap:=-=-=-=--="+csMap);
 			}
-			returnMap.put("s_case", query.size());
-			returnMap.put("f_case", 0);
+			
+			
+			
+			
+			returnMap.put("s_case", csMap.size());
+			returnMap.put("f_case", cfMap.size());
 			int i=0;
 			
 			
@@ -487,7 +592,7 @@ public class CaseSearchService {
 					
 					
 					
-					String baksql="insert into n_case_bak_tbl(case_name,case_status,spa,db,rerunning_id) values(?,?,?,?,?)";
+					String baksql="insert into n_case_bak_tbl(case_name,case_status,case_server,spa,db,rerunning_id) values(?,?,?,?,?,?)";
 					ups = conn.prepareStatement(baksql);
 					for (HashMap<String, Object> bMap : query) {
 						String dpendSql = "select * from CaseDepends where case_name='"+(String)bMap.get("case_name")+"'";
@@ -498,11 +603,26 @@ public class CaseSearchService {
 							spa = (String) dpendList.get(0).get("SPA");
 							db = (String) dpendList.get(0).get("DB");
 						}
+						//判断是否是通过check的case
+						String case_server="";
+						for(String case_name :csMap.keySet()) {
+							if(case_name==(String)bMap.get("case_name")&& case_name.equals((String)bMap.get("case_name"))) {
+								case_server=csMap.get(case_name).toString();
+							}
+						}
+						for(String case_name :cfMap.keySet()) {
+							if(case_name==(String)bMap.get("case_name")&& case_name.equals((String)bMap.get("case_name"))) {
+								case_server=cfMap.get(case_name).toString();
+							}
+						}
+						
+						
 						ups.setString(1, (String)bMap.get("case_name"));
 						ups.setString(2, (String)bMap.get("case_status"));
-						ups.setString(3, spa);
-						ups.setString(4, db);
-						ups.setString(5, max_id+"");
+						ups.setString(3, case_server);
+						ups.setString(4, spa);
+						ups.setString(5, db);
+						ups.setString(6, max_id+"");
 						ups.addBatch();
 					}
 					ups.executeBatch();
@@ -598,7 +718,15 @@ public class CaseSearchService {
 		return query;
 	}
 	public ArrayList<HashMap<String, Object>> searchCaseRunLogCaseInfoById(Map<String, Object> param) throws Exception {
-		String sql ="select * from n_case_bak_tbl where stateflag='0' and rerunning_id= "+param.get("int_id");
+		
+		Boolean case_status = (Boolean)param.get("case_status");
+		String sql = "";
+		if(case_status) {
+			sql ="select * from n_case_bak_tbl where stateflag='0' and rerunning_id= "+param.get("int_id") +" and case_server not like '%:%'";
+		}else {
+			sql ="select * from n_case_bak_tbl where stateflag='0' and rerunning_id= "+param.get("int_id") +" and case_server like '%:%'";
+		}
+		System.err.println(sql);
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		ArrayList<HashMap<String, Object>> arrayList = new ArrayList<HashMap<String, Object>>();
@@ -619,6 +747,8 @@ public class CaseSearchService {
 			for (HashMap<String, Object> qMap : query) {
 				if(qMap.get("case_name").equals(hashMap.get("case_name"))) {
 					hashMap.put("per_case_status", qMap.get("case_status"));
+					String case_server = (String)qMap.get("case_server");
+					hashMap.put("case_server",case_server);
 				}
 			}
 		}

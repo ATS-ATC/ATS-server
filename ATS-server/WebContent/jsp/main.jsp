@@ -177,7 +177,7 @@
 						<div class="col-md-12" >
 							<a id="hide_left_menu">
 								<center style="background-color: rgb(66,81,95);height:28px;">
-									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
+									<button type="button" class="btn btn-link btn-sm &nbsp;&nbsp;" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
 										<span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
 									</button>
 								</center>
@@ -185,7 +185,8 @@
 						<ul class="nav nav-pills nav-stacked">
 						  	<li id="home" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcomeInfo.do')">
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:132px;">
+							  		<button type="button" class="btn btn-link btn-default  btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:132px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
 										<!-- <i class="icon-home"></i> -->
 										&nbsp;&nbsp;&nbsp;&nbsp;Home
@@ -194,7 +195,8 @@
 							</li>
 						  	<li id="case-status" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getStatistics.do')">
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:103px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:103px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Dashboard
 									</button>
@@ -202,7 +204,8 @@
 							</li>
 						  	<li id="case-search" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/searchInfo.do')">
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:108px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:108px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-play" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Run Case
 									</button>
@@ -210,7 +213,8 @@
 							</li>
 							<li id="ats-servers" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getServerInfo.do')"  >
 							  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-object-align-bottom" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Lab Management
 									</button>
@@ -218,7 +222,8 @@
 							</li>
 							<li id="error-cases" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getErrorCaseInfo.do')" >
 							  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Bad Case Management
 									</button>
@@ -227,7 +232,8 @@
 							
 							<li id="config-manage" role="presentation" ><%-- onclick="menuClick('${pageContext.request.contextPath}/config.do')" --%>
 							  	<a href="#config-info" class="nav-header menu-first collapsed" data-toggle="collapse" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;Configuration
 									</button>
@@ -235,15 +241,15 @@
 								<ul id="config-info" class="nav nav-list collapse menu-second" style="background-color: #42515F">
 							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/config.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-									  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
-												&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Certification Server
+									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Certification Server
 											</button>
 										</a>
 									</li>
 							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getSpaAndRtdbInfo.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-									  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:93px;">
-												&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; SPA & RTDB
+									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; SPA & RTDB
 											</button>
 										</a>
 									</li>
@@ -252,7 +258,8 @@
 						    
 							<li id="releases" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getReleases.do')">
 							  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
-							  		<button type="button" class="btn btn-link btn-default " style="color: white;text-decoration:none;border:none;outline:none;padding-left:23px;padding-right:109px;">
+							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:109px; -->
+										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
 										&nbsp;&nbsp;&nbsp;&nbsp;SUnit Releases
 									</button>

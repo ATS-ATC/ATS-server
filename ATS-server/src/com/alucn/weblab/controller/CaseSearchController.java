@@ -124,9 +124,16 @@ public class CaseSearchController {
 			cMap.put("server", split[11]);
 			//ccMap.put("condition_info", cMap);
 			hashMap.put("condition", cMap);
+			
+			paramMap.put("case_status", true);
 			ArrayList<HashMap<String, Object>> case_bak = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
 			model.addAttribute("scase", case_bak);
 			model.addAttribute("scase_count", case_bak.size());
+			
+			paramMap.put("case_status", false);
+			ArrayList<HashMap<String, Object>> case_bak_f = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
+			model.addAttribute("fcase", case_bak_f);
+			model.addAttribute("fcase_count", case_bak_f.size());
 			
 		  	/*String s_case = (String)hashMap.get("s_case");
 		    if(s_case!="[]") {

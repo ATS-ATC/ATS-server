@@ -452,7 +452,7 @@ $(function() {
 			}
 			//alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
 			if(data.s_case != null){
-				alert("submit case count:"+data.s_case)
+				alert("submit case count:  "+data.s_case+" \nnonsupport case count:  "+data.f_case)
 			}
 			$('#loaddingModel').modal('hide');
 			$('#myModal').modal('hide');

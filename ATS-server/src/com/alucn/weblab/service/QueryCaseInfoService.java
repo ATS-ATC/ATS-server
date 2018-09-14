@@ -23,7 +23,8 @@ public class QueryCaseInfoService {
 		String sql="";
 		if("all".equals(etype)) {
 			sql =sql+ "select * from DftTag where 1=1";
-		}else if ("current".equals(etype)) {
+		}
+		else if ("current".equals(etype)) {
 			sql =sql+ "select feature_number,case_name,author,release,code_changed_spa,functionality,base_data,case_status,call_type,customer,porting_release from DftTag where 1=1";
 		}
 		if(!auth.equals(Constant.AUTH)){
@@ -36,7 +37,7 @@ public class QueryCaseInfoService {
 		if(!"".equals(limit)) {
 			sql = sql+" limit "+offset+","+limit;
 		}
-		//System.out.println("sql==========="+sql);
+		System.out.println("sql==========="+sql);
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}

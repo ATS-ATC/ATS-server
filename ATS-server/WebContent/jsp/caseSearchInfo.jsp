@@ -275,8 +275,9 @@ $(function(){
 	        		<thead>
 	        			<tr>
 	        				<th>case_name</th>
-	        				<th>now_case_status</th>
+	        				<th>current_case_status</th>
 	        				<th>per_case_status</th>
+	        				<th>check_result</th>
 	        				<th>feature_number</th>
 	        				<th>release</th>
 	        				<th>author</th>
@@ -299,6 +300,72 @@ $(function(){
 	        					<td>${data.case_name }</td>
 	        					<td>${data.case_status }</td>
 	        					<td>${data.per_case_status }</td>
+	        					<td>${data.case_server }</td>
+	        					<td>${data.feature_number }</td>
+	        					<td>${data.release }</td>
+	        					<td>${data.author }</td>
+	        					<td>${data.special_data }</td>
+	        					<td>${data.lab_number }</td>
+	        					<td>${data.submit_date }</td>
+	        					<td>${data.mate }</td>
+	        					<td>${data.customer }</td>
+	        					<td>${data.base_data }</td>
+	        					<td>${data.porting_release }</td>
+	        				</tr>
+	        			</c:forEach> 
+	        			<%-- <c:forEach items='${scase }' var="s" varStatus="sc">
+	        				<tr>
+	        					<c:forEach items='${s }' var="se" >
+	        						${se } <br>
+									<td>${se.value}</td>				
+								</c:forEach>
+								---------------------------------
+								<br>
+	        				</tr>
+	        			</c:forEach> --%>
+	        		</tbody>
+	        	</table>
+	        </div>
+	        </div>
+        </div>
+  	</div>
+  	<div class="panel panel-danger">
+	    <div class="panel-heading">
+	        <h3 class="panel-title">Nonsupport Case ${fcase_count }</h3>
+	    </div>
+	    <div class="panel-body">
+	        <div class="row" >
+	        <div class="table-responsive pre-scrollable"  style="padding-left: 10px;padding-right: 10px; height: 250px;" >
+	        	<table class="table table-bordered text-nowrap"  >
+	        		<thead>
+	        			<tr>
+	        				<th>case_name</th>
+	        				<th>current_case_status</th>
+	        				<th>per_case_status</th>
+	        				<th>check_result</th>
+	        				<th>feature_number</th>
+	        				<th>release</th>
+	        				<th>author</th>
+	        				<th>special_data</th>
+	        				<th>lab_number</th>
+	        				<th>submit_date</th>
+	        				<th>mate</th>
+	        				<th>customer</th>
+	        				<th>base_data</th>
+	        				<th>porting_release</th>
+	        			</tr>
+	        		</thead>
+	        		<tbody>
+	        			<c:forEach items="${fcase }" var="data" >
+	        				<%-- ${data } 
+	        				<br>
+	        				----------------------
+	        				<br> --%>
+	        				<tr>
+	        					<td>${data.case_name }</td>
+	        					<td>${data.case_status }</td>
+	        					<td>${data.per_case_status }</td>
+	        					<td>${data.case_server }</td>
 	        					<td>${data.feature_number }</td>
 	        					<td>${data.release }</td>
 	        					<td>${data.author }</td>
