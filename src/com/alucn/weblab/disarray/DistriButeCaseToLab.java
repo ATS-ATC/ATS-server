@@ -1012,11 +1012,11 @@ public class DistriButeCaseToLab {
 													idleNum.put(serverName, 0);
 													reInstallNext = true;
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
-													if(getProcess(serverName)){
+													/*if(getProcess(serverName)){
 														String[] cmd = new String[] { "/bin/sh", "-c", "sh /home/huanglei/ATC_"+serverName+"/start.sh"};
 											            Runtime.getRuntime().exec(cmd);
 														logger.debug("lab reinstall completed... " + serverName+" is started");
-													}
+													}*/
 													break;
 												}else if("Failed".equals(installLabResult)){
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
