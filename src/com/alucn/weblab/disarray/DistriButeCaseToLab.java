@@ -1,6 +1,7 @@
 package com.alucn.weblab.disarray;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -922,7 +923,7 @@ public class DistriButeCaseToLab {
 			ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			String serverName = ServerMem.getString(Constant.SERVERNAME);
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
-					.equals(Constant.CASESTATUSIDLE)) {
+					.equals(Constant.CASESTATUSIDLE) && !ServerMem.getJSONArray(Constant.SERVERSPA).getString(0).equals("SPALIST_XXX")) {
 				idleServerNum++;
 				if (null == idleNum.get(serverName)){
 					idleNum.put(serverName, 1);
@@ -969,7 +970,6 @@ public class DistriButeCaseToLab {
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 					String serverName2 = serverMem.getString(Constant.SERVERNAME);
-					logger.error("serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)"+(serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)));
 					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
 						/*String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
 						String serverRelease = serverMem.getString(Constant.SERVERRELEASE);
@@ -1008,10 +1008,15 @@ public class DistriButeCaseToLab {
 											while(true){
 												String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
 												logger.debug("lab reinstall response is "+installLabResult);
-												if("SUCCESS".equals(installLabResult)){
+												if("Succeed".equals(installLabResult)){
 													idleNum.put(serverName, 0);
 													reInstallNext = true;
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													if(getProcess(serverName)){
+														String[] cmd = new String[] { "/bin/sh", "-c", "sh /home/huanglei/ATC_"+serverName+"/start.sh"};
+											            Runtime.getRuntime().exec(cmd);
+														logger.debug("lab reinstall completed... " + serverName+" is started");
+													}
 													break;
 												}else if("Failed".equals(installLabResult)){
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
@@ -1284,7 +1289,28 @@ public class DistriButeCaseToLab {
 		listOne.addAll(listTwo);
 		return listOne;
 	}
- 	
+	
+	public boolean getProcess(String jName) throws IOException{
+		String[] cmd = {
+				"/bin/sh",
+				"-c",
+				"ps -ef | grep "+jName
+				};
+		boolean flag=false;
+		Process p = Runtime.getRuntime().exec(cmd);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream os = p.getInputStream();
+		byte b[] = new byte[256];
+		while(os.read(b)> 0)
+			baos.write(b);
+		String s = baos.toString().replaceAll("grep "+jName, "");
+		if(s.indexOf(jName) >= 0){
+			flag=true;
+		}else{
+			flag=false;
+		}
+		return flag;
+	}
 	private double getTwo(double num){
 		BigDecimal bigd = new BigDecimal(num);
 	    double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
