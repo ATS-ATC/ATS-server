@@ -965,7 +965,8 @@ public class DistriButeCaseToLab {
 		//Automatically determine case dependencies and send installed requests.
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
-            if(currentServerNum > 5 && reInstallNext){
+			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
+            if(currentServerNum > 5  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
@@ -1019,13 +1020,14 @@ public class DistriButeCaseToLab {
 													}*/
 													break;
 												}else if("Failed".equals(installLabResult)){
-													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult+" and add reqData :"+reqData+" to failed list");
 													reInstallNext = true;
 													reInstallFailList.add(reqData);
 												}
 													Thread.sleep(100000);
 											}
 										}else{
+											logger.debug("lab reinstall... " + serverName+" response result "+resResult +" and add reqData :"+reqData+" to failed list");
 											reInstallNext = true;
 											reInstallFailList.add(reqData);
 										}
