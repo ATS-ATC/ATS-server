@@ -1,6 +1,7 @@
 package com.alucn.weblab.disarray;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1024,12 +1025,39 @@ public class DistriButeCaseToLab {
 		// 找到曾经跑过，但是server信息更新了的case和没有跑过的case
 		UpdatedistributeDB(changedKvmList);
 		// 从内存中读取server信息
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
-				null);
+		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		JSONObject ServerMem;
 		int idleServerNum = 0;
 		int caseListNull = 0;
+		//--------------------new-----------------------------------------
 		for (int i = 0; i < Servers.size(); i++) {
+			ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			String serverName = ServerMem.getString(Constant.SERVERNAME);
+			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE) && !ServerMem.getJSONArray(Constant.SERVERSPA).getString(0).equals("SPALIST_XXX")) {
+				idleServerNum++;
+				if (null == idleNum.get(serverName)){
+					idleNum.put(serverName, 1);
+				}else{
+					int numTmp = idleNum.get(serverName)+1;
+					idleNum.put(serverName, numTmp);
+				}
+				logger.debug("idle server: " + serverName);
+				JSONArray caseList = genCaseListToLab(serverName);
+				if(caseList.size()==0){
+					caseListNull++;
+				}
+				JSONObject labInfo = new JSONObject();
+				labInfo.put("uuid", UUID.randomUUID().toString());
+				labInfo.put("case_list", caseList);
+				DbOperation.UpdateDistributedCase(caseList, serverName);
+				Cases.put(serverName, labInfo);
+			}else{
+				idleNum.put(serverName, 0);
+			}
+		}
+		//--------------------new-----------------------------------------
+		//--------------------old-----------------------------------------
+		/*for (int i = 0; i < Servers.size(); i++) {
 			// 判断是否是idle状态
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
@@ -1057,16 +1085,15 @@ public class DistriButeCaseToLab {
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
-		}
+		}*/
+		//--------------------old-----------------------------------------
 		// Original send email logic reservation,Change == to > never go.
 		if (idleServerNum > Servers.size() && caseListNull == Servers.size()) {
 			if (counterUninsRS == 8640) {
 				logger.debug("send e-mail of Missing spa and rtdb!");
 				counterUninsRS = 0;
-				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSANSI = getUninstallRS2(Servers,
-						"ANSI");
-				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSITU = getUninstallRS2(Servers,
-						"ITU");
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSANSI = getUninstallRS2(Servers,"ANSI");
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSITU = getUninstallRS2(Servers,"ITU");
 				// send mail
 				JSONArray cc_list = new JSONArray();
 				JSONArray to_list = new JSONArray();
@@ -1077,166 +1104,182 @@ public class DistriButeCaseToLab {
 			}
 			counterUninsRS++;
 		}
-		// Automatically determine case dependencies and send installed requests.
-		for (String serverName : idleNum.keySet()) {
+		//Automatically determine case dependencies and send installed requests.
+		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
-			logger.error(serverName + " is checked idle num +++++++++++++++++++++++++++" + currentServerNum);
-			if (currentServerNum > 5 && reInstallNext) {
+			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
+            if(currentServerNum > 5  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 					String serverName2 = serverMem.getString(Constant.SERVERNAME);
-					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS)
-							.getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
-						/*
-						 * String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL); String
-						 * serverRelease = serverMem.getString(Constant.SERVERRELEASE); JSONArray
-						 * serverSpa = serverMem.getJSONArray(Constant.SERVERSPA); JSONArray serverRtdb
-						 * = serverMem.getJSONArray(Constant.SERVERRTDB); JSONArray tempArray = new
-						 * JSONArray(); tempArray.add(Servers.getJSONObject(i));
-						 * Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI =
-						 * getUninstallRS2(tempArray, serverProtocol); Set<String> unInstallSpa =
-						 * unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet(); Set<String>
-						 * unInstallRtdb =
-						 * unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
-						 * if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){
-						 */
-						logger.debug("no matching case can run on " + serverName);
-						Thread installLabThread = new Thread(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									String reqData = "";
-									if (reInstallFailList.size() == 0) {
-										String[] cmd = new String[] { "/bin/sh", "-c",
-												"python /home/huanglei/DB/QueryCaseDepends.py /home/huanglei/DB/caseinfo.db "
-														+ serverName };
-										Process ps = Runtime.getRuntime().exec(cmd);
-										BufferedReader br = new BufferedReader(
-												new InputStreamReader(ps.getInputStream()));
-										StringBuffer sb = new StringBuffer();
-										String line;
-										while ((line = br.readLine()) != null) {
-											sb.append(line);
+					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
+						/*String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
+						String serverRelease = serverMem.getString(Constant.SERVERRELEASE);
+						JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
+						JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
+						JSONArray tempArray = new JSONArray();
+						tempArray.add(Servers.getJSONObject(i));
+						Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI = getUninstallRS2(tempArray, serverProtocol);
+						Set<String> unInstallSpa = unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet();
+						Set<String> unInstallRtdb = unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
+						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){*/
+							logger.debug("no matching case can run on " + serverName);
+							Thread installLabThread = new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										String reqData = "";
+										if(reInstallFailList.size() == 0){
+											String[] cmd = new String[] { "/bin/sh", "-c", "python /home/huanglei/DB/QueryCaseDepends.py /home/huanglei/DB/caseinfo.db "+serverName };
+								            Process ps = Runtime.getRuntime().exec(cmd);
+								            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+								            StringBuffer sb = new StringBuffer();
+								            String line;
+								            while ((line = br.readLine()) != null) {
+								                sb.append(line);
+								            }
+								            JSONObject resultCaseDepends = JSONObject.fromObject(sb.toString().replace("u'", "'"));
+								            reqData = "{\"protocol\": \""+resultCaseDepends.getString("protocl")+"\", \"labname\": [\""+serverName+"\"], \"DB\": "+resultCaseDepends.getString("DB")+", \"mate\": \"N\", \"release\": \""+resultCaseDepends.getString("release")+"\", \"SPA\": "+resultCaseDepends.getString("SPA")+", \"ins_flag\": \"1\"}";
+										}else{
+											reqData = reInstallFailList.get(0);
+											reInstallFailList.clear();
 										}
-										JSONObject resultCaseDepends = JSONObject
-												.fromObject(sb.toString().replace("u'", "'"));
-										logger.error(
-												"resultCaseDepends +++++++++++++++++++++++++++" + resultCaseDepends);
-										reqData = "{'protocol': '" + resultCaseDepends.getString("protocl")
-												+ "', 'labname': ['" + serverName + "'], 'DB': "
-												+ resultCaseDepends.getString("DB") + ", 'mate': 'N', 'release': '"
-												+ resultCaseDepends.getString("release") + "', 'SPA': "
-												+ resultCaseDepends.getString("SPA") + "}";
-									} else {
-										reqData = reInstallFailList.get(0);
-										reInstallFailList.clear();
-									}
-									logger.error("reqData +++++++++++++++++++++++++++" + reqData);
-									String resResult = HttpReq.reqUrl(
-											"http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
-									logger.debug("lab reinstall... " + serverName + " response result " + resResult);
-									if ("OK".equals(resResult)) {
-										while (true) {
-											String installLabResult = HttpReq
-													.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"
-															+ serverName + ".json")
-													.getJSONArray("content").getJSONObject(0).getString("status");
-											logger.debug("lab reinstall response is " + installLabResult);
-											if ("SUCCESS".equals(installLabResult)) {
-												idleNum.put(serverName, 0);
-												reInstallNext = true;
-												logger.debug("lab reinstall completed... " + serverName
-														+ " response result " + installLabResult);
-												break;
-											} else if ("Failed".equals(installLabResult)) {
-												reInstallNext = true;
-												reInstallFailList.add(reqData);
+							            String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+										logger.debug("lab reinstall... " + serverName+" response result "+resResult);
+										if("OK".equals(resResult)){
+											while(true){
+												String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
+												logger.debug("lab reinstall response is "+installLabResult);
+												if("Succeed".equals(installLabResult)){
+													idleNum.put(serverName, 0);
+													reInstallNext = true;
+													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													/*if(getProcess(serverName)){
+														String[] cmd = new String[] { "/bin/sh", "-c", "sh /home/huanglei/ATC_"+serverName+"/start.sh"};
+											            Runtime.getRuntime().exec(cmd);
+														logger.debug("lab reinstall completed... " + serverName+" is started");
+													}*/
+													break;
+												}else if("Failed".equals(installLabResult)){
+													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult+" and add reqData :"+reqData+" to failed list");
+													reInstallNext = true;
+													reInstallFailList.add(reqData);
+												}
+													Thread.sleep(100000);
 											}
-											Thread.sleep(100000);
+										}else{
+											logger.debug("lab reinstall... " + serverName+" response result "+resResult +" and add reqData :"+reqData+" to failed list");
+											reInstallNext = true;
+											reInstallFailList.add(reqData);
 										}
-									} else {
-										reInstallNext = true;
-										reInstallFailList.add(reqData);
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
 									}
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
 								}
+							});
+							installLabThread.start();
+						/*}else{
+							Iterator<String> iteratorSpa = unInstallSpa.iterator();
+							while(iteratorSpa.hasNext()){
+								serverSpa.add(iteratorSpa.next());
 							}
-						});
-						installLabThread.start();
-						/*
-						 * }else{ Iterator<String> iteratorSpa = unInstallSpa.iterator();
-						 * while(iteratorSpa.hasNext()){ serverSpa.add(iteratorSpa.next()); }
-						 * Iterator<String> iteratorRtdb = unInstallSpa.iterator();
-						 * while(iteratorRtdb.hasNext()){ serverRtdb.add(iteratorRtdb.next()); } String
-						 * reqData =
-						 * "{'protocol': '"+serverProtocol+"', 'labname': ['"+serverName+"'], 'DB': "
-						 * +serverRtdb.toString()+", 'mate': 'N', 'release': '"
-						 * +serverRelease+"', 'SPA': "+unInstallSpa.toString()+"}"; String resResult =
-						 * HttpReq.reqUrl(
-						 * "http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
-						 * while("OK".equals(resResult)){ String installLabResult =
-						 * HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+
-						 * serverName+".json").getJSONArray("content").getJSONObject(0).getString(
-						 * "status"); logger.debug("lab reinstall response is "+installLabResult);
-						 * if("SUCCESS".equals(installLabResult) ||
-						 * !"Installing".equals(installLabResult)){ idleNum.put(serverName, 0);
-						 * logger.debug("lab reinstall completed... " +
-						 * serverName+" response result "+installLabResult); break; }
-						 * Thread.sleep(100000); } }
-						 */
+							Iterator<String> iteratorRtdb = unInstallSpa.iterator();
+							while(iteratorRtdb.hasNext()){
+								serverRtdb.add(iteratorRtdb.next());
+							}
+							String reqData = "{'protocol': '"+serverProtocol+"', 'labname': ['"+serverName+"'], 'DB': "+serverRtdb.toString()+", 'mate': 'N', 'release': '"+serverRelease+"', 'SPA': "+unInstallSpa.toString()+"}";
+							String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+							while("OK".equals(resResult)){
+								String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
+								logger.debug("lab reinstall response is "+installLabResult);
+								if("SUCCESS".equals(installLabResult) || !"Installing".equals(installLabResult)){
+									idleNum.put(serverName, 0);
+									logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+									break;
+								}
+								Thread.sleep(100000);
+							}
+						}*/
 					}
 				}
 			}
 			Thread.sleep(100000);
 		}
 		AvailableCases.put("availableCase", Cases);
-		// System.err.println("GetDistributeCases
-		// AvailableCases:============"+AvailableCases);
 		return AvailableCases;
 	}
 
-	/*
-	 * private Map<String,Map<String,String>> getUninstallRS(JSONArray Servers,
-	 * String protocol) throws Exception{ Map<String,String> rtdbMap = new
-	 * HashMap<String,String>(); Map<String,String> spaMap = new
-	 * HashMap<String,String>(); Map<String,Map<String,String>> unInstallRS = new
-	 * HashMap<String,Map<String,String>>(); Map<String,String> unInstallRtdb = new
-	 * HashMap<String,String>(); Map<String,String> unInstallSpa = new
-	 * HashMap<String,String>(); String
-	 * sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'"; for
-	 * (int i = 0; i < Servers.size(); i++) { JSONObject
-	 * serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB); String
-	 * serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
-	 * if(protocol.equals(serverProtocol)){ JSONArray serverSpa =
-	 * serverMem.getJSONArray(Constant.SERVERSPA); for (int m=0; m<serverSpa.size();
-	 * m++) { String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
-	 * if(!serSpa.equals("")){ spaMap.put(serSpa, ""); }else{ continue; } }
-	 * JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB); for (int
-	 * n=0; n<serverRtdb.size(); n++) { String serRtdb =
-	 * mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)"); if(!serRtdb.equals("")){
-	 * rtdbMap.put(serRtdb, ""); }else{ continue; } } } }
-	 * if(protocol.equals("ANSI")){ sql+=" and customer='VZW'"; }else{
-	 * sql+=" and customer!='VZW'"; } JdbcUtil jdbc = new
-	 * JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal(
-	 * "CaseInfoDB")); ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
-	 * for (int i = 0; i < list.size(); i++) { JSONArray serverSpa =
-	 * JSONArray.fromObject(list.get(i).get("SPA")); for (int m=0;
-	 * m<serverSpa.size(); m++) { String serSpa = mattch(serverSpa.getString(m),
-	 * "(^[A-Z,a-z]+)"); if(!serSpa.equals("")){ if(!spaMap.containsKey(serSpa)){
-	 * unInstallSpa.put(serSpa,""); } }else{ continue; } }
-	 * 
-	 * JSONArray serverRtdb = JSONArray.fromObject(list.get(i).get("RTDB")); for
-	 * (int n=0; n<serverRtdb.size(); n++) { String serRtdb =
-	 * mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)"); if(!serRtdb.equals("")){
-	 * if(!rtdbMap.containsKey(serRtdb)){ unInstallRtdb.put(serRtdb, ""); } }else{
-	 * continue; } }
-	 * 
-	 * } unInstallRS.put("SPA", unInstallSpa); unInstallRS.put("RTDB",
-	 * unInstallRtdb); return unInstallRS; }
-	 */
+	/*private Map<String,Map<String,String>> getUninstallRS(JSONArray Servers, String protocol) throws Exception{
+		Map<String,String> rtdbMap = new HashMap<String,String>();
+		Map<String,String> spaMap = new HashMap<String,String>();
+		Map<String,Map<String,String>> unInstallRS = new HashMap<String,Map<String,String>>();
+		Map<String,String> unInstallRtdb = new HashMap<String,String>();
+		Map<String,String> unInstallSpa = new HashMap<String,String>();
+		String sql="SELECT DISTINCT SPA, RTDB FROM toDistributeCases WHERE server='[]'";
+		for (int i = 0; i < Servers.size(); i++) {
+			JSONObject serverMem=Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
+			if(protocol.equals(serverProtocol)){
+				JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
+				for (int m=0; m<serverSpa.size(); m++) {
+					String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
+					if(!serSpa.equals("")){
+						spaMap.put(serSpa, "");
+					}else{
+						continue;
+					}
+				}
+				JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
+				for (int n=0; n<serverRtdb.size(); n++) {
+					String serRtdb = mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)");
+					if(!serRtdb.equals("")){
+						rtdbMap.put(serRtdb, "");
+					}else{
+						continue;
+					}
+				}
+			}
+		}
+		if(protocol.equals("ANSI")){
+			sql+=" and customer='VZW'";
+		}else{
+			sql+=" and customer!='VZW'";
+		}
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		ArrayList<HashMap<String, Object>> list = jdbc.query(sql);
+		for (int i = 0; i < list.size(); i++) {
+			JSONArray serverSpa = JSONArray.fromObject(list.get(i).get("SPA"));
+			for (int m=0; m<serverSpa.size(); m++) {
+				String serSpa = mattch(serverSpa.getString(m), "(^[A-Z,a-z]+)");
+				if(!serSpa.equals("")){
+					if(!spaMap.containsKey(serSpa)){
+						unInstallSpa.put(serSpa,"");
+					}
+				}else{
+					continue;
+				}
+			}
+			
+			JSONArray serverRtdb = JSONArray.fromObject(list.get(i).get("RTDB"));
+			for (int n=0; n<serverRtdb.size(); n++) {
+				String serRtdb = mattch(serverRtdb.getString(n), "(^[A-Z,a-z]+)");
+				if(!serRtdb.equals("")){
+					if(!rtdbMap.containsKey(serRtdb)){
+						unInstallRtdb.put(serRtdb, "");
+					}
+				}else{
+					continue;
+				}
+			}
+			
+		}
+		unInstallRS.put("SPA", unInstallSpa);
+		unInstallRS.put("RTDB", unInstallRtdb);
+		return unInstallRS;
+	}
+*/
 	private Map<String, Map<String, Map<String, Map<String, String>>>> getUninstallRS2(JSONArray Servers,
 			String protocol) throws Exception {
 		Map<String, Map<String, Map<String, Map<String, String>>>> unInstallRS = new HashMap<String, Map<String, Map<String, Map<String, String>>>>();
@@ -1391,7 +1434,27 @@ public class DistriButeCaseToLab {
 		listOne.addAll(listTwo);
 		return listOne;
 	}
-
+	public boolean getProcess(String jName) throws IOException{
+		String[] cmd = {
+				"/bin/sh",
+				"-c",
+				"ps -ef | grep "+jName
+				};
+		boolean flag=false;
+		Process p = Runtime.getRuntime().exec(cmd);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream os = p.getInputStream();
+		byte b[] = new byte[256];
+		while(os.read(b)> 0)
+			baos.write(b);
+		String s = baos.toString().replaceAll("grep "+jName, "");
+		if(s.indexOf(jName) >= 0){
+			flag=true;
+		}else{
+			flag=false;
+		}
+		return flag;
+	}
 	private double getTwo(double num) {
 		BigDecimal bigd = new BigDecimal(num);
 		double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();

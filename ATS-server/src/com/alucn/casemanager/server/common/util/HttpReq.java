@@ -56,7 +56,8 @@ public class HttpReq {
 			BufferedReader reader = null;
 			String tempLine;
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST");
+			connection.setRequestMethod("PUT");
+			connection.setRequestProperty("Content-Type", " application/json");
 			connection.setDoOutput(true);
 			OutputStream out = connection.getOutputStream();
 			out.write(data.getBytes());
