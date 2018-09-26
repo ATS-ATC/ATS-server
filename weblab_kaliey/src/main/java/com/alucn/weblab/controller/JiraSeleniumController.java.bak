@@ -1,0 +1,126 @@
+package com.alucn.weblab.controller;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.apache.commons.collections.map.HashedMap;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.alucn.weblab.selenium.JiraSelenium;
+import com.alucn.weblab.service.JiraSeleniumService;
+
+
+@Controller
+public class JiraSeleniumController { 
+	
+	static final String HOST = "135.251.33.15";
+    static final String PORT = "80";
+    static final String phantomjs ="D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
+    
+    
+	@Autowired(required=true)
+	private JiraSeleniumService jiraSeleniumService;
+	
+	//http://localhost:8080/weblab/setJiraCaseTbl.do
+	@RequestMapping(value="/setJiraCaseTbl")
+	public String setJiraCaseTbl() throws Exception {
+		System.setProperty("phantomjs.binary.path", phantomjs);
+        DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
+    	ArrayList<String> cliArgsCap = new ArrayList<>();
+        cliArgsCap.add("--proxy=http://"+HOST+":"+PORT);
+        capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
+
+        WebDriver driver = new PhantomJSDriver(capabilities);
+        
+        JiraSelenium.login(driver,"https://greenhopper.app.alcatel-lucent.com/login.jsp");
+    	Thread.sleep(100);
+    	ArrayList<String> issues = JiraSelenium.getIssues(driver,"https://greenhopper.app.alcatel-lucent.com/issues/?filter=54758");
+    	Map iMap = new HashedMap();
+    	
+    	ExecutorService exec = Executors.newCachedThreadPool();
+    	/*if(issues.size()>0) {
+    		for (String target : issues) {
+    			
+    			String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
+    			
+    			Callable<Map<String, Object>> c = new GetIssuessInfoThread(driver,url);
+    			Future<Map<String, Object>> future = exec.submit(c);
+    			iMap.put(target, future.get());
+    			Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(driver,url);
+    			iMap.put(target, issuesInfo);
+			}
+    	}*/
+    	ArrayList<Future<Map<String, Object>>> results = new ArrayList<Future<Map<String, Object>>>();
+		Callable<Map<String, Object>> c = new GetIssuessInfoThread(driver,issues);
+		Future<Map<String, Object>> future = exec.submit(c);
+		results.add(future);
+		
+    	TreeSet<String> set = new TreeSet<String>();
+    	while(true) {
+    		if(set.size()==results.size()) {
+    			break;
+    		}
+    		for (int j =0;j<results.size();j++) {
+    			if(results.get(j).isDone()) {
+    				set.add(j+"");
+    			}
+    		}
+    	}
+    	for (Future<Map<String, Object>> f : results) {
+			System.out.println("future:========="+f.get());
+			//iMap.put(target, future.get());
+			//jiraSeleniumService.setTempJiraTbl(iMap);
+		}
+		//iMap.put(target, future.get());
+		//jiraSeleniumService.setTempJiraTbl(iMap);
+    	
+    	driver.quit();
+		
+		return "";
+	}
+	
+}
+class GetIssuessInfoThread implements Callable<Map<String, Object>>{
+	
+	private WebDriver driver;
+	private ArrayList<String> issues;
+	private int i;
+	private Map iMap = new HashedMap();
+	
+	public GetIssuessInfoThread(WebDriver driver,ArrayList<String> issues) {
+		this.driver = driver;
+		this.issues = issues;
+		this.i=issues.size();
+	}
+	@Override
+	public Map<String, Object> call() throws Exception {
+		
+		while(true) {
+			synchronized (this) {
+				if(issues.size()>0) {
+					for (String target : issues) {
+						String url = "https://greenhopper.app.alcatel-lucent.com/browse/"+target;
+						Map<String, Object> issuesInfo = JiraSelenium.getIssuesInfo(driver,url);
+						iMap.put(target, issuesInfo);
+					}
+				}else {
+					break;
+				}
+				
+			}
+		}
+		return iMap;
+	}
+	
+}

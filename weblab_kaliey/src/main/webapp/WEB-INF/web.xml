@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<web-app version="2.5"   
+    xmlns="http://java.sun.com/xml/ns/javaee"   
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee   
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"> 
+  <display-name>Archetype Created Web Application</display-name>
+  <servlet>
+	    <servlet-name>kaliey</servlet-name>
+	    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	    <init-param>
+	    	<!--加载Spring XML配置文件 --> 
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring-*.xml</param-value>
+        </init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+  
+      <!-- 配置字符集过滤器 -->  
+    <filter>  
+        <filter-name>encodingFilter</filter-name>  
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
+        <init-param>  
+              <param-name>encoding</param-name>  
+              <param-value>UTF-8</param-value>  
+        </init-param>  
+        <init-param>  
+             <param-name>forceEncoding</param-name>  
+             <param-value>true</param-value>  
+         </init-param>  
+    </filter>  
+      
+    <filter-mapping>  
+         <filter-name>encodingFilter</filter-name>  
+         <url-pattern>/*</url-pattern>  
+    </filter-mapping>
+  
+	<!-- 第一种:*.action访问以*.action结尾由DispatcherServlet进行解析 -->
+	<!-- 第二种:/ 所有访问都由DispatcherServlet进行解析，对于静态页面的解析配置不让DispatcherServlet进行解析 -->
+	<!-- 第三种:/*这种方式不对，转发到jsp时仍会由DispatcherServlet解析，不能通过jsp找到handler，会报错 -->
+	<servlet-mapping>
+	    <servlet-name>kaliey</servlet-name>
+	    <url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<!-- shiro过滤器定义 -->
+	<filter>  
+	    <filter-name>shiroFilter</filter-name>  
+	    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>  
+    <init-param>  
+    <!-- 该值缺省为false,表示生命周期由SpringApplicationContext管理,设置为true则表示由ServletContainer管理 -->  
+    <param-name>targetFilterLifecycle</param-name>  
+    <param-value>true</param-value>  
+    </init-param>  
+	</filter>  
+	<filter-mapping>  
+	        <filter-name>shiroFilter</filter-name>  
+	        <url-pattern>/*</url-pattern>  
+	</filter-mapping>
+	
+	<listener>
+    	<listener-class>com.alucn.casemanager.server.listener.MainListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>com.alucn.casemanager.server.listener.SocketListener</listener-class>	
+	</listener>
+	
+</web-app>
