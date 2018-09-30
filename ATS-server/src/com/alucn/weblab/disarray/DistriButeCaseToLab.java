@@ -1108,7 +1108,7 @@ public class DistriButeCaseToLab {
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
 			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
-            if(currentServerNum > 10  && reInstallNext){
+            if(currentServerNum > 0  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverBody = Servers.getJSONObject(i);
@@ -1126,7 +1126,7 @@ public class DistriButeCaseToLab {
 						Set<String> unInstallSpa = unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet();
 						Set<String> unInstallRtdb = unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
 						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){*/
-							logger.debug("no matching case can run on " + serverName);
+							logger.debug("no matching case can run on " + serverName +" need reinstall");
 							Thread installLabThread = new Thread(new Runnable() {
 								@Override
 								public void run() {
@@ -1174,7 +1174,9 @@ public class DistriButeCaseToLab {
 													break;
 												}else if(Constant.REINSTALLLABFAIL.equals(installLabResult)){
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult+" and add reqData :"+reqData+" to failed list");
-													reInstallFailList.put(serverName, reqData);
+													if (!"".equals(reqData)){
+														reInstallFailList.put(serverName, reqData);
+													}
 													reInstallNext = true;
 													JSONArray cc_list = new JSONArray();
 													JSONArray to_list = new JSONArray();
@@ -1188,11 +1190,15 @@ public class DistriButeCaseToLab {
 										}else{
 											logger.debug("lab reinstall... " + serverName+" response result "+resResult +" and add reqData :"+reqData+" to failed list");
 											reInstallNext = true;
-											reInstallFailList.put(serverName, reqData);
+											if (!"".equals(reqData)){
+												reInstallFailList.put(serverName, reqData);
+											}
 										}
 									} catch (Exception e) {
 										logger.error("lab reinstall exception... " + serverName, e);
-										reInstallFailList.put(serverName, reqData);
+										if (!"".equals(reqData)){
+											reInstallFailList.put(serverName, reqData);
+										}
 										reInstallNext = true;
 									}
 								}
