@@ -1108,7 +1108,7 @@ public class DistriButeCaseToLab {
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
 			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
-            if(currentServerNum > 0  && reInstallNext){
+            if(currentServerNum > 10  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverBody = Servers.getJSONObject(i);
