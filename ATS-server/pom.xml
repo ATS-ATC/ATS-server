@@ -44,6 +44,12 @@
 	        </exclusion>
 	    </exclusions>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.maven.archetypes/maven-archetype-webapp -->
+	<dependency>
+	    <groupId>org.apache.maven.archetypes</groupId>
+	    <artifactId>maven-archetype-webapp</artifactId>
+	    <version>1.0</version>
+	</dependency>
 	
   </dependencies>
   

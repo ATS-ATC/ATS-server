@@ -1144,6 +1144,7 @@ public class DistriButeCaseToLab {
 								            String resultCaseDependsString = sb.toString();
 								            if ("".equals(resultCaseDependsString)){
 								            	logger.warn("case server no case need runned...");
+								            	idleNum.put(serverName, 0);
 								            }else{
 								            	JSONObject resultCaseDepends = JSONObject.fromObject(resultCaseDependsString.replace("u'", "'"));
 									            reqData = "{\"protocol\": \""+resultCaseDepends.getString("protocl")+"\", \"labname\": [\""+serverName+"\"], \"DB\": "+resultCaseDepends.getString("DB")+", \"mate\": \"N\", \"release\": \""+resultCaseDepends.getString("release")+"\", \"SPA\": "+resultCaseDepends.getString("SPA")+", \"ins_flag\": \"1\"}";
