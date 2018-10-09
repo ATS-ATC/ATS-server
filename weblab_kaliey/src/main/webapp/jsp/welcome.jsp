@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %> 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -153,7 +154,12 @@ $(document).ready(function(){
                           </div>
                           <div class="value">
                               	<h1 id="s_rate">
-									<fmt:formatNumber type="number" value="${(caseCount[0].sCase/caseCount[0].allCase*100) }" pattern="0.00" maxFractionDigits="2"/>%
+                              		<c:if test="${caseCount[0].allCase !=0}">
+										<fmt:formatNumber type="number" value="${(caseCount[0].sCase/caseCount[0].allCase*100) }" pattern="0.00" maxFractionDigits="2"/>%
+                              		</c:if>
+                              		<c:if test="${caseCount[0].allCase==0}">
+                              			0
+                              		</c:if>
 								</h1>
                               <p>My Success Rate</p>
                           </div>

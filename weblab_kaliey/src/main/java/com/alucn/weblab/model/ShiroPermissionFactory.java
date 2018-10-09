@@ -36,6 +36,7 @@ public class ShiroPermissionFactory  extends ShiroFilterFactoryBean{
      */  
     @Override  
     public void setFilterChainDefinitions(String definitions) {  
+    	System.err.println("ShiroPermissionFactory >> setFilterChainDefinitions");
     	if(definitions!=null&&!"".endsWith(definitions)) {
     		ShiroPermissionFactory.definitions = definitions;  
             
@@ -55,6 +56,7 @@ public class ShiroPermissionFactory  extends ShiroFilterFactoryBean{
             	String permission_name = (String)po.get("permission_name");
             	if(!"".equals(url)&&!"".equals(permission_name)) {
             		otherChains.put(url, permission_name);
+            		//logger.info("url:========"+url+"   permission_name:======="+permission_name);
             	}
             }  
             //System.out.println("==============="+definitions);  
@@ -66,7 +68,7 @@ public class ShiroPermissionFactory  extends ShiroFilterFactoryBean{
                 section = ini.getSection(Ini.DEFAULT_SECTION_NAME); 
                 
             }  
-            logger.info("================="+definitions+"================="+otherChains);
+            //logger.info("================="+definitions+"================="+otherChains);
             //加入权限集合  
             section.putAll(otherChains);
             setFilterChainDefinitionMap(section);  

@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -24,6 +23,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 	
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+		System.err.println("PrincipalCollection >> doGetAuthorizationInfo");
 		String username = (String)principals.fromRealm(getName()).iterator().next();
 		if(username!=null){
 			ArrayList<HashMap<String, Object>> pers = new ArrayList<HashMap<String, Object>>();
@@ -49,7 +49,8 @@ public class MyShiroRealm extends  AuthorizingRealm{
 	}
 
 	@Override
-	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken at) throws AuthenticationException {
+	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken at) {
+		System.err.println("AuthenticationToken >> doGetAuthenticationInfo");
 		 UsernamePasswordToken token = (UsernamePasswordToken) at;
 		 // 通过表单接收的用户名 
 		 String username  = token.getUsername();
@@ -58,15 +59,15 @@ public class MyShiroRealm extends  AuthorizingRealm{
 			NUser nUser = new NUser();
 			nUser.setUsername(username);
 			ArrayList<HashMap<String, Object>> queryNUser = new ArrayList<HashMap<String, Object>>();
-			try {
-				queryNUser = loginService.queryNUser(nUser);
+				try {
+					queryNUser = loginService.queryNUser(nUser);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			 	if (queryNUser.size()>0) {  
 			 		logger.info("doGetAuthenticationInfo:========="+queryNUser.get(0).get("password"));
 			 		return new SimpleAuthenticationInfo(queryNUser.get(0).get("username"), queryNUser.get(0).get("password"), getName());  
 			 	} 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}  
 	 	}
 		return null;
 	}

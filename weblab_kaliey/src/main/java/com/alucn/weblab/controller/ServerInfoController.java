@@ -19,20 +19,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alucn.casemanager.server.common.model.ServerSort;
+import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.weblab.model.NServer;
 import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.model.Server;
 import com.alucn.weblab.service.LoginService;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
+import com.alucn.weblab.utils.StringUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * @author haiqiw
- * desc: serverinfo
- */
 @Controller
 //@RequestMapping("/serverInfo")
 public class ServerInfoController {
@@ -102,7 +100,7 @@ public class ServerInfoController {
 					String serverMate = lab.getString("serverMate");
 					String mateServer = lab.getString("mateServer");
 					String status = jsonObject.getJSONObject("taskStatus").getString("status");
-					int stateflag = 1;
+					/*int stateflag = 1;
 					if("Idle".equals(status)) {
 						stateflag=0;
 					}
@@ -117,11 +115,12 @@ public class ServerInfoController {
 					}
 					if("Finished".equals(status)) {
 						stateflag=4;
-					}
+					}*/
 					childMap.put("id", id);
 					childMap.put("pid", pid);
 					childMap.put("name", serverName);
-					childMap.put("status", stateflag);
+					//childMap.put("status", stateflag);
+					childMap.put("status", status);
 					childMap.put("type", "server");
 					childMap.put("serverIp", serverIp);
 					childMap.put("serverRelease", serverRelease);
@@ -219,7 +218,27 @@ public class ServerInfoController {
 		int deptId = Integer.parseInt(queryNUser.get(0).get("deptid").toString());
 		server.setCreateUserId(id);
 		server.setCreateDeptId(deptId);
-		serverInfoService.addServerDetails(server);
+		//serverInfoService.addServerDetails(server);
+		//添加server
+		JSONObject reqdate = new JSONObject();
+		reqdate.put("ins_flag", "0");
+		reqdate.put("protocol", server.getServerProtocol());
+		String labname = StringUtil.formatJsonString(server.getServerName());
+		reqdate.put("labname", labname);
+		String serverRTDB = server.getServerRTDB();
+		String DB = StringUtil.formatJsonString(serverRTDB);
+		reqdate.put("DB", DB);
+		reqdate.put("mate", "N");
+		reqdate.put("release", server.getServerRelease());
+		String serverSPA = server.getServerSPA();
+		String SPA = StringUtil.formatJsonString(serverSPA);
+		reqdate.put("SPA", SPA);
+		
+		//{"ins_flag":"0","protocol":"ANSI","labname":["BJRMS21H"],"DB":["CTRTDB","XBRTDB","GNRTDB","SGLDB","SGLRTDB","SIMDB"],"mate":"N","release":"SP17.9","SPA":["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","ECGS"]}
+		System.out.println("addServerDetails >> "+reqdate);
+		
+        //String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqdate.toString());
+        //System.out.println(resResult);
 	}
 
 	@RequestMapping(path = "/removeServerInfo")

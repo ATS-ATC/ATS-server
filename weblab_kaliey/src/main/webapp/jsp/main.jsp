@@ -22,19 +22,32 @@
 	$(function() {
 		var height=document.documentElement.clientHeight;
 		var head = $("#head").height();
-		//alert(head)
-		//alert(height)
+		var hidemenu = $("#hide_left_menu").height();
+		var home = $("#home").height();
+		//alert("head:=="+head)//50
+		//alert("height:==="+height)//648
+		//alert("hide_left_menu:==="+hidemenu)//28
+		//alert("home:==="+home)//32*7
+		
+		//七级目录，单位长度*菜单数量7
+		var fill = head+hidemenu+(home*7)+14;
+		
 		document.getElementById('main-info').style.height=height-head+'px';
-		document.getElementById('fill').style.height=height-316+'px';
+		//document.getElementById('fill').style.height=height-316+'px';
+		document.getElementById('fill').style.height=height-fill+'px';
 		
 		$("#config-manage").click(function(){
 			var active = $("#config-info").is(".in");
 			if(active){
-				$("#fill").css("height",height-316+'px');
+				//$("#fill").css("height",height-316+'px');
+				$("#fill").css("height",height-fill+'px');
 				//document.getElementById('fill').style.height=height-316+32+'px';
 			}else{
 				//document.getElementById('fill').style.height=height-316-32+'px';
-				$("#fill").css("height",height-377+'px');
+				//二级菜单展开fill+展开长度:单位长度*二级菜单数量3
+				var fill2 = fill + (home*3);
+				
+				$("#fill").css("height",height-fill2+'px');
 			}
 		}); 
 	});
@@ -175,8 +188,8 @@
 			<div id="left-menu" class="col-md-2" style="padding-left: 0px; padding-right: 0px;background-color:#293038" >
 					<div class="row">
 						<div class="col-md-12" >
-							<a id="hide_left_menu">
-								<center style="background-color: rgb(66,81,95);height:28px;">
+							<a><!-- id="hide_left_menu" -->
+								<center id="hide_left_menu" style="background-color: rgb(66,81,95);height:28px;">
 									<button type="button" class="btn btn-link btn-sm &nbsp;&nbsp;" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
 										<span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
 									</button>
@@ -230,8 +243,8 @@
 								</a>
 							</li>
 							
-							<li id="config-manage" role="presentation" ><%-- onclick="menuClick('${pageContext.request.contextPath}/config.do')" --%>
-							  	<a href="#config-info" class="nav-header menu-first collapsed" data-toggle="collapse" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+							<li role="presentation" ><%-- onclick="menuClick('${pageContext.request.contextPath}/config.do')" --%>
+							  	<a id="config-manage" href="#config-info" class="nav-header menu-first collapsed" data-toggle="collapse" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
@@ -250,6 +263,13 @@
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; SPA & RTDB
+											</button>
+										</a>
+									</li>
+							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getUserInfo.do')">
+									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; User Management
 											</button>
 										</a>
 									</li>

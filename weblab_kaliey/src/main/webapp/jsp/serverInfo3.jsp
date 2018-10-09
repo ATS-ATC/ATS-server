@@ -137,7 +137,7 @@ function statusFormatter(value, row, index) {
 	if(row.type == 'set'){
 		return '';
 	}else if(row.type == 'server'){
-		if (value == 0) {
+		/* if (value == 0) {
 		    return '<span class="label label-success">Idle</span>';
 	  	} else if(value == 1){
 		    return '<span class="label label-danger">Dead</span>';
@@ -146,7 +146,20 @@ function statusFormatter(value, row, index) {
 	  	} else if(value == 3){
 		    return '<span class="label label-info">Ready</span>';
 	  	} else if(value == 4){
-		    return '<span class="label label-default">Running</span>';
+		    return '<span class="label label-default">Finished</span>';
+	  	} */
+		if (value == 'Idle') {
+		    return '<span class="label label-success">Idle</span>';
+	  	} else if(value == 'Dead'){
+		    return '<span class="label label-danger">Dead</span>';
+	  	} else if(value == 'Running'){
+		    return '<span class="label label-warning">Running</span>';
+	  	} else if(value == 'Ready'){
+		    return '<span class="label label-info">Ready</span>';
+	  	} else if(value == 'Finished'){
+		    return '<span class="label label-default">Finished</span>';
+	  	}else{
+	  		return '<span class="label label-default">'+value+'</span>';
 	  	}
 	}
 }

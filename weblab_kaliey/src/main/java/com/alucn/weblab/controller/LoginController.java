@@ -73,14 +73,22 @@ public class LoginController {
 				//登陆成功,后验证是否在数据库内，如果不在则创建基本用户
 				ArrayList<HashMap<String, Object>> nUser = loginService.queryNUser(nuser);
 				if(nUser.size()>0){
-					//在数据库内，
+					//在数据库内，可能为逻辑删除，也可能是正常
 					session.setAttribute("auth", Constant.AUTH);
 				}else{
 					session.setAttribute("auth", "errorCases");
 					//不在数据库内，
-					//1、创建用户，
-					//2、赋予基本用户权限
-					loginService.createLdapUser(nuser);
+					//验证是否为逻辑删除
+					ArrayList<HashMap<String,Object>> allNUser = loginService.queryAllNUser(nuser);
+					//如果能查到，则说明该用户是被逻辑删除的用户
+					if(allNUser.size()>0) {
+						return "login";
+					}else {
+						//1、创建用户，
+						//2、赋予基本用户权限
+						loginService.createLdapUser(nuser);
+					}
+					
 				}
 				//3、放入session权限
 				//取出内部的权限放入session

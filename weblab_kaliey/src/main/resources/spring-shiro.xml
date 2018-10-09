@@ -28,9 +28,6 @@
 	        <value>  
 	            /login=anon
 	            /unauthorized.jsp=anon
-	            /appLogin=anon
-				/main*/**=authc
-				/admin*/**=authc,roles[admin]
 	        </value>  
 	    </property>
 	</bean>  

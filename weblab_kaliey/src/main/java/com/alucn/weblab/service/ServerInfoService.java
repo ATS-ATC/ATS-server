@@ -27,11 +27,6 @@ import com.alucn.weblab.model.Server;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * @author haiqiw
- * 2017��6��5�� ����6:28:09
- * desc:ServerInfoService
- */
 @Service("serverInfoService")
 public class ServerInfoService {
 	private static Logger logger = Logger.getLogger(ServerInfoService.class);
@@ -122,7 +117,7 @@ public class ServerInfoService {
 			}
 		}
 		Map<String,Set<ServerSort>> setMap = new HashMap<String,Set<ServerSort>>();
-		JSONObject taskStatus = new JSONObject();
+		/*JSONObject taskStatus = new JSONObject();
 		for(int i=0; i<infos.size(); i++){
 			JSONObject info = infos.getJSONObject(i);
 			JSONObject lib = info.getJSONObject(Constant.LAB);
@@ -140,7 +135,7 @@ public class ServerInfoService {
 				info.put(Constant.TASKSTATUS, taskStatus);
 			}
 			
-		}
+		}*/
 		for(int i=0; i<infos.size(); i++){
 			JSONObject info = infos.getJSONObject(i);
 			JSONObject lib = info.getJSONObject(Constant.LAB);
@@ -292,23 +287,23 @@ public class ServerInfoService {
 	}
 
 	public void addServerDetails(NServer server) throws Exception {
-		String filePath = ConfigProperites.getInstance().getCaseClientSftpSourcePath();
+		String filePath = ConfigProperites.getInstance().getCaseClientSftpSourcePath();//""
 		logger.info("addServerDetails >> filePath:==========="+filePath);
-		Fifowriter.writerFile(filePath, Constant.SPAANDRTDB, JSONObject.fromObject(server).toString());
+		Fifowriter.writerFile(filePath, Constant.SPAANDRTDB, JSONObject.fromObject(server).toString());//spaANDrtdb.txt
 		
-		String sftpTargetPath = ConfigProperites.getInstance().getCaseClientSftpTargetPath();
-		String shellName = ConfigProperites.getInstance().getCaseClientSftpSendShellName();
-		String userName = ConfigProperites.getInstance().getCaseClientSftpUserName();
-		String password = ConfigProperites.getInstance().getCaseClientSftpPassword();
-		int port = Integer.parseInt(ConfigProperites.getInstance().getCaseClientSftpPort());
+		String sftpTargetPath = ConfigProperites.getInstance().getCaseClientSftpTargetPath();//""
+		String shellName = ConfigProperites.getInstance().getCaseClientSftpSendShellName();//init.sh
+		String userName = ConfigProperites.getInstance().getCaseClientSftpUserName();//root
+		String password = ConfigProperites.getInstance().getCaseClientSftpPassword();//r00t
+		int port = Integer.parseInt(ConfigProperites.getInstance().getCaseClientSftpPort());//22
 		
 		logger.info("addServerDetails >> upLoadFile:==========="+sftpTargetPath+"/"+shellName+"/"+userName+"/"+password+"/"+port);
 		FileUtil.upLoadFile(FileUtil.createSession(server.getServerIp(), userName, password, port), filePath, sftpTargetPath);
 		String[] cmds = new String[] {"sh "+sftpTargetPath+File.separator+shellName};
 		logger.info("addServerDetails >> cmds:============="+cmds.toString());
-		/*String[] result = FileUtil.execShellCmdBySSH(server.getServerIp(), port, userName, password, cmds);
+		String[] result = FileUtil.execShellCmdBySSH(server.getServerIp(), port, userName, password, cmds);
 		for(String str : result){
 			System.out.println(str);
-		}*/
+		}
 	}
 }

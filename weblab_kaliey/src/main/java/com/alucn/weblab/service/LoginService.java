@@ -30,7 +30,7 @@ public class LoginService {
 	public ArrayList<HashMap<String, Object>> getPermissionsByUserName(String username) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select d.permission_name from n_user a "
+		String sql = "select distinct d.permission_name from n_user a "
 				+ "left join n_user_role b on a.id=b.user_id "
 				+ "left join n_role_permission c on b.role_id=c.role_id "
 				+ "left join n_permission d on d.id=c.permission_id "
@@ -57,13 +57,21 @@ public class LoginService {
 		String rsql = "insert into n_user_role (user_id,role_id) values ("+id+","+3+")";
 		userDaoImpl.insert(jdbc, rsql);
 	} 
-	
-	public ArrayList<HashMap<String, Object>> queryNUser(NUser nuser) throws Exception{
+	//不排除逻辑删除账号
+	public ArrayList<HashMap<String, Object>> queryAllNUser(NUser nuser) throws Exception{
     	String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_user where username='"+nuser.getUsername()+"'";
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+        return result;
+	}
+	//只取状态正常的账号
+	public ArrayList<HashMap<String, Object>> queryNUser(NUser nuser) throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_user where stateflag=0 and username='"+nuser.getUsername()+"'";
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
-        return result;
+		return result;
 	}
 	
 	
