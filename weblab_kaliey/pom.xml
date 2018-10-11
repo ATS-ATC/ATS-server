@@ -71,6 +71,12 @@
 	        </exclusion>
 	    </exclusions>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.maven.archetypes/maven-archetype-webapp -->
+ 	<dependency>
+ 	    <groupId>org.apache.maven.archetypes</groupId>
+ 	    <artifactId>maven-archetype-webapp</artifactId>
+ 	    <version>1.0</version>
+ 	</dependency>
   </dependencies>
   <build>
     <finalName>weblab</finalName>
@@ -84,7 +90,17 @@
                 <source>1.8</source>  
                 <target>1.8</target>  
             </configuration>  
-        </plugin>  
+        </plugin> 
+        <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-resources-plugin</artifactId>
+         <version>2.6</version>
+         <configuration>
+         	<source>${java-version}</source>
+ 			<target>${java-version}</target>
+           	<encoding>UTF-8</encoding>
+         </configuration>
+       </plugin> 
     </plugins>  
   </build>
   

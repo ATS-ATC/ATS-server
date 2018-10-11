@@ -217,6 +217,29 @@ public class SendMail {
 		SendMail.Send("Daily certified case failure check " + dateTime, sb.toString(), to_list, cc_list);
 	}
 	
+	public static void genReport(JSONArray cc_list, JSONArray to_list, String serverName, String reqData){
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+		String dateTime = df.format(new Date());
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("<head>");
+		sb.append("<title>Report</title>");
+		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
+		sb.append("<style type=\"text/css\">");
+		sb.append("body { margin:0 auto; padding:20px; font:13px;}");
+		sb.append("p, table, caption, td, tr, th {margin:0 auto; padding:0; font-weight:normal;}");
+		sb.append("p {margin-bottom:15px;}");
+		sb.append("</style></head>");
+		sb.append("<body>");
+		sb.append("<p><span style=\"background:#cccc33;\">@xiuyun!</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+ serverName +" installation failure, please deal with it in time.</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>RequestData:</Strong></span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+reqData+"</span></p>");
+		sb.append("<br/><br/>");
+		sb.append("</body></html>");
+		SendMail.Send("Lab Installation Failure " + dateTime, sb.toString(), to_list, cc_list);
+	}
+	
 	public static void genReport(JSONArray cc_list, JSONArray to_list, Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI, Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSITU){
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		String dateTime = df.format(new Date());

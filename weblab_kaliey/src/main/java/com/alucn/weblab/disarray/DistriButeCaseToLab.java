@@ -52,7 +52,7 @@ public class DistriButeCaseToLab {
 	
 	int counterUninsRS=0;
 	Map<String, Integer> idleNum = new HashMap<String, Integer>();
-	List<String> reInstallFailList = new ArrayList<String>();
+	Map<String, String> reInstallFailList = new HashMap<String, String>();
 	boolean reInstallNext = true;
 	private DistriButeCaseToLab(){};
 
@@ -1108,10 +1108,12 @@ public class DistriButeCaseToLab {
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
 			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
-            if(currentServerNum > 5  && reInstallNext){
+            if(currentServerNum > 10  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
-					JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+					JSONObject serverBody = Servers.getJSONObject(i);
+					JSONObject serverMem = serverBody.getJSONObject(Constant.LAB);
+					JSONObject serverStatus = serverBody.getJSONObject(Constant.TASKSTATUS);
 					String serverName2 = serverMem.getString(Constant.SERVERNAME);
 					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
 						/*String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
@@ -1124,13 +1126,13 @@ public class DistriButeCaseToLab {
 						Set<String> unInstallSpa = unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet();
 						Set<String> unInstallRtdb = unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
 						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){*/
-							logger.debug("no matching case can run on " + serverName);
+							logger.debug("no matching case can run on " + serverName +" need reinstall");
 							Thread installLabThread = new Thread(new Runnable() {
 								@Override
 								public void run() {
+									String reqData = "";
 									try {
-										String reqData = "";
-										if(reInstallFailList.size() == 0){
+										if(null == reInstallFailList.get(serverName)){
 											String[] cmd = new String[] { "/bin/sh", "-c", "python /home/huanglei/DB/QueryCaseDepends.py /home/huanglei/DB/caseinfo.db "+serverName };
 								            Process ps = Runtime.getRuntime().exec(cmd);
 								            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
@@ -1139,43 +1141,66 @@ public class DistriButeCaseToLab {
 								            while ((line = br.readLine()) != null) {
 								                sb.append(line);
 								            }
-								            JSONObject resultCaseDepends = JSONObject.fromObject(sb.toString().replace("u'", "'"));
-								            reqData = "{\"protocol\": \""+resultCaseDepends.getString("protocl")+"\", \"labname\": [\""+serverName+"\"], \"DB\": "+resultCaseDepends.getString("DB")+", \"mate\": \"N\", \"release\": \""+resultCaseDepends.getString("release")+"\", \"SPA\": "+resultCaseDepends.getString("SPA")+", \"ins_flag\": \"1\"}";
+								            String resultCaseDependsString = sb.toString();
+								            if ("".equals(resultCaseDependsString)){
+								            	logger.warn("case server no case need runned...");
+								            	idleNum.put(serverName, 0);
+								            }else{
+								            	JSONObject resultCaseDepends = JSONObject.fromObject(resultCaseDependsString.replace("u'", "'"));
+									            reqData = "{\"protocol\": \""+resultCaseDepends.getString("protocl")+"\", \"labname\": [\""+serverName+"\"], \"DB\": "+resultCaseDepends.getString("DB")+", \"mate\": \"N\", \"release\": \""+resultCaseDepends.getString("release")+"\", \"SPA\": "+resultCaseDepends.getString("SPA")+", \"ins_flag\": \"1\"}";
+								            }
 										}else{
-											reqData = reInstallFailList.get(0);
-											reInstallFailList.clear();
+											reqData = reInstallFailList.get(serverName);
+											reInstallFailList.remove(serverName);
 										}
 							            String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
 										logger.debug("lab reinstall... " + serverName+" response result "+resResult);
-										if("OK".equals(resResult)){
+										if(Constant.REINSTALLLABOK.equals(resResult)){
 											while(true){
 												String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
-												logger.debug("lab reinstall response is "+installLabResult);
-												if("Succeed".equals(installLabResult)){
+												logger.debug("lab reinstall... " + serverName+" response is "+installLabResult);
+												serverStatus.put(Constant.STATUS, installLabResult);
+			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												if(Constant.REINSTALLLABSUCCESS.equals(installLabResult)){
 													idleNum.put(serverName, 0);
 													reInstallNext = true;
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
+													serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
+				                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
 													/*if(getProcess(serverName)){
 														String[] cmd = new String[] { "/bin/sh", "-c", "sh /home/huanglei/ATC_"+serverName+"/start.sh"};
 											            Runtime.getRuntime().exec(cmd);
 														logger.debug("lab reinstall completed... " + serverName+" is started");
 													}*/
 													break;
-												}else if("Failed".equals(installLabResult)){
+												}else if(Constant.REINSTALLLABFAIL.equals(installLabResult)){
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult+" and add reqData :"+reqData+" to failed list");
+													if (!"".equals(reqData)){
+														reInstallFailList.put(serverName, reqData);
+													}
 													reInstallNext = true;
-													reInstallFailList.add(reqData);
+													JSONArray cc_list = new JSONArray();
+													JSONArray to_list = new JSONArray();
+													cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+													to_list.add("xiuyun.he@nokia-sbell.com");
+													SendMail.genReport(cc_list, to_list, serverName, reqData);
+													break;
 												}
 													Thread.sleep(100000);
 											}
 										}else{
 											logger.debug("lab reinstall... " + serverName+" response result "+resResult +" and add reqData :"+reqData+" to failed list");
 											reInstallNext = true;
-											reInstallFailList.add(reqData);
+											if (!"".equals(reqData)){
+												reInstallFailList.put(serverName, reqData);
+											}
 										}
 									} catch (Exception e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
+										logger.error("lab reinstall exception... " + serverName, e);
+										if (!"".equals(reqData)){
+											reInstallFailList.put(serverName, reqData);
+										}
+										reInstallNext = true;
 									}
 								}
 							});
