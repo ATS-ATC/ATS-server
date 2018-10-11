@@ -19,7 +19,7 @@
 <script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
 
-
+<link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
  <style  type="text/css">
 .dropdown-toggle{
 	padding-top: 3px;
@@ -131,7 +131,7 @@
 				</div>
 	            <div class="modal-footer">
 	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary">submit</button>
+	                <button type="button" class="btn btn-primary" id="editSubmit">submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -159,6 +159,69 @@
 	
 </body>
 <script type="text/javascript">
+$("#editSubmit").click(function(){
+	var ehroles = $("#ehroles").val();
+	var edept = $("#edept").val();
+	var estateflag = $("input[name='optionsRadios']:checked").val();
+	/* alert(ehroles);
+	alert(edept);
+	alert(estateflag); */
+	var a  = $('#tb_departments').bootstrapTable('getSelections');
+	var aid = a[0].id;
+	//var aroles = a[0].roles;
+	var aroles= new Array(); //定义一数组 
+	aroles=a[0].roles.split(","); //字符分割
+	aroles.sort();
+	
+	var adept = a[0].dept_name;
+	var amstateflag = a[0].stateflag;
+	var astateflag="normal";
+	if(amstateflag!=0){
+		astateflag="disable";
+	}
+	/* alert(aroles);
+	alert(adept);
+	alert(astateflag); */
+	
+	var sdata ="id="+aid+"&";
+	var updateflag="1";
+	
+	if(ehroles!=aroles){
+		sdata=sdata+"erole="+ehroles+"&";
+		updateflag="0";
+	}else {
+		sdata=sdata+"erole=&";
+	}
+	if(edept!=adept){
+		sdata=sdata+"edept="+edept+"&";
+		updateflag="0";
+	}else {
+		sdata=sdata+"edept=&";
+	}
+	if(estateflag!=astateflag){
+		sdata=sdata+"estateflag="+estateflag+"&";
+		updateflag="0";
+	}else {
+		sdata=sdata+"estateflag=&";
+	}
+	
+	if(updateflag=="1"){
+		alert("Nothing has changed");
+		return;
+	}
+	
+	$.ajax({
+		url:"editUserInfo.do",
+		data:sdata,
+		success:function(data){
+			alert(data);
+			
+		}
+	});
+	
+});
+
+
 //清除弹窗原数据
 $("#myModal").on("hidden.bs.modal", function() {
 	var dept= "<input type='text' class='form-control' id='edept'  placeholder='dept' disabled='disabled' style='display: inline;'>";
@@ -195,7 +258,7 @@ $("#sdept").click(function(){
 		url:"getAllDept.do",
 		success: function(data){
 			var scheck="";
-			var dept="<select class='form-control'>"
+			var dept="<select class='form-control'id='edept' >"
 			for(i=0;i<data.length;i++){
 				//alert(data[i].dept_name)
 				if(data[i].dept_name==a[0].dept_name){
@@ -228,6 +291,8 @@ function tagStyle(strs){
 }
 $("#sRoleSubmit").click(function(){
 	var tag = "";
+	//var strs="";
+	var list = new Array();
 	$.each($('input:checkbox[name="rolesCheck"]:checked'),function(){
         //window.alert("你选了："+ $(this).val());
         var crole= $(this).val();
@@ -240,11 +305,24 @@ $("#sRoleSubmit").click(function(){
 		}else {
 			tag=tag+"<span class='label label-default'>"+crole+"</span> ";
 		}
+        //strs=strs+crole+",";
+        list.push(crole);
     });
 	if(tag==""){
 		alert("At least checked one role");
 		return;
 	}
+	/* if(strs.indexOf(",")>=0){
+		strs.substring(0,strs.length-1);
+	} */
+	/* var sear=new RegExp(',');
+	if(sear.test(strs)) {
+		//alert('Yes');
+		strs = strs.substring(0,strs.length-1);
+	} */
+	//alert(list);
+	tag=tag+"<input id='ehroles' value='"+list+"' type='hidden' />";
+	//tag=tag+"<input id='ehroles' value='"+strs+"' type='hidden' />";
 	$("#eroles").html(tag);
 	$("#roleModal").modal("hide");
 })
@@ -314,6 +392,7 @@ $("#edit").click(function(){
 			}
 		}  */
 		var tag = tagStyle(strs);
+		tag=tag+"<input id='ehroles' value='"+strs+"' type='hidden' />";
 		$("#eroles").html(tag);
 		$("#edept").val(a[0].dept_name);
 		$("#estateflag").val(a[0].dept_name);
@@ -398,7 +477,8 @@ var TableInit = function () {
                 formatter: 'tagsFormatter'
             }, {
                 field: 'dept_name',
-                title: 'dept name'
+                title: 'dept name',
+                formatter: 'iconFormatter'
             }, {
                 field: 'stateflag',
                 title: 'stateflag',
@@ -430,6 +510,13 @@ var ButtonInit = function () {
 
     return oInit;
 };
+function iconFormatter(value, row, index) {
+	if(row.dept_name == 'headquarters'){
+		return value+' <i class="icon-trophy"></i>';
+	}else{
+		return value;
+	}
+}
 function statusFormatter(value, row, index) {
 	if(row.stateflag == '0'){
 		//圆角

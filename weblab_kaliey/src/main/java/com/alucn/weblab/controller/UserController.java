@@ -56,7 +56,7 @@ public class UserController {
 		System.out.println("getAllDept >> "+allDept);
 		return allDept;
 	}
-	@RequestMapping(path = "/getRolePermission")
+	/*@RequestMapping(path = "/getRolePermission")
 	@ResponseBody
 	public ArrayList<HashMap<String, Object>> getRolePermission(HttpServletRequest request,Model model) throws Exception {
 		String rolename = request.getParameter("rolename")==null?"":request.getParameter("rolename").toString().trim();
@@ -64,6 +64,34 @@ public class UserController {
 		ArrayList<HashMap<String, Object>> rolePermission = userService.getRolePermission(rolename);
 		System.out.println("getRolePermission >> "+rolePermission);
 		return rolePermission;
+	}*/
+	@RequestMapping(path = "/editUserInfo")
+	@ResponseBody
+	public String  editUserInfo(HttpServletRequest request) throws Exception {
+		String id = request.getParameter("id")==null?"":request.getParameter("id").toString().trim();
+		String erole = request.getParameter("erole")==null?"":request.getParameter("erole").toString().trim();
+		String edept = request.getParameter("edept")==null?"":request.getParameter("edept").toString().trim();
+		String estateflag = request.getParameter("estateflag")==null?"":request.getParameter("estateflag").toString().trim();
+		
+		//System.out.println("editUserInfo >> id >> "+id);
+		//System.out.println("editUserInfo >> erole >> "+erole);
+		//System.out.println("editUserInfo >> edept >> "+edept);
+		//System.out.println("editUserInfo >> estateflag >> "+estateflag);
+		if(id!=null&&!"".equals(id)) {
+			//第一步：通过id获取账户信息
+			ArrayList<HashMap<String, Object>> userInfoById = userService.getUserInfoById(id);
+			//第二步：对比旧有信息与前端传来的信息差异
+			if(userInfoById.size()==1) {
+				String deptid = (String) userInfoById.get(0).get("deptid");
+				String stateflag = (String) userInfoById.get(0).get("stateflag");
+				String roles = (String) userInfoById.get(0).get("roles");
+				
+				
+			}
+			//第三步：通过对比得来的差异进行更新
+		}
+		
+		return "1";
 	}
 	
 }

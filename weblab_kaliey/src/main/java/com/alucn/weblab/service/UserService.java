@@ -86,7 +86,22 @@ public class UserService {
 		return query;
 	}
 
-	
+	public ArrayList<HashMap<String, Object>> getUserInfoById(String id) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select a.id,a.username,a.deptid,a.stateflag,b.roles from n_user a  " + 
+				"left join ( " + 
+				"select user_id,group_concat(distinct b.role_name) roles from n_user_role a  " + 
+				"left join n_role b on a.role_id=b.id and b.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"group by a.user_id " + 
+				") b on a.id=b.user_id " + 
+				"left join n_dept c on a.deptid=c.id and c.stateflag=0 "+
+				"where 1=1 "+
+				"and a.id='"+id+"'";
+		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
+		return query;
+	}
 	
 	
 }
