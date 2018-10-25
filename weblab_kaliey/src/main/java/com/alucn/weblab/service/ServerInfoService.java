@@ -2,6 +2,7 @@ package com.alucn.weblab.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,6 +12,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
@@ -21,6 +23,10 @@ import com.alucn.casemanager.server.common.model.ServerSort;
 import com.alucn.casemanager.server.common.model.ServerType;
 import com.alucn.casemanager.server.common.util.Fifowriter;
 import com.alucn.casemanager.server.common.util.FileUtil;
+import com.alucn.casemanager.server.common.util.JdbcUtil;
+import com.alucn.casemanager.server.common.util.ParamUtil;
+import com.alucn.weblab.dao.impl.ServerInfoDaoImpl;
+import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NServer;
 import com.alucn.weblab.model.Server;
 
@@ -30,7 +36,9 @@ import net.sf.json.JSONObject;
 @Service("serverInfoService")
 public class ServerInfoService {
 	private static Logger logger = Logger.getLogger(ServerInfoService.class);
-
+	
+	@Autowired(required=true)
+	private ServerInfoDaoImpl serverInfoDaoImpl;
 	
 	public Map<String,Set<Map<String,JSONObject>>> getServerInfoNosort(){
 		/*JSONArray infos = new JSONArray();
@@ -306,4 +314,29 @@ public class ServerInfoService {
 			System.out.println(str);
 		}
 	}
+
+	public String addLabStatus(String status, String log, String enwtpps, String ss7, String labname, String db, String free, String ips, String ptversion, String spa, String deptid, String createid) {
+		String result ="success";
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = null;
+		try {
+			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		} catch (Exception e1) {
+			result ="fail";
+			e1.printStackTrace();
+		}
+		//String fdb = db.replace("\"", "").replace("[", "").replace("]", "");
+		//String fspa = spa.replace("\"", "").replace("[", "").replace("]", "");
+		String sql = "replace into n_add_lab_status(status,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime) "
+				+ "values('"+status+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"',datetime('now', 'localtime'))";
+		try {
+			System.err.println(sql);
+			serverInfoDaoImpl.insert(jdbc, sql);
+		} catch (Exception e) {
+			result ="fail";
+			e.printStackTrace();
+		}
+		return result; 
+	}
+
 }

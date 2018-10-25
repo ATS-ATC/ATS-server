@@ -27,20 +27,32 @@ public class MyShiroRealm extends  AuthorizingRealm{
 		String username = (String)principals.fromRealm(getName()).iterator().next();
 		if(username!=null){
 			ArrayList<HashMap<String, Object>> pers = new ArrayList<HashMap<String, Object>>();
+			ArrayList<String> roles = new ArrayList<String>();
 			try {
 				pers = loginService.getPermissionsByUserName(username);
+				ArrayList<HashMap<String, Object>> rolesByName = loginService.getRolesByName(username);
+				SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+				if(rolesByName.size()>0) {
+					for (HashMap<String, Object> hashMap : rolesByName) {
+						String role_name = (String)hashMap.get("role_name");
+						roles.add(role_name);
+					}
+					System.err.println("doGetAuthorizationInfo   role_name:======="+roles);
+					//logger.info("doGetAuthorizationInfo   role_name:======="+roles);
+					info.addRoles(roles);
+				}
 		        if(pers.size()>0){
-		             SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 		             for(HashMap<String, Object> each:pers){
 		                 //将权限资源添加到用户信息中  
 		            	 String permission_name = (String)each.get("permission_name");
-		            	 logger.info("doGetAuthorizationInfo   permission_name:======="+permission_name);
+		            	 System.err.println("doGetAuthorizationInfo   permission_name:======="+permission_name);
+		            	 //logger.info("doGetAuthorizationInfo   permission_name:======="+permission_name);
 		            	 if(permission_name!=null&&!"".equals(permission_name)) {
 		            		 info.addStringPermission(permission_name);
 		            	 }
 		             }
-		             return info;
 		         }
+		        return info;
 			} catch (Exception e) {
 				e.printStackTrace();
 			} 

@@ -44,8 +44,8 @@
 				//document.getElementById('fill').style.height=height-316+32+'px';
 			}else{
 				//document.getElementById('fill').style.height=height-316-32+'px';
-				//二级菜单展开fill+展开长度:单位长度*二级菜单数量3
-				var fill2 = fill + (home*3);
+				//二级菜单展开fill+展开长度:单位长度*二级菜单数量4
+				var fill2 = fill + (home*4);
 				
 				$("#fill").css("height",height-fill2+'px');
 			}
@@ -266,13 +266,27 @@
 											</button>
 										</a>
 									</li>
-							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getUserInfo.do')">
+							        <li id="usermanagement" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getUserInfo.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; User Management
 											</button>
 										</a>
 									</li>
+							        <li id="deptmanagement" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getDeptInfo.do')">
+									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Dept Management
+											</button>
+										</a>
+									</li>
+							        <%-- <li id="rolesmanagement" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getRolesInfo.do')">
+									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Role Management
+											</button>
+										</a>
+									</li> --%>
 							    </ul>
 							</li>
 						    

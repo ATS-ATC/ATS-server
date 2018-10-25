@@ -13,7 +13,7 @@ import com.alucn.weblab.dao.impl.SpaAndRtdbDaoImpl;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ6ÈÕ ÏÂÎç7:19:07
+ * 2017ï¿½ï¿½6ï¿½ï¿½6ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½7:19:07
  * desc:SpaAndRtdbManService
  */
 @Service("spaAndRtdbManService")
@@ -102,4 +102,5 @@ public class SpaAndRtdbManService {
 	public void setSpaAndRtdbDaoImpl(SpaAndRtdbDaoImpl spaAndRtdbDaoImpl) {
 		this.spaAndRtdbDaoImpl = spaAndRtdbDaoImpl;
 	}
+
 }

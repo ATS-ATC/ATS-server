@@ -25,7 +25,7 @@
 	padding-top: 3px;
     padding-bottom: 3px;
 }
-#edit{
+#edit,#ndept,#nroles{
     padding-top: 3px;
     padding-bottom: 3px;
 }
@@ -54,9 +54,15 @@
             </div>
         </div> 
         <div id="toolbar" style="text-align:left;">
-	        <button id="edit" class="btn btn-primary">
-				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  edit
+	        <button id="edit" class="btn btn-info">
+				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  edit 
 			</button>
+	        <%-- <button id="ndept" class="btn btn-default" onclick="javascript:window.location.href='${pageContext.request.contextPath}/getDeptInfo.do'">
+				<i class="icon-trophy"></i>  dept 
+			</button> --%>
+	        <%-- <button id="nroles" class="btn btn-default" onclick="javascript:window.location.href=${pageContext.request.contextPath}/getRolesInfo.do'">
+				<i class="icon-github-alt"></i>  roles 
+			</button> --%>
         </div>
         <div style="background-color: white;">
 	        <div class="row" style="margin-left: 10px;margin-right: 13px;margin-top: 10px; ">
@@ -173,7 +179,7 @@ $("#editSubmit").click(function(){
 	aroles=a[0].roles.split(","); //字符分割
 	aroles.sort();
 	
-	var adept = a[0].dept_name;
+	var adept = a[0].deptid;
 	var amstateflag = a[0].stateflag;
 	var astateflag="normal";
 	if(amstateflag!=0){
@@ -214,8 +220,13 @@ $("#editSubmit").click(function(){
 		url:"editUserInfo.do",
 		data:sdata,
 		success:function(data){
-			alert(data);
-			
+			//alert(data);
+			if(data=="fail"){
+				alert("Sorry, data update failed.");
+			}else if(data=="success"){
+				alert("Congratulations, data updated successfully.");
+				window.location.reload();
+			}
 		}
 	});
 	
@@ -266,7 +277,7 @@ $("#sdept").click(function(){
 				}else {
 					scheck="";
 				}
-				dept=dept+"<option value='"+data[i].dept_name+"' "+scheck+">"+data[i].dept_name+"</option>";
+				dept=dept+"<option value='"+data[i].id+"' "+scheck+">"+data[i].dept_name+"</option>";
 			}
 			dept=dept+"</select>";
 			$("#sedept").html(dept);
@@ -394,7 +405,9 @@ $("#edit").click(function(){
 		var tag = tagStyle(strs);
 		tag=tag+"<input id='ehroles' value='"+strs+"' type='hidden' />";
 		$("#eroles").html(tag);
-		$("#edept").val(a[0].dept_name);
+		var edept = "<input type='text' id='edept' value='"+a[0].deptid+"' style='display: none;'>"+
+		"<input type='text' class='form-control' value='"+a[0].dept_name+"' placeholder='dept' disabled='disabled' style='display: inline;'>";
+		$("#sedept").html(edept);
 		$("#estateflag").val(a[0].dept_name);
 		if(a[0].stateflag==0){
 			$("#normal").prop("checked",true);
@@ -467,21 +480,24 @@ var TableInit = function () {
                 checkbox: true
             }, {
                  field: 'id',
-                 title: 'id'
+                 title: 'Id'
             }, {
                 field: 'username',
-                title: 'username'
+                title: 'UserName'
             }, {
                 field: 'roles',
-                title: 'roles',
+                title: 'Roles',
                 formatter: 'tagsFormatter'
             }, {
+                field: 'deptid',
+                title: 'Group Id'
+            }, {
                 field: 'dept_name',
-                title: 'dept name',
+                title: 'GroupName',
                 formatter: 'iconFormatter'
             }, {
                 field: 'stateflag',
-                title: 'stateflag',
+                title: 'StateFlag',
                 formatter: 'statusFormatter'
             }]
         });

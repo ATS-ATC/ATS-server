@@ -27,6 +27,18 @@ public class LoginService {
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
+	
+	public ArrayList<HashMap<String, Object>> getRolesByName(String username) throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_user a " + 
+				"left join n_user_role b on a.id=b.user_id and b.stateflag=0 " + 
+				"left join n_role c on b.role_id=c.id and c.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"and a.username='"+username.trim()+"'";
+		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
+		return query;
+	}
 	public ArrayList<HashMap<String, Object>> getPermissionsByUserName(String username) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
@@ -109,6 +121,14 @@ public class LoginService {
 	
 	public void setUserDaoImpl(UserDaoImpl userDaoImpl) {
 		this.userDaoImpl = userDaoImpl;
+	}
+
+	public ArrayList<HashMap<String, Object>> getDeptByUserName(String username) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_user a left join n_dept b on a.deptid=b.id and b.stateflag=0 where a.stateflag=0 and a.username='"+username+"'";
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+		return result;
 	}
 
 	

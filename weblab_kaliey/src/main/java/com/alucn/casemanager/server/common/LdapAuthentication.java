@@ -99,7 +99,7 @@ public class LdapAuthentication {
                  return AuthFail;
              } catch (javax.naming.CommunicationException e) {
                  log.error(User + " Ldap server connection fail 2: " + e.toString());
-                 ad4_server_list.get(try_times);//ad4_server = "135.251.33.43";
+                 ad4_server = ad4_server_list.get(try_times);//ad4_server = "135.251.33.43";
                  try_times += 1;
                  // TODO: handle exception
              } 
