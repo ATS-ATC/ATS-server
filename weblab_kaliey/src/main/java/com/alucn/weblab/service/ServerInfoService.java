@@ -315,7 +315,7 @@ public class ServerInfoService {
 		}
 	}
 
-	public String addLabStatus(String status, String log, String enwtpps, String ss7, String labname, String db, String free, String ips, String ptversion, String spa, String deptid, String createid) {
+	public String addLabStatus(String status,String type, String log, String enwtpps, String ss7, String labname, String db, String free, String ips, String ptversion, String spa, String deptid, String createid, String createtime, String ainsflag) {
 		String result ="success";
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = null;
@@ -327,16 +327,62 @@ public class ServerInfoService {
 		}
 		//String fdb = db.replace("\"", "").replace("[", "").replace("]", "");
 		//String fspa = spa.replace("\"", "").replace("[", "").replace("]", "");
-		String sql = "replace into n_add_lab_status(status,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime) "
-				+ "values('"+status+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"',datetime('now', 'localtime'))";
+		String sql = "insert into n_add_lab_status(status,type,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime,modifytime,insflag) "
+				+ "values('"+status+"','"+type+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"','"+createtime+"','','"+ainsflag+"')";
 		try {
-			System.err.println(sql);
+			System.err.println("addLabStatus >> "+sql);
 			serverInfoDaoImpl.insert(jdbc, sql);
 		} catch (Exception e) {
 			result ="fail";
 			e.printStackTrace();
 		}
 		return result; 
+	}
+
+	public void editLabStatus(String status, String log,String labname,String stateflag,String createtime) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql="";
+		if(stateflag!=null&&!"".equals(stateflag)) {
+			sql = "update n_add_lab_status set status='"+status+"',log='"+log+"',stateflag='"+stateflag+"',modifytime=datetime('now', 'localtime') where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
+		}else {
+			sql = "update n_add_lab_status set status='"+status+"',log='"+log+"',modifytime=datetime('now', 'localtime') where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
+		}
+		System.err.println("editLabStatus >> "+sql);
+		serverInfoDaoImpl.insert(jdbc, sql);
+		
+	}
+
+	public ArrayList<HashMap<String, Object>> getLabLogJson(String limit, String offset, String labname, String deptid) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_add_lab_status "
+				+ "where 1=1 "
+				+ "and deptid='"+deptid+"'";
+		if(labname!=null && !"".equals(labname)) {
+			sql=sql+"and a.labname like '%"+labname+"%' ";
+		}
+		sql=sql+"order by createtime desc limit "+offset+","+limit;
+		System.err.println("UserService >> getAllDeptInfoJson >> sql "+sql);
+		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
+		return query;
+	}
+	public int getLabLogJsonCount(String labname, String deptid) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select count(1) ccount from n_add_lab_status "
+				+ "where 1=1 "
+				+ "and deptid='"+deptid+"'";
+		if(labname!=null && !"".equals(labname)) {
+			sql=sql+"and a.labname like '%"+labname+"%' ";
+		}
+		System.err.println("UserService >> getAllDeptInfoJson >> sql "+sql);
+		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
+		if(query.size()>0) {
+			return Integer.parseInt((String)query.get(0).get("ccount"));
+		}else {
+			return 0; 
+		}
 	}
 
 }

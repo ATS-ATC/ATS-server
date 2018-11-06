@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -58,14 +59,18 @@
 			</div>
 		</div>
 		<div id="toolbar" style="text-align: left;">
+			<shiro:hasPermission name="dept:create">
 			<button id="add" class="btn btn-success">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
 				add
 			</button>
+			</shiro:hasPermission>
+			<shiro:hasPermission name="dept:edit">
 			<button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
 				edit
 			</button>
+			</shiro:hasPermission>
 			<!-- 
 			<button id="edelete" class="btn btn-danger" onclick="edelete()">
 				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
@@ -278,9 +283,13 @@
 	$("#edit").click(function() {
 		var a  = $('#tb_departments').bootstrapTable('getSelections');
 		if(a.length==0){
-			alert("At least checked one line");
+			alert("At least checked one line.");
 			return false;
 		}else{
+			if(a[0].id=="1"||a[0].id=="2"){
+				alert("The "+a[0].dept_name+" grouping is not allowed to be modified.");
+				return false;
+			}
 			$("#eid").val(a[0].id);
 			$("#edeptname").val(a[0].dept_name);
 			$("#eremark").val(a[0].remark);
@@ -373,20 +382,20 @@
 					checkbox : true
 				}, {
 					field : 'id',
-					title : 'id'
+					title : 'Id'
 				}, {
 					field : 'dept_name',
-					title : 'deptname'
+					title : 'Dept Name'
 				}, {
 					field : 'remark',
-					title : 'remark'
+					title : 'Remark'
 				}, {
 					field : 'stateflag',
-					title : 'stateflag',
+					title : 'State Flag',
 					formatter : 'statusFormatter'
 				}, {
 					field : 'ccount',
-					title : 'online count',
+					title : 'Online Count',
 					formatter : 'countFormatter'
 				} ]
 			});

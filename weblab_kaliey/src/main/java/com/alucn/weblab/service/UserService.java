@@ -418,4 +418,22 @@ public class UserService {
 			return 0; 
 		}
 	}
+	public String deleteUser(String id) {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = null;
+		try {
+			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		String sql = "delete from n_user where id="+id;
+		System.err.println("UserService >> getAllRoleInfoJsonCount >> sql "+sql);
+		try {
+			userDaoImpl.delete(jdbc, sql);
+			return "success";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "fail";
+		}
+	}
 }

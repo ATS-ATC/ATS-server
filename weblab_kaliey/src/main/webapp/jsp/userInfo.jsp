@@ -1,7 +1,7 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -25,7 +25,7 @@
 	padding-top: 3px;
     padding-bottom: 3px;
 }
-#edit,#ndept,#nroles{
+#edit,#ndept,#nroles,#deleteUser{
     padding-top: 3px;
     padding-bottom: 3px;
 }
@@ -54,9 +54,19 @@
             </div>
         </div> 
         <div id="toolbar" style="text-align:left;">
+        	<shiro:hasPermission name="user:edit">
 	        <button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  edit 
 			</button>
+			</shiro:hasPermission>
+			
+	        <!-- 
+	        <button id="deleteUser" class="btn btn-danger">
+				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>  delete 
+			</button> 
+			-->
+			
+			
 	        <%-- <button id="ndept" class="btn btn-default" onclick="javascript:window.location.href='${pageContext.request.contextPath}/getDeptInfo.do'">
 				<i class="icon-trophy"></i>  dept 
 			</button> --%>
@@ -378,12 +388,33 @@ $("#sroles").click(function(){
 	$("#roleModal").modal("show");
 });
 
+$("#deleteUser").click(function(){
+	var a  = $('#tb_departments').bootstrapTable('getSelections');
+	if(a.length==0){
+		alert("At least checked one line");
+		return false;
+	}else{
+		//a[0].id
+		$.ajax({ 
+		url: "deleteUser.do",
+		data:"id="+a[0].id,
+		success: function(data){
+				alert(data);
+				window.location.reload();
+			}
+		})
+	}
+});
 $("#edit").click(function(){
 	var a  = $('#tb_departments').bootstrapTable('getSelections');
 	if(a.length==0){
 		alert("At least checked one line");
 		return false;
 	}else{
+		if(a[0].id=="1"){
+			alert("The root is not allowed to be modified.");
+			return false;
+		}
 		//alert(a[0].dept_name);
 		$("#eid").val(a[0].id);
 		$("#eusername").val(a[0].username);
@@ -483,7 +514,7 @@ var TableInit = function () {
                  title: 'Id'
             }, {
                 field: 'username',
-                title: 'UserName'
+                title: 'User Name'
             }, {
                 field: 'roles',
                 title: 'Roles',
@@ -493,11 +524,11 @@ var TableInit = function () {
                 title: 'Group Id'
             }, {
                 field: 'dept_name',
-                title: 'GroupName',
+                title: 'Group Name',
                 formatter: 'iconFormatter'
             }, {
                 field: 'stateflag',
-                title: 'StateFlag',
+                title: 'State Flag',
                 formatter: 'statusFormatter'
             }]
         });

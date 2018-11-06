@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -11,12 +12,14 @@
 <script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
 <link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-<script src="${pageContext.request.contextPath}/js/bootstrap-table-treegrid.min.js"></script>
-<script src="${pageContext.request.contextPath}/js/jquery.treegrid.min.js"></script>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/jquery.treegrid.css">
-
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+
+<script src="${pageContext.request.contextPath}/js/jquery.treegrid.min.js"></script>
+<script src="${pageContext.request.contextPath}/js/bootstrap-table-treegrid.min.js"></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/jquery.treegrid.css">
+
+
 
 <script src="./js/bootstrap-select.min.js"></script>
 <link href="./css/bootstrap-select.min.css" rel="stylesheet">
@@ -38,13 +41,15 @@ width: 100%;
     <div class="panel-body">
     	<div id="toolbar" style="text-align:left;">
     		<!-- <a class="btn btn-success btn-sm" type="button" href="./addServerInfo.do" id="add"> -->
-    		<a class="btn btn-primary btn-sm" type="button" href="#" id="add">
-			   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add new lab&nbsp;&nbsp;
-		 	</a>
-    		<a class="btn btn-success btn-sm" type="button" href="#" id="addExist">
-			   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add exist lab&nbsp;&nbsp;
-		 	</a>
-    		<a class="btn btn-info btn-sm" type="button" href="#" id="checkAddLog">
+    		<shiro:hasPermission name="lab:create">
+	    		<a class="btn btn-primary btn-sm" type="button" href="#" id="add">
+				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add new lab&nbsp;&nbsp;
+			 	</a>
+	    		<a class="btn btn-success btn-sm" type="button" href="#" id="addExist">
+				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add exist lab&nbsp;&nbsp;
+			 	</a>
+		 	</shiro:hasPermission>
+    		<a class="btn btn-info btn-sm" type="button" id="checkAddLog" href="./addlablog.do">
 			   	<span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;&nbsp;check add log&nbsp;&nbsp;
 		 	</a>
 		 	
@@ -58,7 +63,7 @@ width: 100%;
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="addModalLabel">Add Lab Info</h4>
+                <h4 class="modal-title" id="addModalLabel">Add New Lab</h4>
             </div>
             <div class="modal-body" id="add_body">
             	<div class="row">
@@ -121,6 +126,21 @@ width: 100%;
 							    </div> 
 							  </div>-->
 							  <div class="form-group">
+							  	<label id="csset" for="sset" class="col-sm-2 control-label" style="text-align: left;" data-toggle="tooltip" data-placement="bottom" title="click to create / click to select" >set<sup>[2]</sup></label>
+							  	<!-- <label for="adept" class="col-sm-2 control-label" style="text-align: left;">set</label> -->
+							    <div class="col-sm-4">
+							    	<input id="createflag" type="hidden" value="select"/>
+								    <div id="creatediv"></div>
+								    <div id="selectdiv">
+										<select id="sset" name="sset" class="selectpicker" multiple data-live-search="true" data-max-options="1">
+											<c:if test="${sets!=null && fn:length(sets) > 0}">
+												<c:forEach items="${sets}" var="osets">
+													<option name='osets' value="${osets}">${osets}</option>
+												</c:forEach>
+											</c:if>
+										</select>
+								    </div>
+							    </div>
 							    <label for="adept" class="col-sm-2 control-label" style="text-align: left;">dept</label>
 							    <div class="col-sm-4">
 									<input type="text" class="form-control" id="adept"  placeholder="dept" style="display: inline;" value="${deptname }" disabled="disabled">
@@ -174,13 +194,217 @@ width: 100%;
 </div>
 <!-- /.modal -->
 
-
+	<!--新增dept -->
+	<div class="modal fade " id="addExistModal" tabindex="-1" role="dialog" aria-labelledby="addExistModalLabel" aria-hidden="true">
+	    <div class="modal-dialog ">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	                <h4 class="modal-title" id="addExistModalLabel">Add Exist Lab</h4>
+	            </div>
+	            <div class="modal-body" id="add_exist_body">
+	            	<div class="row">
+        				<div class="col-md-12">
+        					<form class="form-horizontal" role="form">
+								  <div class="form-group">
+								    <label for="aeservername" class="col-sm-2 control-label" style="text-align: left;">servername</label>
+								    <div class="col-sm-6" style="padding-right: 0px;">
+								      <input type="text" class="form-control" id="aeservername"  placeholder="servername" >
+								    </div>
+								    <div class="col-sm-4" style="padding-left: 0px;">
+								      <span id="aecompletion" class="glyphicon glyphicon-leaf btn" aria-hidden="true" style="display: inline;"></span>
+								    </div>
+								  </div>
+								  <input id="fgipflag" type="hidden" />
+								  <div class="form-group" id="fgip2">
+								  		<label for="aeip2" class="col-sm-2 control-label" style="text-align: left;">ip</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      		<div id="ipList"></div>
+									    </div>
+									    <div class="col-sm-4" style="padding-left: 0px;">
+									      <span id="editipbtn" class="glyphicon glyphicon-cog btn" aria-hidden="true" style="display: inline;"></span>
+									    </div>
+								  </div>
+								  <div class="form-group" id="fgip" style="display:none">
+								  		<label for="aeip" class="col-sm-2 control-label" style="text-align: left;">ip</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      	<input type="text" class="form-control" id="aeip"  placeholder="ip" >
+									      		<!-- <div id="ipList"></div> -->
+									    </div>
+									    <div class="col-sm-4" style="padding-left: 0px;">
+									      <span id="editipbtn2" class="glyphicon glyphicon-cog btn" aria-hidden="true" style="display: inline;"></span>
+									    </div>
+								  </div>
+								  <div class="form-group" >
+								  		<label for="aerelease" class="col-sm-2 control-label" style="text-align: left;">release</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      <input type="text" class="form-control" id="aerelease"  placeholder="release" >
+									    </div>
+								  </div>
+								  <div class="form-group" >
+								  		<label for="aeprotocol" class="col-sm-2 control-label" style="text-align: left;">protocol</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      <input type="text" class="form-control" id="aeprotocol"  placeholder="protocol" >
+									    </div>
+								  </div>
+								  <div class="form-group" >
+								  		<label for="aeset" class="col-sm-2 control-label" style="text-align: left;">set</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      	<div id="setList"></div>
+									    </div>
+								  </div>
+								  <div id="completion"></div>
+								  <div id="msg"></div>
+							</form>
+        				</div>
+					</div>
+				</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
+	                <button type="button" class="btn btn-primary" id="addExistSubmit" disabled="disabled" >submit</button>
+	            </div>
+	        </div><!-- /.modal-content -->
+	    </div><!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
 
 
 
 </body>
 
 <script type="text/javascript">
+
+$("#csset").click(function(){
+	//alert(1);
+	var createflag = $("#createflag").val();
+	if(createflag=="select"){
+		var create =  '<input id="sset1" class="form-control"  type="text" placeholder="creaste set"/>';
+		$("#creatediv").html(create);
+		$("#selectdiv").attr("style","display: none;");
+		$("#createflag").val("create");
+	}else if (createflag=="create") {
+		$("#creatediv").html("");
+		$("#selectdiv").attr("style","display: inline;");
+		$("#createflag").val("select");
+	}
+	
+});
+
+
+$("#addExistSubmit").click(function(){
+	var aeservername = $("#aeservername").val().replace(" ","");
+	if(aeservername==""){
+		alert("please fill in servername.");
+		$("#addExistSubmit").attr("disabled","disabled");
+		return;
+	}
+	var fgipflag = $("#fgipflag").val();
+	var aeip = "";
+	if(fgipflag=="fgip"){
+		aeip = $("#aeip").val().replace(" ","");
+		if(aeip==""){
+			alert("please fill in ip.");
+			$("#addExistSubmit").attr("disabled","disabled");
+			return;
+		}
+	}else if (fgipflag=="fgip2") {
+		aeip = $("#aeip2").val();
+	}
+	/* var aeip = $("#aeip").val();
+	var aeip2 = $("#aeip2").val(); */
+	var aerelease = $("#aerelease").val().replace(" ","");
+	if(aerelease==""){
+		alert("please fill in release.");
+		$("#addExistSubmit").attr("disabled","disabled");
+		return;
+	}
+	var aeprotocol = $("#aeprotocol").val().replace(" ","");
+	if(aeprotocol==""){
+		alert("please fill in protocol.");
+		$("#addExistSubmit").attr("disabled","disabled");
+		return;
+	}
+	var aeset = $("#aeset").val();
+	if(aeset==""){
+		alert("please fill in set.");
+		$("#addExistSubmit").attr("disabled","disabled");
+		return;
+	}
+	$("#addExistSubmit").attr("disabled","disabled");
+	var sdata = "labname="+aeservername+"&ip="+aeip+"&enwtpps="+aerelease+"&ss7="+aeprotocol+"&setname="+aeset;
+	$.ajax({
+		url:"genClient.do",
+		data:sdata,
+		success:function(data){
+			if(data.result!=""&&data.result=="fail"){
+				alert(data.msg);
+				return ;
+			} else if(data.result!=""&&data.result=="success"){
+				alert("Congratulations, Installation is done, please check the log.");
+				window.location.href="./addlablog.do";
+			}
+		}
+	})
+	
+	
+});
+$("#editipbtn").click(function(){
+	$("#fgip").removeAttr("style");
+	$("#fgip2").attr("style","display:none");
+	$("#fgipflag").val("fgip");
+});
+$("#editipbtn2").click(function(){
+	$("#fgip2").removeAttr("style");
+	$("#fgip").attr("style","display:none");
+	$("#fgipflag").val("fgip2");
+});
+
+$("#aecompletion").click(function(){
+	var aeservername = $("#aeservername").val().replace(" ","");
+	if(aeservername==""){
+		alert("please fill in servername");
+		$("#addExistSubmit").attr("disabled","disabled");
+		return;
+	}
+	$.ajax({
+		url:"getLabInfo.do",
+		data:"aeservername="+aeservername,
+		success:function(data){
+			if(data.result=="fail"){
+				$("#addExistSubmit").attr("disabled","disabled");
+				alert(data.msg);
+				return;
+			}else if(data.result=="success"){
+				/* var htm = "";
+				$("#completion").html(); */
+				var ipList = data.ipList;
+				//alert(ipList.length);
+				var ipHtm = "<select id='aeip2' name='aeip2' class='form-control'>";
+				for(var i=0;i<ipList.length;i++){
+					ipHtm=ipHtm+"<option name='ipl2' value="+ipList[i]+">"+ipList[i]+"</option>";
+				}
+				ipHtm=ipHtm+"</select>";
+				//alert(ipHtm);
+				$("#ipList").html(ipHtm);
+				$("#aerelease").val(data.enwtpps);
+				$("#aeprotocol").val(data.ss7);
+				var setList = data.setList;
+				var setHtm = "<select id='aeset' name='aeset' class='form-control' >";
+				for(var i=0;i<setList.length;i++){
+					//<option name='odb' value="${odb}">${odb}</option>
+					setHtm=setHtm+"<option name='setl' value="+setList[i]+">"+setList[i]+"</option>";
+				}
+				setHtm=setHtm+"</select>";
+				//alert(setHtm);
+				$("#setList").html(setHtm);
+				$("#addExistSubmit").removeAttr("disabled");
+			}
+		}
+	});
+});
+$("#addExist").click(function(){
+	$("#addExistModal").modal("show");
+});
 $("#addSubmit").click(function(){
 	var sdata = "";
 	var aservername = $("#aservername").val().replace(" ","");
@@ -219,14 +443,34 @@ $("#addSubmit").click(function(){
 	}else {
 		sdata=sdata+"&sdb="+sdb
 	}
-	alert(sdata);
-	
+	var createflag = $("#createflag").val();
+	//判断是创建还是选择
+	if(createflag=="select"){
+		var sset = $("#sset").val();
+		if(sset==null){
+			alert("set is required");
+			return false;
+		}else {
+			sdata=sdata+"&sset="+sset
+		}
+	}else if(createflag=="create"){
+		var sset = $("#sset1").val().replace(" ","");
+		if(sset==""){
+			alert("set is required");
+			return false;
+		}else {
+			sdata=sdata+"&sset="+sset
+		}
+	}
+	//alert(sdata);
+	$("#addSubmit").attr("disabled","disabled");
 	$.ajax({
 		url:"installLab.do",
 		data:sdata,
 		success:function(data){
 			if(data.result=="fail"){
 				alert(data.msg);
+				$("#addSubmit").removeAttr("disabled");
 				return;
 			}
 			if(data.result=="success"){

@@ -619,7 +619,7 @@ $(function() {
             			<div class="row" style="margin-bottom: 10px">
             				<div class="col-md-4">
 	            				<div style="margin-right: 13px;">
-									<h4 style="display: inline;">Data Source</h4>
+									<h4 style="display: inline;color: red;">Data Source</h4>
 									<select class="selectpicker nav navbar-nav navbar-right" title="--Please Select--" multiple data-live-search="true" data-max-options="1" >
 									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
 											<c:forEach items="${data_source}" var="ds">

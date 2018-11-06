@@ -237,4 +237,15 @@ public class UserController {
 		}
 		return editUserInfo;
 	}
+	@RequestMapping(path = "/deleteUser")
+	@ResponseBody
+	public String  deleteUser(HttpServletRequest request) throws Exception {
+		String id = request.getParameter("id")==null?"":request.getParameter("id").toString().trim();
+		
+		String editUserInfo="fail";
+		if(id!=null&&!"".equals(id)) {
+			editUserInfo = userService.deleteUser(id);
+		}
+		return editUserInfo;
+	}
 }

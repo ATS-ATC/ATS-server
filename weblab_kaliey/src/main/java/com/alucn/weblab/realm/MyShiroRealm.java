@@ -66,7 +66,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 		 UsernamePasswordToken token = (UsernamePasswordToken) at;
 		 // 通过表单接收的用户名 
 		 String username  = token.getUsername();
-		 
+		 String password = new String((char[])token.getCredentials()); //得到密码  
 		 if(username!=null && !"".equals(username)){
 			NUser nUser = new NUser();
 			nUser.setUsername(username);
@@ -77,8 +77,9 @@ public class MyShiroRealm extends  AuthorizingRealm{
 					e.printStackTrace();
 				}
 			 	if (queryNUser.size()>0) {  
-			 		logger.info("doGetAuthenticationInfo:========="+queryNUser.get(0).get("password"));
-			 		return new SimpleAuthenticationInfo(queryNUser.get(0).get("username"), queryNUser.get(0).get("password"), getName());  
+			 		//logger.info("doGetAuthenticationInfo:========="+queryNUser.get(0).get("password"));
+			 		logger.info("doGetAuthenticationInfo:========="+password);
+			 		return new SimpleAuthenticationInfo(queryNUser.get(0).get("username"), password, getName());  
 			 	} 
 	 	}
 		return null;

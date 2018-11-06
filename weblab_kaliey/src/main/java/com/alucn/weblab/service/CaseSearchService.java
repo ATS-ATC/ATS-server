@@ -49,8 +49,12 @@ public class CaseSearchService {
 	//private Lock lock = new ReentrantLock(true);
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
+	public Map<String, List<String>> getCaseSearch(String deptid,boolean hasRole) throws NumberFormatException, InterruptedException, IOException{
 		String tagConfig = MainListener.configFilesPath+File.separator+"TagConfig.json";
+		//D:\eclipse-jee-oxygen-3a-win32-x86_64\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp1\wtpwebapps\weblab_kaliey\conf\TagConfig.json
+		//System.err.println("getCaseSearch >> tagConfig >> "+tagConfig);
+		
+		
 		JSONObject caseSearchItems = JSONObject.fromObject(Fiforeader.readCaseInfoFromChannel(tagConfig));
 		JSONArray single = caseSearchItems.getJSONArray("single");
 		for(int i=0; i<single.size(); i++){
@@ -75,7 +79,10 @@ public class CaseSearchService {
 		for (int i = 0; i < Servers.size(); i++) {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			String serverName = ServerMem.getString(Constant.SERVERNAME);
-			serversName.add(serverName);
+			String sdeptid = ServerMem.getString("deptid");
+			if(sdeptid.equals(deptid)||hasRole) {
+				serversName.add(serverName);
+			}
 		}
 		caseSearchItemMap.put("servers",serversName);
 		return caseSearchItemMap;
