@@ -131,6 +131,14 @@ public class LoginService {
 		return result;
 	}
 
+	public ArrayList<HashMap<String, Object>> getDeptById(String deptid) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_dept where id='"+deptid+"'";
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+		return result;
+	}
+
 	
 	
 	

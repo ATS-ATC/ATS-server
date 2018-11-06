@@ -532,7 +532,7 @@ $(function() {
 	      },
 	      {
 	        field: 'name',
-	        title: 'name',
+	        title: 'Name',
         	formatter:function(value,row,index){
         		if(row.type == 'set'){
         			return value;
@@ -551,32 +551,36 @@ $(function() {
 		   }, */
 	      {
 	        field: 'status',
-	        title: 'status',
+	        title: 'Status',
 	        align: 'center',
 	        formatter: 'statusFormatter'
 	      },{
 		        field: 'serverIp',
-		        title: 'serverIp',
+		        title: 'Server Ip',
 		    }
 	      ,{
 		        field: 'serverRelease',
-		        title: 'serverRelease',
+		        title: 'Server Release',
 		    }
 	      ,{
 		        field: 'serverProtocol',
-		        title: 'serverProtocol',
+		        title: 'Server Protocol',
 		    }
 	      ,{
 		        field: 'serverType',
-		        title: 'serverType',
+		        title: 'Server Type',
 		    }
 	      ,{
 		        field: 'serverMate',
-		        title: 'serverMate',
+		        title: 'Server Mate',
 		    }
 	      ,{
 		        field: 'mateServer',
-		        title: 'mateServer',
+		        title: 'Mate Server',
+		    }
+	      ,{
+		        field: 'deptname',
+		        title: 'Group Name',
 		    }
 	    ],
 	    //最主要的就是下面  定义哪一列作为展开项  定义父级标志 这里是pid

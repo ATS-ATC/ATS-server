@@ -95,6 +95,7 @@ public class ServerInfoController {
 			superMap.put("serverType", "");
 			superMap.put("serverMate", "");
 			superMap.put("mateServer", "");
+			superMap.put("deptname", "");
 			
 			resultList.add(superMap);
 			pid=id;
@@ -122,6 +123,12 @@ public class ServerInfoController {
 					String serverType = lab.getString("serverType");
 					String serverMate = lab.getString("serverMate");
 					String mateServer = lab.getString("mateServer");
+					String sdeptid = lab.getString("deptid");
+					ArrayList<HashMap<String, Object>> deptById = loginService.getDeptById(sdeptid);
+					String deptname = "";
+					if(deptById.size()>0) {
+						deptname = (String) deptById.get(0).get("dept_name");
+					}
 					
 					String labdeptid = "";
 					try {
@@ -158,6 +165,7 @@ public class ServerInfoController {
 					childMap.put("serverType", serverType);
 					childMap.put("serverMate", serverMate);
 					childMap.put("mateServer", mateServer);
+					childMap.put("deptname", deptname);
 					
 					if(deptid.equals(labdeptid)||hasRole) {
 						resultList.add(childMap);
