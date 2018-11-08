@@ -310,9 +310,6 @@ $("#addExistSubmit").click(function(){
 	}else if (fgipflag=="fgip2") {
 		aeip = $("#aeip2").val();
 	}
-	alert(fgipflag);
-	alert(aeip);
-	return;
 	/* var aeip = $("#aeip").val();
 	var aeip2 = $("#aeip2").val(); */
 	var aerelease = $("#aerelease").val().replace(" ","");
