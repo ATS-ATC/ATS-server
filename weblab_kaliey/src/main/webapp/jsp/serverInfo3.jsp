@@ -215,7 +215,7 @@ width: 100%;
 								      <span id="aecompletion" class="glyphicon glyphicon-leaf btn" aria-hidden="true" style="display: inline;"></span>
 								    </div>
 								  </div>
-								  <input id="fgipflag" type="hidden" />
+								  <input id="fgipflag" type="hidden" value='fgip2'/>
 								  <div class="form-group" id="fgip2">
 								  		<label for="aeip2" class="col-sm-2 control-label" style="text-align: left;">ip</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
@@ -310,6 +310,9 @@ $("#addExistSubmit").click(function(){
 	}else if (fgipflag=="fgip2") {
 		aeip = $("#aeip2").val();
 	}
+	alert(fgipflag);
+	alert(aeip);
+	return;
 	/* var aeip = $("#aeip").val();
 	var aeip2 = $("#aeip2").val(); */
 	var aerelease = $("#aerelease").val().replace(" ","");
