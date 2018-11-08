@@ -31,7 +31,7 @@ public class SpaAndRtdbManService {
 		spaAndRt.clear();
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getSpa = "SELECT spa_name FROM spainfo";
+		String getSpa = "SELECT spa_name FROM spainfo order by spa_name";
 		ArrayList<HashMap<String, Object>> result = spaAndRtdbDaoImpl.query(jdbc, getSpa);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
@@ -40,7 +40,7 @@ public class SpaAndRtdbManService {
 			}
 		}
 		
-		String getTrdb = "SELECT rtdb_name FROM rtdbinfo";
+		String getTrdb = "SELECT rtdb_name FROM rtdbinfo order by rtdb_name";
 		result = spaAndRtdbDaoImpl.query(jdbc, getTrdb);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);

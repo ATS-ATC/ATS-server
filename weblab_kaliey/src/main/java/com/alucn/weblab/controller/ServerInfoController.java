@@ -459,16 +459,16 @@ public class ServerInfoController {
 			createid = (String) queryNUser.get(0).get("id");
 		}
 		String createtime =  new Date().getTime()+"";
-		serverInfoService.addLabStatus("waiting", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", deptid, createid, createtime,"");
+		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", deptid, createid, createtime,"");
 		try {
 			System.out.println("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
 			//为了测试注释掉执行部分
-			//Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
-			serverInfoService.editLabStatus("success", "", labname, new Date().getTime()+"", createtime);
+			Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
+			serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime()+"", createtime);
 			result.put("result", "success");
 		}catch (Exception e) {
 			e.printStackTrace();
-			serverInfoService.editLabStatus("fail", "", labname, new Date().getTime()+"", createtime);
+			serverInfoService.editLabStatus("Failed", "", labname, new Date().getTime()+"", createtime);
 			result.put("result", "fail");
 		}
 		return result;
@@ -610,6 +610,21 @@ public class ServerInfoController {
 					int i = 0;
 					int count = 0;
 					long createtime=new Date().getTime();
+					String createid ="";
+					String deptid ="";
+					String username = session.getAttribute("login").toString();
+					NUser user = new NUser();
+					user.setUsername(username);
+					ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
+					try {
+						queryNUser = loginService.queryNUser(user);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					if(queryNUser.size()>0) {
+						createid = (String) queryNUser.get(0).get("id");
+						deptid = (String) queryNUser.get(0).get("deptid");
+					}
 					while(true) {
 						try {
 							//等待10s
@@ -648,29 +663,13 @@ public class ServerInfoController {
 								String log = jsonArray.getJSONObject(0).getString("log");
 								String free = jsonArray.getJSONObject(0).getString("free");
 								String ptversion = jsonArray.getJSONObject(0).getString("log");
-								String createid ="";
-								String deptid ="";
-								if(addLabFlag=="false") {
-									String username = session.getAttribute("login").toString();
-									NUser user = new NUser();
-									user.setUsername(username);
-									ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
-									try {
-										queryNUser = loginService.queryNUser(user);
-									} catch (Exception e) {
-										e.printStackTrace();
-									}
-									if(queryNUser.size()>0) {
-										createid = (String) queryNUser.get(0).get("id");
-										deptid = (String) queryNUser.get(0).get("deptid");
-									}
-									
+								
+								if(addLabFlag=="false") {	
 									String labStatus = serverInfoService.addLabStatus(status,"new","",enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime+"",ainsflag);
 									//labStatus 返回success表示记录到数据库内成功，返回fail则表示添加到数据库失败<因为在线程中，所以暂时没啥用>
 									//只添加一次
 									addLabFlag="true";
 								}
-								
 								if("Installing".equals(status) ) {
 									SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); 
 									System.err.println(df.format(new Date())+"  >>  Installing  >>"+i); 

@@ -215,6 +215,8 @@
 			return '<span class="label label-success">'+value+'</span>';
 		} else if(row.status == 'Failed'){
 			return '<span class="label label-danger">'+value+'</span>';
+		}else{
+			return value;
 		}
 	}
 	function typeFormatter(value, row, index) {
