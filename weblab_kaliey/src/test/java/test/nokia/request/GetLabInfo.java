@@ -12,7 +12,8 @@ public class GetLabInfo {
 		//result.put("Servers", Servers);
 		for (int i =0 ;i<Servers.size();i++) {
 			JSONObject lab = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-			String deptid = lab.getString("deptid");
+			String deptid = lab.getString("status");
+			System.out.println(deptid);
 			if(deptid==null) {
 				System.out.println("null");
 			}

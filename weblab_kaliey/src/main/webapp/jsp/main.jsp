@@ -179,6 +179,7 @@
 						            <button type="submit" class="btn btn-default">Search</button>
 						        </form> -->
 					        </li>
+					        <li><a href="${pageContext.request.contextPath}/SACMS.chm"><span class="glyphicon glyphicon-book"></span></a></li>
 							<li><a href="#"><span class="glyphicon glyphicon-user"></span> ${login }</a></li>
 				            <li><a href="./userLogout.do"><span class="glyphicon glyphicon-log-in"></span> login out</a></li> 
 				        </ul> 
@@ -276,7 +277,7 @@
 							        <li id="deptmanagement" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getDeptInfo.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
-												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Dept Management
+												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Group Management
 											</button>
 										</a>
 									</li>

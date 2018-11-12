@@ -17,7 +17,7 @@ public class QueryCaseInfoService {
 	@Autowired(required=true)
 	private QueryCaseDaoImpl queryCaseDaoImpl;
 	
-	public ArrayList<HashMap<String, Object>> getQueryCaseInfoTable(String userName, String auth,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
+	public ArrayList<HashMap<String, Object>> getQueryCaseInfoTable(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql="";
@@ -27,9 +27,9 @@ public class QueryCaseInfoService {
 		else if ("current".equals(etype)) {
 			sql =sql+ "select feature_number,case_name,author,release,code_changed_spa,functionality,base_data,case_status,call_type,customer,porting_release from DftTag where 1=1";
 		}
-		if(!auth.equals(Constant.AUTH)){
+		/*if(!auth.equals(Constant.AUTH)){
 			sql = sql+" and author='"+userName+"'";
-		}
+		}*/
 		if(!"".equals(feature)) {
 			sql = sql+" and feature_number like '%"+feature+"%'";
 		}
@@ -41,13 +41,13 @@ public class QueryCaseInfoService {
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}
-	public int getQueryCaseInfoTableCount(String userName, String auth,String caseStatus,String feature) throws Exception{
+	public int getQueryCaseInfoTableCount(String userName,String caseStatus,String feature) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select count(1) from DftTag where 1=1";
-		if(!auth.equals(Constant.AUTH)){
+		/*if(!auth.equals(Constant.AUTH)){
 			sql = sql+" and author='"+userName+"'";
-		}
+		}*/
 		if(!"".equals(feature)) {
 			sql = sql+" and feature_number like '%"+feature+"%'";
 		}

@@ -52,9 +52,11 @@ public class QueryCaseInfoController {
 		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		String userName = session.getAttribute("login").toString();
-		String auth = session.getAttribute("auth").toString();
-		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,feature, offset, limit,"all");
-		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, auth, qtype,feature);
+		//String auth = session.getAttribute("auth").toString();
+		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,feature, offset, limit,"all");
+		//int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, auth, qtype,feature);
+		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, qtype,feature, offset, limit,"all");
+		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature);
 		//System.out.println("queryCaseInfoTable:========"+queryCaseInfoTable);
 		returnMap.put("rows", queryCaseInfoTable);
 		returnMap.put("total", total);
@@ -79,8 +81,8 @@ public class QueryCaseInfoController {
 		System.out.println("ftype============================"+ftype);
 		
 		String userName = session.getAttribute("login").toString();
-		String auth = session.getAttribute("auth").toString();
-		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,"", "", "",etype);
+		//String auth = session.getAttribute("auth").toString();
+		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, qtype,"", "", "",etype);
 		
 		if(ftype!=null && !"".equals(ftype)) {
 			if("csv".equals(ftype)) {
@@ -88,7 +90,7 @@ public class QueryCaseInfoController {
 				
 				
 				// Style the cell with borders all around.
-			    CellStyle style = wb.createCellStyle();
+			    /*CellStyle style = wb.createCellStyle();
 			    style.setBorderBottom(BorderStyle.THIN);
 			    style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
 			    style.setBorderLeft(BorderStyle.THIN);
@@ -112,7 +114,7 @@ public class QueryCaseInfoController {
 			    tstyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
 			    
 			    tstyle.setFillPattern(tstyle.getFillPatternEnum().SOLID_FOREGROUND);
-			    tstyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
+			    tstyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());*/
 			    
 		        Sheet sh = wb.createSheet();
 		        Row title = sh.createRow(0);
@@ -125,12 +127,12 @@ public class QueryCaseInfoController {
 		        		if(i==0) {
 		        			Cell titleCell = title.createCell(j);
 		        			titleCell.setCellValue(key);
-		        			titleCell.setCellStyle(tstyle);
+		        			//titleCell.setCellStyle(tstyle);
 		        		}
 		        		Cell cell = row.createCell(j);
 		        		String value = (String)hashMap.get(key);
 		        		cell.setCellValue(value);
-		        		cell.setCellStyle(style);
+		        		//cell.setCellStyle(style);
 		        		j++;
 		        	}
 		        	

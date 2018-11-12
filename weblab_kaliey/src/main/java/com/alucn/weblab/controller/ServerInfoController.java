@@ -497,20 +497,41 @@ public class ServerInfoController {
 						result.put("msg", queryNUser.get(0).get("username")+" is not in your group.");
 						return result;
 					}
+				}else {
+					result.put("result", false);
+					result.put("msg", queryNUser.get(0).get("username")+"  is not registered in the system.");
+					return result;
 				}
+			}else {
 				result.put("result", false);
-				result.put("msg", queryNUser.get(0).get("username")+"  is not registered in the system.");
+				result.put("msg", labname+" information cannot be obtained.");
 				return result;
 			}
-			result.put("result", false);
-			result.put("msg", labname+" information cannot be obtained.");
-			return result;
 		}
 		return result;
 	}
+	//通过labname获取lab的运行状态（内存中的状态）
+	@RequestMapping(path = "/testStatus")
+	@ResponseBody
 	public Map<String, Object> getLabStatus(String labname){
 		Map<String, Object> result = new HashMap<>();
-		
+		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//result.put("Servers", Servers);
+		//List setList = new ArrayList<>();
+		Set sets = new HashSet<>();
+		if(Servers.size()>0) {
+			for (int i =0 ;i<Servers.size();i++) {
+				JSONObject lab = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+				String status ="";
+				try {
+					status = lab.getString("status");
+					System.err.println(status);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+			}
+		}
 		return result;
 	}
 	@RequestMapping(path = "/installLab")
@@ -568,7 +589,7 @@ public class ServerInfoController {
          安装前进行check
 			如果lab正在运行（running）则不进行安装，返回失败
          */
-		
+		Map<String, Object> labStatus = getLabStatus(aservername);
         
 		String db = StringUtil.formatJsonString(sdb);
 		String spa = StringUtil.formatJsonString(sspa);
@@ -788,8 +809,8 @@ public class ServerInfoController {
         
 	}
 	
-	//定义一个方法：传入lab名字和用户的deptid，取判断是否可以使用该lab
-	public Map<String, Object> isCanUseLab(String labname,String deptid) {
+	//定义一个方法：传入lab名字和用户的deptid，取判断是否可以使用该lab-->已经有方法完成此功能
+	/*public Map<String, Object> isCanUseLab(String labname,String deptid) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		if(labname==null||"".equals(labname)) {
 			result.put("result", "false");
@@ -802,13 +823,21 @@ public class ServerInfoController {
 			return result;
 		}
 		JSONObject reqUrl = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/"+labname+".json");
-		
-		
-		
-		
-		
+		//http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/BJVM12B.json
+		//"labuser": "Yang PAN",
+		if(!reqUrl.isEmpty()) {
+			JSONArray jsonArray = reqUrl.getJSONArray("content");
+			if(jsonArray.size()>0) {
+				String labuser = jsonArray.getJSONObject(0).getString("labuser");
+				
+			}else {
+				result.put("result", "false");
+				result.put("msg", "No lab was found.");
+				return result;
+			}
+		}
 		return result;
-	}
+	}*/
 
 	@RequestMapping(path = "/removeServerInfo")
 	public void removeServerInfo(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{

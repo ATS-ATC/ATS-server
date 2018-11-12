@@ -41,7 +41,7 @@
             <div class="panel-body" style="padding-bottom: 0px;">
                 <form id="formSearch" class="form-horizontal">
                     <div class="form-group" style="margin-top:15px">
-                        <label class="control-label col-sm-2" for="txt_search_feature">username</label>
+                        <label class="control-label col-sm-2" for="txt_search_feature">User Name</label>
                         <div class="col-sm-3">
                             <input type="text" class="form-control" id="txt_search_username">
                         </div>
@@ -56,7 +56,7 @@
         <div id="toolbar" style="text-align:left;">
         	<shiro:hasPermission name="user:edit">
 	        <button id="edit" class="btn btn-info">
-				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  edit 
+				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  Edit 
 			</button>
 			</shiro:hasPermission>
 			

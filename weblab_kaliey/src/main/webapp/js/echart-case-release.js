@@ -17,9 +17,10 @@ myReleaseChart.setOption({
           }
       },
       legend: {
-          data: ['Successful Count','Fail Count'],
+          data: ['Successful','Fail','Initial'],
       	  selected: {
-      		'Fail Count' : true
+      		'Fail' : true,
+      		'Initial':false
       	  }
       },
       xAxis: {
@@ -31,7 +32,7 @@ myReleaseChart.setOption({
       },
       yAxis: {},
       series: [{
-          name: 'Fail Count',
+          name: 'Fail',
           label: {
               normal: {
                   show: true,
@@ -52,10 +53,36 @@ myReleaseChart.setOption({
               ]
           }*/
       },{
-          name: 'Successful Count',
+          name: 'Successful',
           itemStyle:{
               normal:{
                   color:'#334455'
+              }
+          },
+          label: {
+              normal: {
+                  show: true,
+                  position: 'top'
+              }
+          },
+          type: 'bar',
+          data: [],
+          markLine : {
+              data : [
+                  {type : 'average', name : 'average'}
+              ]
+          }/*,
+          markPoint : {
+              data : [
+                  {type : 'max', name: 'max'},
+                  {type : 'min', name: 'min'}
+              ]
+          }*/
+      },{
+          name: 'Initial',
+          itemStyle:{
+              normal:{
+                  color:'#E5CF0D'
               }
           },
           label: {
@@ -85,6 +112,7 @@ myReleaseChart.setOption({
   var names = [];    //类别数组（实际用来盛放X轴坐标值）
   var nums = [];    //销量数组（实际用来盛放Y坐标值）
   var fnums = [];    //销量数组（实际用来盛放Y坐标值）
+  var inums = [];    //销量数组（实际用来盛放Y坐标值）
   $.ajax({
       type: "get",
       async: true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
@@ -100,6 +128,7 @@ myReleaseChart.setOption({
                   names.push(result[i].release);    //挨个取出类别并填入类别数组
                   nums.push(result[i].cc);    //挨个取出销量并填入销量数组
                   fnums.push(result[i].ff);
+                  inums.push(result[i].ii);
               }
               myReleaseChart.hideLoading();    //隐藏加载动画
               myReleaseChart.setOption({        //加载数据图表
@@ -108,12 +137,16 @@ myReleaseChart.setOption({
                   },
                   series: [{
                       // 根据名字对应到相应的系列
-                      name: 'Fail Count',
+                      name: 'Fail',
                       data: fnums
                   },{
                       // 根据名字对应到相应的系列
-                      name: 'Successful Count',
+                      name: 'Successful',
                       data: nums
+                  },{
+                      // 根据名字对应到相应的系列
+                      name: 'Initial',
+                      data: inums
                   }]
               });
 

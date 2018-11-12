@@ -43,14 +43,14 @@ width: 100%;
     		<!-- <a class="btn btn-success btn-sm" type="button" href="./addServerInfo.do" id="add"> -->
     		<shiro:hasPermission name="lab:create">
 	    		<a class="btn btn-primary btn-sm" type="button" href="#" id="add">
-				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add new lab&nbsp;&nbsp;
+				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;Add New Lab&nbsp;&nbsp;
 			 	</a>
 	    		<a class="btn btn-success btn-sm" type="button" href="#" id="addExist">
-				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;add exist lab&nbsp;&nbsp;
+				   	<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;&nbsp;Add Existing Lab&nbsp;&nbsp;
 			 	</a>
 		 	</shiro:hasPermission>
     		<a class="btn btn-info btn-sm" type="button" id="checkAddLog" href="./addlablog.do">
-			   	<span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;&nbsp;check add log&nbsp;&nbsp;
+			   	<span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;&nbsp;Lab Management Log&nbsp;&nbsp;
 		 	</a>
 		 	
     	</div>
@@ -200,7 +200,7 @@ width: 100%;
 	        <div class="modal-content">
 	            <div class="modal-header">
 	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	                <h4 class="modal-title" id="addExistModalLabel">Add Exist Lab</h4>
+	                <h4 class="modal-title" id="addExistModalLabel">Add Existing Lab</h4>
 	            </div>
 	            <div class="modal-body" id="add_exist_body">
 	            	<div class="row">
@@ -556,7 +556,7 @@ $(function() {
 	        formatter: 'statusFormatter'
 	      },{
 		        field: 'serverIp',
-		        title: 'Server Ip',
+		        title: 'Server IP',
 		    }
 	      ,{
 		        field: 'serverRelease',
@@ -572,7 +572,7 @@ $(function() {
 		    }
 	      ,{
 		        field: 'serverMate',
-		        title: 'Server Mate',
+		        title: 'Mate Type',
 		    }
 	      ,{
 		        field: 'mateServer',

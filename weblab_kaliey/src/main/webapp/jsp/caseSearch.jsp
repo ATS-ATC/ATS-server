@@ -89,23 +89,26 @@ $(function() {
         }, */
         columns: [ {
             field: 'int_id',
-            title: 'int_id'
+            title: 'ID'
         }, {
             field: 'title',
-            title: 'title',
+            title: 'Title',
             formatter:function(value,row,index){
             	var a = '<a href="./searchCaseRunLogInfo.do?int_id='+row.int_id+'" >'+value+'</a>';
             	return a;
             }
         }, {
             field: 'server_info',
-            title: 'server_info'
+            title: 'Server Info'
         }, {
             field: 'author',
-            title: 'author'
+            title: 'Author'
         }, {
             field: 'datetime',
-            title: 'datetime'
+            title: 'Date Time'
+        },{
+        	field: 'deptid',
+            title: 'Group Id'
         }
         ]
     });

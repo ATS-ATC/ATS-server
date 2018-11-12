@@ -45,7 +45,7 @@
 			<div class="panel-body" style="padding-bottom: 0px;">
 				<form id="formSearch" class="form-horizontal">
 					<div class="form-group" style="margin-top: 15px">
-						<label class="control-label col-sm-2" for="txt_search_feature">deptname</label>
+						<label class="control-label col-sm-2" for="txt_search_feature">Group Name</label>
 						<div class="col-sm-3">
 							<input type="text" class="form-control" id="txt_search_dept">
 						</div>
@@ -62,13 +62,13 @@
 			<shiro:hasPermission name="dept:create">
 			<button id="add" class="btn btn-success">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-				add
+				Add
 			</button>
 			</shiro:hasPermission>
 			<shiro:hasPermission name="dept:edit">
 			<button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-				edit
+				Edit
 			</button>
 			</shiro:hasPermission>
 			<!-- 
@@ -92,14 +92,14 @@
 	        <div class="modal-content">
 	            <div class="modal-header">
 	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	                <h4 class="modal-title" id="addModalLabel">Create Dept</h4>
+	                <h4 class="modal-title" id="addModalLabel">Create Group</h4>
 	            </div>
 	            <div class="modal-body" id="add_body">
 	            	<div class="row">
         				<div class="col-md-12">
         					<form class="form-horizontal" role="form">
 								  <div class="form-group">
-								    <label for="adeptname" class="col-sm-2 control-label" style="text-align: left;">deptname</label>
+								    <label for="adeptname" class="col-sm-2 control-label" style="text-align: left;">groupname</label>
 								    <div class="col-sm-6">
 								      <input type="text" class="form-control" id="adeptname"  placeholder="deptname" >
 								    </div>
@@ -115,8 +115,8 @@
 					</div>
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary" id="addSubmit">submit</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Clsoe</button>
+	                <button type="button" class="btn btn-primary" id="addSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -128,7 +128,7 @@
 	        <div class="modal-content">
 	            <div class="modal-header">
 	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	                <h4 class="modal-title" id="editModalLabel">Edit Dept</h4>
+	                <h4 class="modal-title" id="editModalLabel">Edit Group</h4>
 	            </div>
 	            <div class="modal-body" id="edit_body">
 	            	<div class="row">
@@ -141,7 +141,7 @@
 								    </div>
 								  </div>
 								  <div class="form-group">
-								    <label for="edeptname" class="col-sm-2 control-label" style="text-align: left;">deptname</label>
+								    <label for="edeptname" class="col-sm-2 control-label" style="text-align: left;">groupname</label>
 								    <div class="col-sm-6">
 								      <input type="text" class="form-control" id="edeptname"  placeholder="deptname" disabled="disabled">
 								    </div>
@@ -178,8 +178,8 @@
 					</div>
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary" id="editSubmit">submit</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Clsoe</button>
+	                <button type="button" class="btn btn-primary" id="editSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -385,7 +385,7 @@
 					title : 'Id'
 				}, {
 					field : 'dept_name',
-					title : 'Dept Name'
+					title : 'Group Name'
 				}, {
 					field : 'remark',
 					title : 'Remark'

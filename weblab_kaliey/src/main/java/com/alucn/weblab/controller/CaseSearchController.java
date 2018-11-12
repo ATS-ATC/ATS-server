@@ -112,8 +112,24 @@ public class CaseSearchController {
 		paramMap.put("limit", limit);
 		paramMap.put("offset", offset);
 		
-		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total"));
-		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows"));
+		String username = session.getAttribute("login").toString();
+		NUser user = new NUser();
+		user.setUsername(username);
+		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
+		String deptid= "";
+		try {
+			queryNUser = loginService.queryNUser(user);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if(queryNUser.size()>0) {
+			deptid = (String) queryNUser.get(0).get("deptid");
+		}
+		Subject subject = SecurityUtils.getSubject();  
+        boolean hasRole = subject.hasRole("admin");
+		
+		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total",deptid,hasRole));
+		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptid,hasRole));
 		return returnMap;
 	}
 	@RequestMapping(path = "/searchCaseRunLogInfo")

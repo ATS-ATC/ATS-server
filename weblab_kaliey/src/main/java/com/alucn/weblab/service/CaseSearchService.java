@@ -698,11 +698,22 @@ public class CaseSearchService {
 		}
 		return returnMap;
 	}
-	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType) throws Exception {
-		String sql ="select int_id,title,server_info,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";
+	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType, String deptid,Boolean adminFlag) throws Exception {
+		/*String sql ="select int_id,title,server_info,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";*/
+		String sql = "";
+		if(adminFlag) {
+			sql ="select a.int_id,a.title,a.server_info,a.condition,a.author,a.datetime,b.deptid from n_rerunning_case_tbl a " + 
+					"left join n_user b on a.author=b.username and b.deptid='"+deptid+"' and b.stateflag='0 ' " + 
+					"where a.stateflag='0' order by a.datetime desc";
+		}else {
+			sql ="select a.int_id,a.title,a.server_info,a.condition,a.author,a.datetime,b.deptid from n_rerunning_case_tbl a " + 
+					"join n_user b on a.author=b.username and b.deptid='"+deptid+"' and b.stateflag='0 ' " + 
+					"where a.stateflag='0' order by a.datetime desc";
+		}
 		/*if(auth=="all") {
 			
 		}*/
+		System.err.println("searchCaseRunLogInfo  >>  "+sql);
 		if(retrunType=="rows") {
 			if(""!=param.get("offset")&& ""!=param.get("limit")){
 				sql +=" limit "+param.get("offset")+","+param.get("limit");
