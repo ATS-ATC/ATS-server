@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -86,7 +87,7 @@ public class QueryCaseInfoController {
 		
 		if(ftype!=null && !"".equals(ftype)) {
 			if("csv".equals(ftype)) {
-				Workbook wb = new HSSFWorkbook();
+				XSSFWorkbook  wb = new XSSFWorkbook();
 				
 				
 				// Style the cell with borders all around.
@@ -118,12 +119,14 @@ public class QueryCaseInfoController {
 			    
 		        Sheet sh = wb.createSheet();
 		        Row title = sh.createRow(0);
+		        //System.err.println("1");
 		        for(int i=0 ;i<queryCaseInfoTable.size();i++) {
+		        	//System.err.println("queryCaseInfoTable : "+i);
 		        	Row row = sh.createRow(i+1);
 		        	HashMap<String,Object> hashMap = queryCaseInfoTable.get(i);
 		        	int j=0;
 		        	for(String key :hashMap.keySet()) {
-		        		sh.autoSizeColumn(j);
+		        		//sh.autoSizeColumn(j);自适应单元格长度，会使导出性能下降，慎用
 		        		if(i==0) {
 		        			Cell titleCell = title.createCell(j);
 		        			titleCell.setCellValue(key);
@@ -137,17 +140,19 @@ public class QueryCaseInfoController {
 		        	}
 		        	
 		        }
+		        //System.err.println("2");
 		        Date day=new Date();    
 		        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
 		        //System.out.println(df.format(day));   
 		        response.setCharacterEncoding("utf-8");
 		        response.setContentType("multipart/form-data");
 		        response.setHeader("Content-Disposition", "attachment;fileName=CS_"+qtype+"_"+df.format(day)+".csv");
+		        //System.err.println("3");
 		        try {  
 		            OutputStream out = response.getOutputStream();
 		            BufferedOutputStream bufout = new BufferedOutputStream(out);
 		            bufout.flush();
-		            
+		            //System.err.println("4");
 		            wb.write(bufout);
 		            bufout.close();
 		        } catch (IOException e) {  
