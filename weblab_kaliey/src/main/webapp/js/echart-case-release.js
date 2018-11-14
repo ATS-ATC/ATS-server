@@ -17,10 +17,11 @@ myReleaseChart.setOption({
           }
       },
       legend: {
-          data: ['Successful','Fail','Initial'],
+          data: ['Successful','Fail','Initial','Resubmit'],
       	  selected: {
       		'Fail' : true,
-      		'Initial':false
+      		'Initial':false,
+      		'Resubmit':false
       	  }
       },
       xAxis: {
@@ -79,6 +80,32 @@ myReleaseChart.setOption({
               ]
           }*/
       },{
+          name: 'Resubmit',
+          itemStyle:{
+              normal:{
+                  color:'#FFB980'
+              }
+          },
+          label: {
+              normal: {
+                  show: true,
+                  position: 'top'
+              }
+          },
+          type: 'bar',
+          data: [],
+          markLine : {
+              data : [
+                  {type : 'average', name : 'average'}
+              ]
+          }/*,
+          markPoint : {
+              data : [
+                  {type : 'max', name: 'max'},
+                  {type : 'min', name: 'min'}
+              ]
+          }*/
+      },{
           name: 'Initial',
           itemStyle:{
               normal:{
@@ -113,6 +140,7 @@ myReleaseChart.setOption({
   var nums = [];    //销量数组（实际用来盛放Y坐标值）
   var fnums = [];    //销量数组（实际用来盛放Y坐标值）
   var inums = [];    //销量数组（实际用来盛放Y坐标值）
+  var rnums = [];    //销量数组（实际用来盛放Y坐标值）
   $.ajax({
       type: "get",
       async: true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
@@ -129,6 +157,7 @@ myReleaseChart.setOption({
                   nums.push(result[i].cc);    //挨个取出销量并填入销量数组
                   fnums.push(result[i].ff);
                   inums.push(result[i].ii);
+                  rnums.push(result[i].rr);
               }
               myReleaseChart.hideLoading();    //隐藏加载动画
               myReleaseChart.setOption({        //加载数据图表
@@ -147,6 +176,10 @@ myReleaseChart.setOption({
                       // 根据名字对应到相应的系列
                       name: 'Initial',
                       data: inums
+                  },{
+                      // 根据名字对应到相应的系列
+                      name: 'Resubmit',
+                      data: rnums
                   }]
               });
 

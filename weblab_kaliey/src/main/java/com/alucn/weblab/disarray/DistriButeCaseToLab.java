@@ -329,6 +329,27 @@ public class DistriButeCaseToLab {
 		URL url;
 		try {
 			url = new URL("http://135.251.249.250/hg/SurepayDraft/rawfile/tip/.info/TagConfig.json");
+			/*
+			 {
+			    "single":[
+			        {"name":"release","value":["SP29.12","SP29.13","SP29.14","SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2","SP17.3","SP17.9","SP18.3","SP18.9","SP19.3"]},
+			        {"name":"customer","value":["ALL","APT","BSNL","BTL","CamGSM","Airtel","E-Plus","GO Malta","M1","MTNL","Thuraya","Togocell", "VF-Global","VFAL","VFCZ","VFGH","VFGR","VFHU","VFI","VFIE","VFNL","VFNZ","VFP","VFQ","VFUK","VMS","VZW"]},
+			        {"name":"base_data","value":["VFAL","VFCZ","VFGR","VFI","VFIE","VFNZ","VFP","VFQ","VFUK","VzWPP_PPALP","VzWUCRTRHPAS","GoM","BSNL","Thuraya","VFGH","M1","MTNL","VFHU"]},
+			        {"name":"mate","value":["N","Y"]},
+			        {"name":"lab_number","value":["1","2","3","4"]},
+			        {"name":"special_data","value":["N","Y"]}
+			    ],
+			    "multiple":[
+			        {"name":"porting_release","value":["29.12","SP29.13","SP29.14","SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2","SP17.3","SP17.9","SP18.3", "SP18.9", "SP19.3"]},
+			        {"name":"service","value":["VzW PPALP","VzW HPAS","VzW PP","VzW UCRTR","OLH","Rerating","Non-real Time Charging","APR","Other"]},
+			        {"name":"call_type","value":["CS1","CAMEL","IS826","PS","NGIN","VoLTE","IMS","LDAP","IMOM","ISUP","USSD","SMS/MMS","IVR","AUDIT","FBC","Radius","Sy","Short Code","GPRS","Other"]},
+			        {"name":"code_changed_spa","value":["EPAY","EPPSA","EPPSM","ECTRL","DROUTER","GPRSCC","CDRPP","CDRPPGW"]},
+			        {"name":"functionality","value":["Recharge","User Interaction","AccountRating/Charging","Bundle","RC/NRC","Audit/First call check","Vortex","DG","SPL","QoS","Bucket","Discount","Tariff Switch","Session Failure Over","AOD","Data Sync","Overload Control","Notification","Log/Meas/Debug","AMA"]}
+			    ],
+			    "SourceServer": "ftp://135.251.249.250"
+			}
+
+			 */
 			InputStream inputStream = null;
 			InputStreamReader inputStreamReader = null;
 			BufferedReader reader = null;

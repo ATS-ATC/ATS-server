@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee   
     http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"> 
   <display-name>Archetype Created Web Application</display-name>
-  <servlet>
+  	<servlet>
 	    <servlet-name>kaliey</servlet-name>
 	    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 	    <init-param>
@@ -13,7 +13,12 @@
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:spring-*.xml</param-value>
         </init-param>
-		<load-on-startup>1</load-on-startup>
+        <!-- 这里将development参数设置为true就可以关闭jsp缓存 -->
+		<init-param>
+			<param-name>development</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
 	</servlet>
   
       <!-- 配置字符集过滤器 -->  

@@ -116,7 +116,7 @@
 								    </div>
 								  </div>
 								  <div class="form-group">
-								    <label for="edept" class="col-sm-2 control-label" style="text-align: left;">dept</label>
+								    <label for="edept" class="col-sm-2 control-label" style="text-align: left;">group</label>
 								    <div class="col-sm-6" id="sedept">
 								      <input type="text" class="form-control" id="edept"  placeholder="dept" disabled="disabled" style="display: inline;">
 								    </div>

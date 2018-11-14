@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<!-- <meta http-equiv="refresh" content="5">页面每5秒刷新一次 -->
+<meta http-equiv="refresh" content="5"><!--页面每5秒刷新一次 -->
 <script src="${pageContext.request.contextPath}/js/jquery.min.js"></script>
 
 <script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
@@ -141,7 +141,7 @@ width: 100%;
 										</select>
 								    </div>
 							    </div>
-							    <label for="adept" class="col-sm-2 control-label" style="text-align: left;">dept</label>
+							    <label for="adept" class="col-sm-2 control-label" style="text-align: left;">group</label>
 							    <div class="col-sm-4">
 									<input type="text" class="form-control" id="adept"  placeholder="dept" style="display: inline;" value="${deptname }" disabled="disabled">
 									<input type="text" class="form-control" id="hdept"  style="display: none;" value="${deptid }" >

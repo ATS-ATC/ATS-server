@@ -23,12 +23,18 @@ public class MainService {
 	public ArrayList<HashMap<String, Object>> getCustomerCount() throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select a.customer,cc,ff from (\n" + 
-				"select customer,count(1) cc from DftTag where case_status='S' group by customer order by cc asc\n" + 
+		String sql = "select a.customer,cc,ff,ii,rr from (\n" + 
+				"select customer,count(1) cc from DftTag where case_status='S' group by customer\n" + 
 				")a\n" + 
 				"left join (\n" + 
 				"select customer,count(1) ff from DftTag where case_status='F' group by customer\n" + 
-				") b on a.customer=b.customer";
+				") b on a.customer=b.customer\n" + 
+				"left join (\n" + 
+				"select customer,count(1) ii from DftTag where case_status='I' group by customer\n" + 
+				") c on a.customer=c.customer\n" + 
+				"left join (\n" + 
+				"select customer,count(1) rr from DftTag where case_status='R' group by customer\n" + 
+				") d on a.customer=d.customer";
 		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -41,15 +47,18 @@ public class MainService {
 				"left join (\n" + 
 				"select release,count(1) ff from DftTag where case_status='F' group by release\n" + 
 				") b on a.release=b.release";*/
-		String sql="select a.release,cc,ff,ii from (\n" + 
-				"select release,count(1) cc from DftTag where case_status='S' group by release\n" + 
-				")a\n" + 
-				"left join (\n" + 
-				"select release,count(1) ff from DftTag where case_status='F' group by release\n" + 
-				") b on a.release=b.release\n" + 
-				"left join (\n" + 
-				"select release,count(1) ii from DftTag where case_status='I' group by release\n" + 
-				") c on a.release=c.release;";
+		String sql="select a.release,cc,ff,ii,rr from ( " + 
+				"select release,count(1) cc from DftTag where case_status='S' group by release " + 
+				")a " + 
+				"left join ( " + 
+				"select release,count(1) ff from DftTag where case_status='F' group by release " + 
+				") b on a.release=b.release " + 
+				"left join ( " + 
+				"select release,count(1) ii from DftTag where case_status='I' group by release " + 
+				") c on a.release=c.release " + 
+				"left join ( " + 
+				"select release,count(1) rr from DftTag where case_status='R' group by release " + 
+				") d on a.release=d.release";
 		ArrayList<HashMap<String, Object>> query = mainDaoImpl.query(jdbc, sql);
 		return query;
 	}
