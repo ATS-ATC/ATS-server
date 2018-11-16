@@ -47,6 +47,7 @@ public class DistributeCase implements Runnable{
 				
 				//check the lab status, remove the distributed case list
 				if(count > 10){
+					//删除不在总库DftTag的DailyCase里面的case
 				    DbOperation.SyncDailyCaseFromDftTag();
 				    logger.info("check machine status.");
 				    JSONArray unneedServers = new JSONArray();

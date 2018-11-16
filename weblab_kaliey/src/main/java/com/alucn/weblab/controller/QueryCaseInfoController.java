@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alucn.weblab.service.QueryCaseInfoService;
+import com.alucn.weblab.utils.TimeUtil;
 import com.alucn.weblab.utils.jsonUtil;
 
 import net.sf.json.JSONArray;
@@ -56,7 +58,23 @@ public class QueryCaseInfoController {
 		//String auth = session.getAttribute("auth").toString();
 		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,feature, offset, limit,"all");
 		//int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, auth, qtype,feature);
-		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, qtype,feature, offset, limit,"all");
+		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
+		List<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
+		//计算hodingduration
+		if(queryCaseInfoTable.size()>0) {
+			for (HashMap<String, Object> hashMap : queryCaseInfoTable) {
+				String submit_date = (String) hashMap.get("submit_date");
+				if(!"".equals(submit_date)&&submit_date!=null) {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+					Date parse = sdf.parse(submit_date);
+					Date date = new Date();
+					int equation = TimeUtil.equation(parse.getTime(),date.getTime());
+					hashMap.put("hodingduration", equation);
+				}else {
+					hashMap.put("hodingduration", "");
+				}
+			}
+		}
 		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature);
 		//System.out.println("queryCaseInfoTable:========"+queryCaseInfoTable);
 		returnMap.put("rows", queryCaseInfoTable);

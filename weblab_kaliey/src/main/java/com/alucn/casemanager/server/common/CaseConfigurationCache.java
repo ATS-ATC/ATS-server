@@ -2,6 +2,7 @@ package com.alucn.casemanager.server.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -18,6 +19,7 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.TelnetCla;
 import com.alucn.casemanager.server.process.GetTimeCase;
+import com.alucn.weblab.utils.TimeUtil;
 
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
@@ -73,21 +75,50 @@ public class CaseConfigurationCache {
 				boolean isExist = false;
 				String serverName = body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
+				
 				if(singletonCaseProperties.size()==0){
+					//------------------------------我新加的20181115--------------------------------------------------
+					String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+					body.getJSONObject(Constant.LAB).put("laststatus", laststatus);
+					//body.getJSONObject(Constant.LAB).put("lasttime", TimeUtil.stampToTime(new Date().getTime()));
+					body.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
+					//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
+					//-----------------------------------------------------------------------------------------------
 					logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 					//System.out.println("0==[add host "+serverName+" status : "+taskStatus+"]");
 					singletonCaseProperties.add(body);
 				}else{
 					for(int i=0; i<singletonCaseProperties.size();i++){
 						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
+						//更新body
 						if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
-//							singletonCaseProperties.remove(i);
+							//singletonCaseProperties.remove(i);
+							String ulaststatus = body.getJSONObject(Constant.LAB).getString("laststatus");
+							Long ulasttime = body.getJSONObject(Constant.LAB).getLong("lasttime");
+							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+							long nowtime = new Date().getTime();
+							long hodingtime = nowtime-ulasttime;
+							System.err.println("ulaststatus : "+ulaststatus+" status : "+status);
+							System.err.println("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
+							if(!status.equals(ulaststatus)) {
+								body.getJSONObject(Constant.LAB).put("laststatus", status);
+								body.getJSONObject(Constant.LAB).put("lasttime", nowtime);
+							}/*else {
+								body.getJSONObject(Constant.LAB).put("hodingtime", hodingtime);
+							}*/
 							singletonCaseProperties.set(i,body);
 							isExist = true;
 							logger.info("[refresh "+serverName+" status : "+taskStatus+"]");
 							//System.out.println("[refresh "+serverName+" status : "+taskStatus+"]");
 						}
 						if(i==singletonCaseProperties.size()-1 && !isExist){
+							//------------------------------我新加的20181115--------------------------------------------------
+							String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+							body.getJSONObject(Constant.LAB).put("laststatus", laststatus);
+							//body.getJSONObject(Constant.LAB).put("lasttime", TimeUtil.stampToTime(new Date().getTime()));
+							body.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
+							//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
+							//-----------------------------------------------------------------------------------------------
 							logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 							//System.out.println("!0==[add host "+serverName+" status : "+taskStatus+"]");
 							singletonCaseProperties.add(body);

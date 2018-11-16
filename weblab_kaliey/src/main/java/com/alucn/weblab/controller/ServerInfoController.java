@@ -42,6 +42,7 @@ import com.alucn.weblab.service.LoginService;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
 import com.alucn.weblab.utils.StringUtil;
+import com.alucn.weblab.utils.TimeUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -96,6 +97,7 @@ public class ServerInfoController {
 			superMap.put("serverMate", "");
 			superMap.put("mateServer", "");
 			superMap.put("deptname", "");
+			superMap.put("hodingtime", "");
 			
 			resultList.add(superMap);
 			pid=id;
@@ -124,6 +126,12 @@ public class ServerInfoController {
 					String serverMate = lab.getString("serverMate");
 					String mateServer = lab.getString("mateServer");
 					String sdeptid = lab.getString("deptid");
+					
+					long lasttime = lab.getLong("lasttime");
+					long nowtime = new Date().getTime();
+					String timeDifference = TimeUtil.getTimeDifference(nowtime, lasttime);
+					//long hodingtime = nowtime-lasttime;
+					
 					ArrayList<HashMap<String, Object>> deptById = loginService.getDeptById(sdeptid);
 					String deptname = "";
 					if(deptById.size()>0) {
@@ -166,6 +174,7 @@ public class ServerInfoController {
 					childMap.put("serverMate", serverMate);
 					childMap.put("mateServer", mateServer);
 					childMap.put("deptname", deptname);
+					childMap.put("hodingtime", timeDifference);
 					
 					if(deptid.equals(labdeptid)||hasRole) {
 						resultList.add(childMap);

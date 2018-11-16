@@ -254,6 +254,12 @@ var TableInit = function () {
                 field: 'jira_id',
                 title: 'JiraId',
                 visible: false //默认不显示
+            }, {
+                field: 'hodingduration',
+                title: 'hodingduration',
+            }, {
+                field: 'submit_date',
+                title: 'submit_date',
             }
             
             ]
