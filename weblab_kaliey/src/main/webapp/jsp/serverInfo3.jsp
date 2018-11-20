@@ -582,10 +582,10 @@ $(function() {
 		        field: 'deptname',
 		        title: 'Group Name',
 		    }
-	      ,{
+	      /* ,{
 		        field: 'hodingtime',
 		        title: 'Time',
-		    }
+		    } */
 	    ],
 	    //最主要的就是下面  定义哪一列作为展开项  定义父级标志 这里是pid
 	    //定义的列一定是要在表格中展现的  换言之就是上方有这个列 不然报错

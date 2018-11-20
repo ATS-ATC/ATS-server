@@ -268,7 +268,7 @@ public class DistriButeCaseToLab {
 
 				if (changedKvmList.size() > 0) {
 					PreparedStatement prep = connection
-							.prepareStatement("replace into serverList values( ?, ?, ?, ?);");
+							.prepareStatement("replace into serverList values( ?, ?, ?, ?, ? );");
 
 					for (int i = 0; i < changedKvmList.size(); i++) {
 						ServerMem = changedKvmList.getJSONObject(i);
@@ -277,7 +277,7 @@ public class DistriButeCaseToLab {
 						prep.setString(2, ServerMem.getString(Constant.SERVERPROTOCOL));
 						prep.setString(3, ServerMem.getJSONArray(Constant.SERVERSPA).toString());
 						prep.setString(4, ServerMem.getJSONArray(Constant.SERVERRTDB).toString());
-						// prep.setString(5, ServerMem.getStatus());
+						prep.setString(5, ServerMem.getString(Constant.STATUS));
 						// prep.setString(5, "");
 						prep.addBatch();
 					}

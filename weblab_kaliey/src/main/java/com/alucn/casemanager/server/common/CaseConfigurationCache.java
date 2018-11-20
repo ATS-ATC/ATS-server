@@ -75,7 +75,8 @@ public class CaseConfigurationCache {
 				boolean isExist = false;
 				String serverName = body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
-				
+				//判断内存中是否有server信息，
+				//1、如果没有直接将client传过来的添加进去
 				if(singletonCaseProperties.size()==0){
 					//------------------------------我新加的20181115--------------------------------------------------
 					String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
@@ -87,10 +88,12 @@ public class CaseConfigurationCache {
 					logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 					//System.out.println("0==[add host "+serverName+" status : "+taskStatus+"]");
 					singletonCaseProperties.add(body);
+				//2、如果内存中有server记录
 				}else{
+					//遍历每一个server
 					for(int i=0; i<singletonCaseProperties.size();i++){
 						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
-						//更新body
+						//当内存中的server与client中传过来的server匹配时：用client的更新server信息
 						if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
 							//singletonCaseProperties.remove(i);
 							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
@@ -121,6 +124,8 @@ public class CaseConfigurationCache {
 							logger.info("[refresh "+serverName+" status : "+taskStatus+"]");
 							//System.out.println("[refresh "+serverName+" status : "+taskStatus+"]");
 						}
+						//当内存中只有一个server且没有与client的server匹配，
+						//不修改当前server，并新加进去client的server
 						if(i==singletonCaseProperties.size()-1 && !isExist){
 							//------------------------------我新加的20181115--------------------------------------------------
 							String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();

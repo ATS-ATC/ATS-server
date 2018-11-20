@@ -141,12 +141,13 @@
 				    }
 				return { classes: style }
 				} , */
-				columns : [ {
+				 columns : [ 
+				/*{
 					checkbox : true
-				}, {
+				}, */{
 					field : 'id',
 					title : 'id'
-				}, {
+				},  {
 					field : 'status',
 					title : 'status',
 					formatter : 'resultFormatter'

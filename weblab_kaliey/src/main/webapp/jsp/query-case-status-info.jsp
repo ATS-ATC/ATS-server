@@ -256,11 +256,11 @@ var TableInit = function () {
                 visible: false //默认不显示
             }, {
                 field: 'hodingduration',
-                title: 'hodingduration',
-            }, {
+                title: 'HodingDuration',
+            }/* , {
                 field: 'submit_date',
                 title: 'submit_date',
-            }
+            } */
             
             ]
         });
