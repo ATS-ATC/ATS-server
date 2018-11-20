@@ -614,12 +614,12 @@ public class ServerInfoController {
 		//System.err.println(reqData);
 		/*
 		{
-			"protocol": "ANSI",
+			"protocol": "ITU",
 			"labname": ["CHSP12B"],
-			"DB": ["SGLRTDB","SCRRTDB"],
+			"DB": ["SIMDB","ACMDB"],
 			"mate": "N",
 			"release": "SP18.9",
-			"SPA": ["EPAY","EPPSA"],
+			"SPA": ["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","DIAMCL"],
 			"ins_flag": "0"
 		}
 		*/

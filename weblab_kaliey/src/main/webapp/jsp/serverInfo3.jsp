@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta http-equiv="refresh" content="5"><!--页面每5秒刷新一次 -->
+<meta http-equiv="refresh" content="60"><!--页面每60秒刷新一次 -->
 <script src="${pageContext.request.contextPath}/js/jquery.min.js"></script>
 
 <script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>

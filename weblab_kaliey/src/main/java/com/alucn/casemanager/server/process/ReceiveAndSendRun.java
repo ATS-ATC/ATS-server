@@ -178,7 +178,7 @@ public class ReceiveAndSendRun implements Runnable {
 
 	/**
 	 * Get request message (string)
-	 * @return
+	 * @return接收客户端传来的消息
 	 * @throws IOException
 	 * @throws SysException 
 	 */

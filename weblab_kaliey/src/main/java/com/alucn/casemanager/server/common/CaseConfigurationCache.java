@@ -93,19 +93,29 @@ public class CaseConfigurationCache {
 						//更新body
 						if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
 							//singletonCaseProperties.remove(i);
-							String ulaststatus = body.getJSONObject(Constant.LAB).getString("laststatus");
-							Long ulasttime = body.getJSONObject(Constant.LAB).getLong("lasttime");
 							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+							
+							String ulaststatus="";
+							long ulasttime = new Date().getTime();
+							try {
+								ulaststatus = tmpJsonObject.getJSONObject(Constant.LAB).getString("laststatus");
+								ulasttime = tmpJsonObject.getJSONObject(Constant.LAB).getLong("lasttime");
+							} catch (Exception e) {
+								e.printStackTrace();
+								tmpJsonObject.getJSONObject(Constant.LAB).put("laststatus", status);
+								tmpJsonObject.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
+							}
 							long nowtime = new Date().getTime();
 							long hodingtime = nowtime-ulasttime;
 							System.err.println("ulaststatus : "+ulaststatus+" status : "+status);
 							System.err.println("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
-							if(!status.equals(ulaststatus)) {
+							if(!ulaststatus.equals(status)) {
 								body.getJSONObject(Constant.LAB).put("laststatus", status);
 								body.getJSONObject(Constant.LAB).put("lasttime", nowtime);
-							}/*else {
-								body.getJSONObject(Constant.LAB).put("hodingtime", hodingtime);
-							}*/
+							}else {
+								body.getJSONObject(Constant.LAB).put("laststatus", ulaststatus);
+								body.getJSONObject(Constant.LAB).put("lasttime", ulasttime);
+							}
 							singletonCaseProperties.set(i,body);
 							isExist = true;
 							logger.info("[refresh "+serverName+" status : "+taskStatus+"]");
