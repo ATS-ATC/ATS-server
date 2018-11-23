@@ -277,7 +277,7 @@ public class DistriButeCaseToLab {
 						prep.setString(2, ServerMem.getString(Constant.SERVERPROTOCOL));
 						prep.setString(3, ServerMem.getJSONArray(Constant.SERVERSPA).toString());
 						prep.setString(4, ServerMem.getJSONArray(Constant.SERVERRTDB).toString());
-						prep.setString(5, ServerMem.getString(Constant.STATUS));
+						prep.setString(5, ServerMem.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
 						// prep.setString(5, "");
 						prep.addBatch();
 					}

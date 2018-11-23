@@ -60,7 +60,7 @@ public class ErrorCaseInfoService {
 	 * 涉及变量：
 	 * </pre>
 	 */
-	public ArrayList<HashMap<String, Object>> getErrorCaseInfoTable(String userName, String auth) throws Exception{
+	/*public ArrayList<HashMap<String, Object>> getErrorCaseInfoTable(String userName, String auth) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select feature,owner,servername,count(casename) fcount  from errorcaseinfo where 1=1";
@@ -70,7 +70,7 @@ public class ErrorCaseInfoService {
 		sql = sql+" group by feature,owner,servername";
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		return result;
-	}
+	}*/
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, String auth) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
@@ -113,6 +113,39 @@ public class ErrorCaseInfoService {
 //			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND feature='"+featureName.trim()+"'";
 			String markCaseSql = "UPDATE  errorcaseinfo SET err_desc='"+failedreasons.split("@")[1]+"', err_reason='"+failedreasons.split("@")[0]+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE casename='"+ acase +"' AND feature='"+featureName.trim()+"'";
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
+		}
+	}
+	public ArrayList<HashMap<String, Object>> getErrorCaseInfoTable(String userName,String feature, boolean hasRole, String offset, String limit) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select feature,owner,servername,count(casename) fcount  from errorcaseinfo where 1=1";
+		if(!hasRole){
+			sql = sql+" and owner='"+userName+"'";
+		}
+		if(feature!=null && !"".equals(feature)) {
+			sql=sql+" and feature like '%"+feature+"%' ";
+		}
+		sql = sql+" group by feature,owner,servername limit "+offset+","+limit;
+		System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	public int getErrorCaseInfoTableCount(String userName,String feature, boolean hasRole) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select count(1) ccount  from ( select * from errorcaseinfo group by feature,owner,servername ) where 1=1 ";
+		if(!hasRole){
+			sql = sql+" and owner='"+userName+"'";
+		}
+		if(feature!=null && !"".equals(feature)) {
+			sql=sql+" and feature like '%"+feature+"%' ";
+		}
+		System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
+		if(result.size()>0) {
+			return Integer.parseInt((String)result.get(0).get("ccount"));
+		}else {
+			return 0; 
 		}
 	}
 }

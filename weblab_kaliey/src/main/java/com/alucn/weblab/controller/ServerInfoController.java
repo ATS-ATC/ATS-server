@@ -65,6 +65,38 @@ public class ServerInfoController {
 		return "serverInfo";
 	}*/
 	
+	//lab变动日志记录表
+	@RequestMapping(path = "/getServerStatusLog")
+	public String getServerStatusLog(Model model){
+		return "serverStatusLog";
+	}
+	@RequestMapping(path = "/getServerStatusLogJson")
+	@ResponseBody
+	public Map<String,Object> getServerStatusLogJson(HttpServletRequest request,Model model,HttpSession session) throws Exception {
+		Map<String,Object> resultMap = new HashMap<String,Object>();
+		
+		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
+		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
+		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
+		String username = (String) session.getAttribute("login");
+		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
+		String deptid="";
+		if(deptByUserName.size()==1) {
+			deptid = (String) deptByUserName.get(0).get("deptid");
+		}
+		/*Subject subject = SecurityUtils.getSubject();  
+		boolean hasRole = subject.hasRole("admin");*/
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid);
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(limit, offset, serverName, deptid);
+		resultMap.put("rows", labLogJson);
+		resultMap.put("total", labLogJsonCount);
+		
+		return resultMap;
+		
+	}
+	
+	
+	
 	@RequestMapping(value="/getServerInfoJson")
 	@ResponseBody
 	public ArrayList<HashMap<String, Object>> getServerInfoJson(HttpSession session) throws Exception{

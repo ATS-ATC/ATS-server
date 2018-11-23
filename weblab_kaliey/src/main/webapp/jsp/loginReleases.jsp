@@ -35,7 +35,7 @@ $(document).keyup(function(event){
 				</div>
 				<div class="row">
 				  <div class="col-md-10 col-md-offset-1" style="padding-top:10px;">
-				  	<center><font size="3" style="font-weight:bold;">Automatic Daily Certifcation</font></center>
+				  	<center><font size="3" style="font-weight:bold;">SurePay Automation Case Management System</font></center>
 				  </div>
 				</div>
 				<div class="row">
@@ -43,12 +43,12 @@ $(document).keyup(function(event){
 					<form class="form-horizontal" action="./releasesLoginCheckOut.do" method="post" >
 					  <div class="form-group">
 					    <div class="col-sm-12">
-					      <input type="text" class="form-control" id="userName" name="userName" placeholder="userName">
+					      <input type="text" class="form-control" id="username" name="username" placeholder="username">
 					    </div>
 					  </div>
 					  <div class="form-group">
 					    <div class="col-sm-12">
-					      <input type="password" class="form-control" id="passWord" name="passWord" placeholder="passWord">
+					      <input type="password" class="form-control" id="password" name="password" placeholder="password">
 					    </div>
 					  </div>
 					  <c:if test="${loginResult != 'success' && loginResult != 'login'}">

@@ -59,7 +59,7 @@ public class QueryCaseInfoController {
 		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,feature, offset, limit,"all");
 		//int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, auth, qtype,feature);
 		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
-		List<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
+		ArrayList<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
 		//计算hodingduration
 		if(queryCaseInfoTable.size()>0) {
 			for (HashMap<String, Object> hashMap : queryCaseInfoTable) {
@@ -101,7 +101,7 @@ public class QueryCaseInfoController {
 		
 		String userName = session.getAttribute("login").toString();
 		//String auth = session.getAttribute("auth").toString();
-		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, qtype,"", "", "",etype);
+		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,"", "", "",etype);
 		
 		if(ftype!=null && !"".equals(ftype)) {
 			if("csv".equals(ftype)) {
@@ -151,7 +151,7 @@ public class QueryCaseInfoController {
 		        			//titleCell.setCellStyle(tstyle);
 		        		}
 		        		Cell cell = row.createCell(j);
-		        		String value = (String)hashMap.get(key);
+		        		String value = hashMap.get(key)+"";
 		        		cell.setCellValue(value);
 		        		//cell.setCellStyle(style);
 		        		j++;

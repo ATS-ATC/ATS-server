@@ -74,8 +74,7 @@
 			
 		</div> -->
 		<div style="background-color: white;">
-			<div class="row"
-				style="margin-left: 10px; margin-right: 13px; margin-top: 10px;">
+			<div class="row" style="margin-left: 10px; margin-right: 13px; margin-top: 10px;">
 				<table id="tb_departments" class="text-nowrap"></table>
 			</div>
 		</div>

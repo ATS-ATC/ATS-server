@@ -113,6 +113,27 @@ public class CaseConfigurationCache {
 							System.err.println("ulaststatus : "+ulaststatus+" status : "+status);
 							System.err.println("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
 							if(!ulaststatus.equals(status)) {
+								System.out.println(ulaststatus+">>"+status);
+								//此处应该加到数据库做成log
+								//设计表结构：n_lab_status_time
+								//id,labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime,stateflag
+								try {
+									String ip = body.getJSONObject(Constant.LAB).getString(Constant.IP);
+									String serverRelease = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRELEASE);
+									String serverProtocol = body.getJSONObject(Constant.LAB).getString(Constant.SERVERPROTOCOL);
+									String serverSPA = body.getJSONObject(Constant.LAB).getString(Constant.SERVERSPA);
+									String serverRTDB = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRTDB);
+									String serverType = body.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE);
+									String mateServer = body.getJSONObject(Constant.LAB).getString(Constant.MATESERVER);
+									String serverMate = body.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE);
+									String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
+									JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+									String insertLog = "insert into n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
+											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
+									jdbc_cf.executeSql(insertLog);
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 								body.getJSONObject(Constant.LAB).put("laststatus", status);
 								body.getJSONObject(Constant.LAB).put("lasttime", nowtime);
 							}else {

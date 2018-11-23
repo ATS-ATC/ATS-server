@@ -24,16 +24,16 @@ public class QueryCaseInfoService {
 	@Autowired(required=true)
 	private QueryCaseDaoImpl queryCaseDaoImpl;
 	
-	public ArrayList<HashMap<String, Object>> getQueryCaseInfoTable(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
+	/*public ArrayList<HashMap<String, Object>> getQueryCaseInfoTable(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		/*Class.forName("org.sqlite.JDBC");
+		Class.forName("org.sqlite.JDBC");
 		Connection connection = null;
 		Statement state = null;
 		String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 		state = connection.createStatement();
-		state.execute("ATTACH DATABASE '"+CaseInfoDB+"' AS attCaseInfo");*/
+		state.execute("ATTACH DATABASE '"+CaseInfoDB+"' AS attCaseInfo");
 		String sql="";
 		if("all".equals(etype)) {
 			sql =sql+ "select * from DftTag a left join attCaseInfo.DailyCase b on a.case_name=b.case_name where 1=1";
@@ -47,9 +47,9 @@ public class QueryCaseInfoService {
 					"left join attCaseInfo.DailyCase b on a.case_name=b.case_name " + 
 					"where 1=1";
 		}
-		/*if(!auth.equals(Constant.AUTH)){
+		if(!auth.equals(Constant.AUTH)){
 			sql = sql+" and author='"+userName+"'";
-		}*/
+		}
 		if(!"".equals(feature)) {
 			sql = sql+" and a.feature_number like '%"+feature+"%'";
 		}
@@ -60,9 +60,9 @@ public class QueryCaseInfoService {
 		System.out.println("sql==========="+sql);
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		return result;
-	}
-	public List<HashMap<String,Object>> getQueryCaseInfoTableNew(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
-		List<HashMap<String,Object>> list = new ArrayList();
+	}*/
+	public ArrayList<HashMap<String,Object>> getQueryCaseInfoTableNew(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
+		ArrayList<HashMap<String,Object>> list = new ArrayList();
 		Class.forName("org.sqlite.JDBC");
 		//Connection connection = null;
 		//Statement state = null;

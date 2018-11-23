@@ -80,8 +80,6 @@
         <table id="tb_departments" class="text-nowrap"></table>
     </div>
 </body>
-</html>
-</body>
 <script type="text/javascript">
 
 	function exportcase(etype,ftype){

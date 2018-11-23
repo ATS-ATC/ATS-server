@@ -385,4 +385,37 @@ public class ServerInfoService {
 		}
 	}
 
+	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, String deptid) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select * from n_lab_status_time "
+				+ "where 1=1 "
+				+ "and deptid='"+deptid+"'";
+		if(serverName!=null && !"".equals(serverName)) {
+			sql=sql+"and labname like '%"+serverName+"%' ";
+		}
+		sql=sql+"order by endtime desc limit "+offset+","+limit;
+		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);
+		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
+		return query;
+	}
+	public int getServerStatusLogJsonCount(String limit, String offset, String serverName, String deptid) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select count(*) ccount from n_lab_status_time "
+				+ "where 1=1 "
+				+ "and deptid='"+deptid+"'";
+		if(serverName!=null && !"".equals(serverName)) {
+			sql=sql+"and labname like '%"+serverName+"%' ";
+		}
+		sql=sql+"order by endtime desc limit "+offset+","+limit;
+		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);
+		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
+		if(query.size()>0) {
+			return Integer.parseInt((String)query.get(0).get("ccount"));
+		}else {
+			return 0; 
+		}
+	}
+
 }
