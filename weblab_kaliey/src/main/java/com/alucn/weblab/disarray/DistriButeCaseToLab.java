@@ -49,13 +49,11 @@ public class DistriButeCaseToLab {
 	public static Logger logger = Logger.getLogger(DistriButeCaseToLab.class);
 
 	String specialRelease = "28A,28C,28F,28G,28H";
-	
 	int counterUninsRS=0;
 	Map<String, Integer> idleNum = new HashMap<String, Integer>();
 	Map<String, String> reInstallFailList = new HashMap<String, String>();
 	boolean reInstallNext = true;
 	private DistriButeCaseToLab(){};
-
 	static DistriButeCaseToLab instance = null;
 
 	public static DistriButeCaseToLab getDistriButeCaseToLab() {
@@ -65,16 +63,7 @@ public class DistriButeCaseToLab {
 		return instance;
 	}
 
-	/**
-	 * <pre>
-	 * Example: GetServerInfoFromDB();
-	 * Description: 从数据库里面获取当前server
-	 * Arguments: null
-	 * Return: JSONArray 返回所有数据库内的server
-	 * Variable：null
-	 * </pre>
-	 */
-	private JSONArray GetServerInfoFromDB() {
+	private JSONArray getServerInfoFromDB() {
 
 		Connection connection = null;
 		Statement state = null;
@@ -101,7 +90,6 @@ public class DistriButeCaseToLab {
 			logger.error(e1);
 		} catch (Exception e2) {
 			logger.error(e2);
-
 		} finally {
 			try {
 				if (state != null) {
@@ -111,16 +99,13 @@ public class DistriButeCaseToLab {
 					connection.close();
 				}
 			} catch (SQLException e3) {
-
 				logger.error(e3);
 			}
-
 		}
 		return ServerInfos;
-
 	}
 
-	private boolean IsInJSONArray(Object value, JSONArray list) {
+	private boolean isInJSONArray(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
 			if (String.valueOf(value).equals(String.valueOf(list.get(i)))) {
 				return true;
@@ -134,14 +119,14 @@ public class DistriButeCaseToLab {
 			return false;
 		}
 		for (int i = 0; i < value.size(); i++) {
-			if (!IsInJSONArray(value.getString(i), list)) {
+			if (!isInJSONArray(value.getString(i), list)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private boolean IsInJSONArrayWithoutCase(Object value, JSONArray list) {
+	private boolean isInJSONArrayWithoutCase(Object value, JSONArray list) {
 		for (int i = 0; i < list.size(); i++) {
 			String A_value = String.valueOf(list.get(i));
 			if (A_value.equalsIgnoreCase(String.valueOf(value))
@@ -157,7 +142,7 @@ public class DistriButeCaseToLab {
 
 	private boolean isLabListContainsCaseList(JSONArray A, JSONArray B) {
 		for (int i = 0; i < B.size(); i++) {
-			if (!IsInJSONArrayWithoutCase(B.getString(i), A)) {
+			if (!isInJSONArrayWithoutCase(B.getString(i), A)) {
 				return false;
 			}
 		}
@@ -175,71 +160,61 @@ public class DistriButeCaseToLab {
 		return -1;
 	}
 
-	/**
-	 * <pre>
-	 * Example: updateKvmDB();
-	 * Description: 去内存中获取server信息，同步到数据库，
-	 * Arguments: null
-	 * Return: JSONArray 返回更新过的server
-	 * Variable：
-	 * </pre>
-	 */
 	private JSONArray updateKvmDB() {
 		JSONArray changedList = new JSONArray();
 		JSONArray changedKvmList = new JSONArray();
 		JSONArray needDeleteKvmList = new JSONArray();
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
-				null);
-		JSONArray ServersInDB = GetServerInfoFromDB();
-		JSONObject ServerDB;
-		JSONObject ServerMem;
+		JSONArray servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		JSONArray serversInDB = getServerInfoFromDB();
+		JSONObject serverDB;
+		JSONObject serverMem;
 		boolean IsExist;
-		for (int i = 0; i < ServersInDB.size(); i++) {
-			ServerDB = ServersInDB.getJSONObject(i);
+		for (int i = 0; i < serversInDB.size(); i++) {
+			serverDB = serversInDB.getJSONObject(i);
 			IsExist = false;
-			for (int j = 0; j < Servers.size(); j++) {
-				ServerMem = Servers.getJSONObject(j).getJSONObject(Constant.LAB);
-				if (ServerDB.getString("serverName").equals(ServerMem.getString(Constant.SERVERNAME))) {
+			for (int j = 0; j < servers.size(); j++) {
+				serverMem = servers.getJSONObject(j).getJSONObject(Constant.LAB);
+				if (serverDB.getString("serverName").equals(serverMem.getString(Constant.SERVERNAME))) {
 					IsExist = true;
-					if (!ServerDB.getString("protocol").equals(ServerMem.getString(Constant.SERVERPROTOCOL))) {
-						changedKvmList.add(ServerMem);
-						changedList.add(ServerMem.getString(Constant.SERVERNAME));
+					if (!serverDB.getString("protocol").equals(serverMem.getString(Constant.SERVERPROTOCOL))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
 						break;
 					}
-					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(ServerDB.getString("SPA")),
-							ServerMem.getJSONArray(Constant.SERVERSPA))) {
-						changedKvmList.add(ServerMem);
-						changedList.add(ServerMem.getString(Constant.SERVERNAME));
+					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(serverDB.getString("SPA")),
+							serverMem.getJSONArray(Constant.SERVERSPA))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
 						break;
 					}
-					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(ServerDB.getString("RTDB")),
-							ServerMem.getJSONArray(Constant.SERVERRTDB))) {
-						changedKvmList.add(ServerMem);
-						changedList.add(ServerMem.getString(Constant.SERVERNAME));
+					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(serverDB.getString("RTDB")),
+							serverMem.getJSONArray(Constant.SERVERRTDB))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
 						break;
 					}
 				}
 			}
 			if (!IsExist) {
-				needDeleteKvmList.add(ServerDB.getString("serverName"));
-				changedList.add(ServerDB.getString("serverName"));
+				needDeleteKvmList.add(serverDB.getString("serverName"));
+				changedList.add(serverDB.getString("serverName"));
 			}
 
 		}
 
-		for (int i = 0; i < Servers.size(); i++) {
-			ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+		for (int i = 0; i < servers.size(); i++) {
+			serverMem = servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			IsExist = false;
-			for (int j = 0; j < ServersInDB.size(); j++) {
-				if (ServersInDB.getJSONObject(j).getString("serverName")
-						.equals(ServerMem.getString(Constant.SERVERNAME))) {
+			for (int j = 0; j < serversInDB.size(); j++) {
+				if (serversInDB.getJSONObject(j).getString("serverName")
+						.equals(serverMem.getString(Constant.SERVERNAME))) {
 					IsExist = true;
 					break;
 				}
 			}
 			if (!IsExist) {
-				changedKvmList.add(ServerMem);
-				changedList.add(ServerMem.getString(Constant.SERVERNAME));
+				changedKvmList.add(serverMem);
+				changedList.add(serverMem.getString(Constant.SERVERNAME));
 			}
 		}
 
@@ -260,7 +235,6 @@ public class DistriButeCaseToLab {
 						prep.setString(1, needDeleteKvmList.getString(i));
 						prep.addBatch();
 					}
-
 					connection.setAutoCommit(false);
 					prep.executeBatch();
 					connection.setAutoCommit(true);
@@ -268,30 +242,25 @@ public class DistriButeCaseToLab {
 
 				if (changedKvmList.size() > 0) {
 					PreparedStatement prep = connection
-							.prepareStatement("replace into serverList values( ?, ?, ?, ?, ? );");
+							.prepareStatement("replace into serverList values( ?, ?, ?, ?);");
 
 					for (int i = 0; i < changedKvmList.size(); i++) {
-						ServerMem = changedKvmList.getJSONObject(i);
-
-						prep.setString(1, ServerMem.getString(Constant.SERVERNAME));
-						prep.setString(2, ServerMem.getString(Constant.SERVERPROTOCOL));
-						prep.setString(3, ServerMem.getJSONArray(Constant.SERVERSPA).toString());
-						prep.setString(4, ServerMem.getJSONArray(Constant.SERVERRTDB).toString());
-						prep.setString(5, ServerMem.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
-						// prep.setString(5, "");
+						serverMem = changedKvmList.getJSONObject(i);
+						prep.setString(1, serverMem.getString(Constant.SERVERNAME));
+						prep.setString(2, serverMem.getString(Constant.SERVERPROTOCOL));
+						prep.setString(3, serverMem.getJSONArray(Constant.SERVERSPA).toString());
+						prep.setString(4, serverMem.getJSONArray(Constant.SERVERRTDB).toString());
+						prep.setString(5, serverMem.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
 						prep.addBatch();
 					}
-
 					connection.setAutoCommit(false);
 					prep.executeBatch();
 					connection.setAutoCommit(true);
 				}
-
 			} catch (SQLException e1) {
 				logger.error(e1);
 			} catch (Exception e2) {
 				logger.error(e2);
-
 			} finally {
 				try {
 					if (state != null) {
@@ -301,55 +270,18 @@ public class DistriButeCaseToLab {
 						connection.close();
 					}
 				} catch (SQLException e3) {
-
 					logger.error(e3);
 				}
-
 			}
 		}
-
 		return changedList;
 	}
 
-	/*
-	 * private boolean isNumeric(String str){ Pattern pattern =
-	 * Pattern.compile("[0-9]*"); return pattern.matcher(str).matches(); }
-	 */
-	/**
-	 * <pre>
-	 * Example: GetReleaseList();
-	 * Description: 从一个网站上获取版本信息
-	 * Arguments: null
-	 * Return: JSONArray 版本信息集合
-	 * Variable：
-	 * </pre>
-	 */
-	private JSONArray GetReleaseList() {
+	private JSONArray getReleaseList() {
 		JSONArray releaseArray = new JSONArray();
 		URL url;
 		try {
 			url = new URL("http://135.251.249.250/hg/SurepayDraft/rawfile/tip/.info/TagConfig.json");
-			/*
-			 {
-			    "single":[
-			        {"name":"release","value":["SP29.12","SP29.13","SP29.14","SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2","SP17.3","SP17.9","SP18.3","SP18.9","SP19.3"]},
-			        {"name":"customer","value":["ALL","APT","BSNL","BTL","CamGSM","Airtel","E-Plus","GO Malta","M1","MTNL","Thuraya","Togocell", "VF-Global","VFAL","VFCZ","VFGH","VFGR","VFHU","VFI","VFIE","VFNL","VFNZ","VFP","VFQ","VFUK","VMS","VZW"]},
-			        {"name":"base_data","value":["VFAL","VFCZ","VFGR","VFI","VFIE","VFNZ","VFP","VFQ","VFUK","VzWPP_PPALP","VzWUCRTRHPAS","GoM","BSNL","Thuraya","VFGH","M1","MTNL","VFHU"]},
-			        {"name":"mate","value":["N","Y"]},
-			        {"name":"lab_number","value":["1","2","3","4"]},
-			        {"name":"special_data","value":["N","Y"]}
-			    ],
-			    "multiple":[
-			        {"name":"porting_release","value":["29.12","SP29.13","SP29.14","SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2","SP17.3","SP17.9","SP18.3", "SP18.9", "SP19.3"]},
-			        {"name":"service","value":["VzW PPALP","VzW HPAS","VzW PP","VzW UCRTR","OLH","Rerating","Non-real Time Charging","APR","Other"]},
-			        {"name":"call_type","value":["CS1","CAMEL","IS826","PS","NGIN","VoLTE","IMS","LDAP","IMOM","ISUP","USSD","SMS/MMS","IVR","AUDIT","FBC","Radius","Sy","Short Code","GPRS","Other"]},
-			        {"name":"code_changed_spa","value":["EPAY","EPPSA","EPPSM","ECTRL","DROUTER","GPRSCC","CDRPP","CDRPPGW"]},
-			        {"name":"functionality","value":["Recharge","User Interaction","AccountRating/Charging","Bundle","RC/NRC","Audit/First call check","Vortex","DG","SPL","QoS","Bucket","Discount","Tariff Switch","Session Failure Over","AOD","Data Sync","Overload Control","Notification","Log/Meas/Debug","AMA"]}
-			    ],
-			    "SourceServer": "ftp://135.251.249.250"
-			}
-
-			 */
 			InputStream inputStream = null;
 			InputStreamReader inputStreamReader = null;
 			BufferedReader reader = null;
@@ -366,7 +298,6 @@ public class DistriButeCaseToLab {
 					response += tempLine;
 
 				}
-
 				JSONObject tagInfos = JSONObject.fromObject(response);
 				JSONArray SingleList = tagInfos.getJSONArray("single");
 				for (int i = 0; i < SingleList.size(); i++) {
@@ -375,32 +306,18 @@ public class DistriButeCaseToLab {
 						break;
 					}
 				}
-
 			}
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ProtocolException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return releaseArray;
 	}
 
-	/**
-	 * <pre>
-	 * Example: RemoveRelease(list);
-	 * Description: 从静态变量list的release内剔除传入的list内的release
-	 * Arguments: JSONArray 要剔除的release的集合
-	 * Return: JSONArray
-	 * Variable：specialRelease
-	 * </pre>
-	 */
-	private JSONArray RemoveRelease(JSONArray list) {
+	private JSONArray removeRelease(JSONArray list) {
 
 		JSONArray jsonList = new JSONArray();
 		for (int i = 0; i < list.size(); i++) {
@@ -412,20 +329,10 @@ public class DistriButeCaseToLab {
 			}
 			jsonList.add(temp);
 		}
-
 		return jsonList;
 	}
 
-	/**
-	 * <pre>
-	 * Example: 
-	 * Description: 
-	 * Arguments: 
-	 * Return: void
-	 * Variable：
-	 * </pre>
-	 */
-	private void UpdateCaseStatusDB(JSONArray caseList) {
+	private void updateCaseStatusDB(JSONArray caseList) {
 		Connection connection = null;
 		Statement state = null;
 
@@ -455,7 +362,6 @@ public class DistriButeCaseToLab {
 						GroupId = 0;
 						logger.error(e);
 					}
-
 				}
 			} catch (Exception e) {
 				logger.error(e);
@@ -480,7 +386,7 @@ public class DistriButeCaseToLab {
 			JSONArray spaArray, rtdbArray;
 			boolean IsSame = true;
 
-			JSONArray releaseList = GetReleaseList();
+			JSONArray releaseList = getReleaseList();
 			logger.debug("releaseList: " + releaseList.toString());
 
 			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
@@ -671,19 +577,9 @@ public class DistriButeCaseToLab {
 
 				e3.printStackTrace();
 			}
-
 		}
 	}
 
-	/**
-	 * <pre>
-	 * Example: getServers(infos)；
-	 * Description: 解析JSONArray转换成map类型的server
-	 * Arguments: infos 包含server信息的JSONArray
-	 * Return: Map<String,Set<Map<String,JSONObject>>>
-	 * Variable：none
-	 * </pre>
-	 */
 	public Map<String, Set<Map<String, JSONObject>>> getServers(JSONArray infos) {
 		Map<String, Set<Map<String, JSONObject>>> setMap = new HashMap<String, Set<Map<String, JSONObject>>>();
 		for (int i = 0; i < infos.size(); i++) {
@@ -735,18 +631,7 @@ public class DistriButeCaseToLab {
 		}
 		return setMap;
 	}
-
-	/**
-	 * <pre>
-	 * Example: 
-	 * Description: 这个方法是干啥的？
-	 * 				对比数据库中case的运行条件和现有内存中server的条件，看是否符合
-	 * 				如果符合，返回server名称
-	 * Arguments: 
-	 * Return: String
-	 * Variable：
-	 * </pre>
-	 */
+	
 	public String gerServer(JSONArray Servers, String customer, String release, String porting_release,
 			JSONArray releaseList, JSONArray spaArray, JSONArray rtdbArray) {
 		String serverName = "";
@@ -754,8 +639,8 @@ public class DistriButeCaseToLab {
 		for (int i = 0; i < Servers.size(); i++) {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			serverName = ServerMem.getString(Constant.SERVERNAME);
-			JSONArray spaList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
-			JSONArray rtdbList = RemoveRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
+			JSONArray spaList = removeRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
+			JSONArray rtdbList = removeRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
 			String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
 			String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
 			// logger.error("Server: " + spaList.toString() + " ---- " +
@@ -784,7 +669,7 @@ public class DistriButeCaseToLab {
 				JSONArray portingReleaseList = JSONArray
 						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
 				// logger.error(serverRelease + " --- " + portingReleaseList);
-				if (IsInJSONArray(serverRelease, portingReleaseList)) {
+				if (isInJSONArray(serverRelease, portingReleaseList)) {
 					isReleaseMath = true;
 				} else {
 					if (porting_release.endsWith("+")) {
@@ -813,36 +698,7 @@ public class DistriButeCaseToLab {
 		return serverNameTmp;
 	}
 
-	public static void main(String[] args) throws Exception {
-		DistriButeCaseToLab test = new DistriButeCaseToLab();
-		// JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
-		// System.out.println(getServerInfoFromDB);
-		JSONObject distributeCases = test.GetDistributeCases();
-		System.out.println(distributeCases);
-		/*
-		 * JSONArray releaseList = test.GetReleaseList();
-		 * System.out.println(releaseList.toString()); String porting_release =
-		 * "SP18.3,SP18.9+"; String serverRelease = "SP17.3"; boolean
-		 * isReleaseMath=false; JSONArray portingReleaseList = JSONArray
-		 * .fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") +
-		 * "\"]"); System.out.println(portingReleaseList.toString()); if
-		 * (test.IsInJSONArray(serverRelease, portingReleaseList)) { isReleaseMath =
-		 * true; } else { if (porting_release.endsWith("+")) { int serverReleasePostion
-		 * = test.postionInJSONArray(serverRelease, releaseList);
-		 * //logger.error(serverRelease + " --- " + releaseList); if
-		 * (serverReleasePostion != -1) {
-		 * System.out.println(porting_release.substring(porting_release.lastIndexOf(",")
-		 * + 1, porting_release.length() - 1)); int LastReleasePostion =
-		 * test.postionInJSONArray(
-		 * porting_release.substring(porting_release.lastIndexOf(",") + 1,
-		 * porting_release.length() - 1), releaseList);
-		 * System.out.println(serverReleasePostion); if (LastReleasePostion != -1 &&
-		 * serverReleasePostion >= LastReleasePostion) { isReleaseMath = true; } } } }
-		 */
-
-	}
-
-	private void UpdatedistributeDB(JSONArray KVMList) {
+	private void updatedistributeDB(JSONArray KVMList) {
 		JSONArray caseList = new JSONArray();
 
 		Connection connection = null;
@@ -922,12 +778,9 @@ public class DistriButeCaseToLab {
 					state.executeUpdate(query_sql);
 				}
 			}
-
-			// caselist里面放的是曾经跑过的case但是现在serverinfo改动了，和一直没有跑的case
 			if (caseList.size() > 0) {
-				UpdateCaseStatusDB(caseList);
+				updateCaseStatusDB(caseList);
 			}
-
 		} catch (SQLException e1) {
 			logger.error(e1);
 		} catch (Exception e2) {
@@ -949,16 +802,6 @@ public class DistriButeCaseToLab {
 		}
 	}
 
-	/**
-	 * <pre>
-	 * Example: genCaseListToLab('BJRMS21C');
-	 * Description: 获取一定数量的case，从将要运行表（toDistributeCases）内，不在表（DistributedCaseTbl）内
-	 * 		规则是group_id相同的一组，数量不大于配置文件中最大case数
-	 * Arguments: ServerName server名称
-	 * Return: JSONArray
-	 * Variable：
-	 * </pre>
-	 */
 	private JSONArray genCaseListToLab(String ServerName) {
 		JSONArray caseList = new JSONArray();
 
@@ -988,7 +831,7 @@ public class DistriButeCaseToLab {
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {
-				// ↓↓↓↓↓↓↓↓↓↓↓只获取一组group_id 相同的一组case↓↓↓↓↓↓↓↓↓↓↓
+				// 鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撳彧鑾峰彇涓�缁刧roup_id 鐩稿悓鐨勪竴缁刢ase鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫�
 				new_group = result.getInt("group_id");
 				if (new_group != old_group) {
 					if (old_group != -1) {
@@ -996,7 +839,7 @@ public class DistriButeCaseToLab {
 					}
 					old_group = new_group;
 				}
-				// ↑↑↑↑↑↑↑↑↑↑↑只获取一组group_id 相同的一组case↑↑↑↑↑↑↑↑↑↑↑
+				// 鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戝彧鑾峰彇涓�缁刧roup_id 鐩稿悓鐨勪竴缁刢ase鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫�
 				caseList.add(result.getString("case_name"));
 				CaseCount++;
 				if (CaseCount >= Integer.valueOf(ConfigProperites.getInstance().getMaxCaseSizeForOneLab())) {
@@ -1029,23 +872,11 @@ public class DistriButeCaseToLab {
 		return caseList;
 	}
 
-	/**
-	 * <pre>
-	 * Example: DistriButeCaseToLab.getDistriButeCaseToLab().GetDistributeCases().getJSONObject(Constant.AVAILABLECASE);
-	 * Description:这个方法存在的意义？
-	 * Arguments: none
-	 * Return: JSONObject  {"availableCase":{}}
-	 * Variable：
-	 * </pre>
-	 */
-	public JSONObject GetDistributeCases() throws Exception {
+	public JSONObject getDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
-		// 更新serverlistinfo数据库使其里面的信息与程序缓存的server信息保持一致，并返回更改的servername
 		JSONArray changedKvmList = updateKvmDB();
-		// 找到曾经跑过，但是server信息更新了的case和没有跑过的case
-		UpdatedistributeDB(changedKvmList);
-		// 从内存中读取server信息
+		updatedistributeDB(changedKvmList);
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		JSONObject ServerMem;
 		int idleServerNum = 0;
@@ -1068,8 +899,8 @@ public class DistriButeCaseToLab {
 					caseListNull++;
 				}
 				JSONObject labInfo = new JSONObject();
-				labInfo.put("uuid", UUID.randomUUID().toString());
-				labInfo.put("case_list", caseList);
+				labInfo.put(Constant.CASELISTUUID, UUID.randomUUID().toString());
+				labInfo.put(Constant.CASELIST, caseList);
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}else{
@@ -1079,7 +910,7 @@ public class DistriButeCaseToLab {
 		//--------------------new-----------------------------------------
 		//--------------------old-----------------------------------------
 		/*for (int i = 0; i < Servers.size(); i++) {
-			// 判断是否是idle状态
+			// 鍒ゆ柇鏄惁鏄痠dle鐘舵��
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
@@ -1102,7 +933,7 @@ public class DistriButeCaseToLab {
 				JSONObject labInfo = new JSONObject();
 				labInfo.put("uuid", UUID.randomUUID().toString());
 				labInfo.put("case_list", caseList);
-				// 更新数据库内的分发表(只有两个字段，case_name，server_name)用的replace into方法
+				// 鏇存柊鏁版嵁搴撳唴鐨勫垎鍙戣〃(鍙湁涓や釜瀛楁锛宑ase_name锛宻erver_name)鐢ㄧ殑replace into鏂规硶
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
@@ -1251,7 +1082,7 @@ public class DistriButeCaseToLab {
 					}
 				}
 			}
-			Thread.sleep(100000);
+			Thread.sleep(1000);
 		}
 		AvailableCases.put("availableCase", Cases);
 		return AvailableCases;
@@ -1501,9 +1332,39 @@ public class DistriButeCaseToLab {
 		}
 		return flag;
 	}
+	
 	private double getTwo(double num) {
 		BigDecimal bigd = new BigDecimal(num);
 		double n = bigd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 		return n;
+	}
+	
+	public static void main(String[] args) throws Exception {
+		DistriButeCaseToLab test = new DistriButeCaseToLab();
+		// JSONArray getServerInfoFromDB = test.GetServerInfoFromDB();
+		// System.out.println(getServerInfoFromDB);
+		JSONObject distributeCases = test.getDistributeCases();
+		System.out.println(distributeCases);
+		/*
+		 * JSONArray releaseList = test.GetReleaseList();
+		 * System.out.println(releaseList.toString()); String porting_release =
+		 * "SP18.3,SP18.9+"; String serverRelease = "SP17.3"; boolean
+		 * isReleaseMath=false; JSONArray portingReleaseList = JSONArray
+		 * .fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") +
+		 * "\"]"); System.out.println(portingReleaseList.toString()); if
+		 * (test.IsInJSONArray(serverRelease, portingReleaseList)) { isReleaseMath =
+		 * true; } else { if (porting_release.endsWith("+")) { int serverReleasePostion
+		 * = test.postionInJSONArray(serverRelease, releaseList);
+		 * //logger.error(serverRelease + " --- " + releaseList); if
+		 * (serverReleasePostion != -1) {
+		 * System.out.println(porting_release.substring(porting_release.lastIndexOf(",")
+		 * + 1, porting_release.length() - 1)); int LastReleasePostion =
+		 * test.postionInJSONArray(
+		 * porting_release.substring(porting_release.lastIndexOf(",") + 1,
+		 * porting_release.length() - 1), releaseList);
+		 * System.out.println(serverReleasePostion); if (LastReleasePostion != -1 &&
+		 * serverReleasePostion >= LastReleasePostion) { isReleaseMath = true; } } } }
+		 */
+
 	}
 }

@@ -76,7 +76,7 @@ public class ReceiveAndSendRun implements Runnable {
 			}catch (SysException e) {
 				logger.error("[Failed to receive or send message]"+e.getMessage());
 				logger.error(ParamUtil.getErrMsgStrOfOriginalException(e.getCause()));
-			} catch (Exception e) {
+			}catch (Exception e) {
 				logger.error("[Failed to receive or send message]");
 				logger.error(ParamUtil.getErrMsgStrOfOriginalException(e));
 			}finally{
@@ -116,27 +116,27 @@ public class ReceiveAndSendRun implements Runnable {
 	}
 	
 	class SendMessage implements Runnable {
-		public SendMessage(){
-			
-		}
+		public SendMessage(){}
 		@Override
 		public void run() {
-			logger.info("send message thread is started !");			
+			logger.info(serverName+ "socket pipe send message thread is started");			
 			while(true){
 				try {					
-					JSONArray currServerStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
-					for(int i=0; i<currServerStatus.size();i++){
-                        JSONObject tmpJsonObject = (JSONObject) currServerStatus.get(i);
+					JSONArray currServersStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+					for(int i=0; i<currServersStatus.size();i++){
+                        JSONObject tmpJsonObject = (JSONObject) currServersStatus.get(i);
                         String serverNameIn = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
                         String status = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
                         if(serverName.equals(serverNameIn) && status.equals(Constant.CASESTATUSIDLE)){
                         	String message = sendMessageBlockingQueue.take();
         					sendMessage(message);
-        					logger.info("server send message of queue "+ message);
+        					logger.info(serverNameIn+ " socket pipe send message of queue "+ message);
                         }
 					}
-					
-				} catch (Exception e) {
+				}catch (SysException e) {
+					logger.error("[Failed to send message]"+e.getMessage());
+					logger.error(ParamUtil.getErrMsgStrOfOriginalException(e.getCause())); 
+				}catch (Exception e) {
 					logger.error("[Failed to send message]"+e.getMessage());
 				}finally{
 					try {
@@ -178,7 +178,7 @@ public class ReceiveAndSendRun implements Runnable {
 
 	/**
 	 * Get request message (string)
-	 * @return接收客户端传来的消息
+	 * @return
 	 * @throws IOException
 	 * @throws SysException 
 	 */
@@ -244,7 +244,7 @@ public class ReceiveAndSendRun implements Runnable {
 	 * @param resjson
 	 * @throws IOException
 	 */
-	public void sendMessage(String resjson) throws IOException {
+	public void sendMessage(String resjson) throws SysException, IOException {
 		//head
 		int jsonDataLength = resjson.getBytes(Constant.CHARACTER_SET_ENCODING_UTF8).length;
 		DataOutputStream dos = new DataOutputStream(this.socket.getOutputStream());

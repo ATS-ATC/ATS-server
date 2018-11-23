@@ -54,6 +54,7 @@ public class Constant {
 	public static final String CASELISTACK = "caselistack";
 	public static final String AVAILABLECASE = "availableCase";
 	public static final String CASELIST = "case_list";
+	public static final String CASELISTUUID = "uuid";
 	public static final String SPAANDRTDB = "spaANDrtdb.txt";
 	public static final JSONObject CASESTATUSPRE = JSONObject.fromObject("{\"head\": {\"reqType\": \"\",\"response\": \"\"},\"body\": {\"lab\": {\"serverIp\": \"\",\"serverName\": \"\",\"serverRelease\": \"\",\"serverProtocol\": \"\",\"serverTpye\": \"\",\"serverMate\": \"\",\"mateServer\": \"\",\"setName\": \"\",\"serverSPA\": [],\"serverRTDB\": []},\"taskStatus\": {\"status\": \"\",\"runningCase\": \"\"},\"taskResult\": {\"success\": [{\"name\": \"\",\"time\": \"\"}],\"fail\": []}}}");
 	public static final String LISTENERPORT="case.socket.listener.port";
