@@ -831,7 +831,6 @@ public class DistriButeCaseToLab {
 			ResultSet result = state.executeQuery(query_sql);
 			int CaseCount = 0;
 			while (result.next()) {
-				// 鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撳彧鑾峰彇涓�缁刧roup_id 鐩稿悓鐨勪竴缁刢ase鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫撯啌鈫�
 				new_group = result.getInt("group_id");
 				if (new_group != old_group) {
 					if (old_group != -1) {
@@ -839,7 +838,6 @@ public class DistriButeCaseToLab {
 					}
 					old_group = new_group;
 				}
-				// 鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戝彧鑾峰彇涓�缁刧roup_id 鐩稿悓鐨勪竴缁刢ase鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫戔啈鈫�
 				caseList.add(result.getString("case_name"));
 				CaseCount++;
 				if (CaseCount >= Integer.valueOf(ConfigProperites.getInstance().getMaxCaseSizeForOneLab())) {
@@ -910,7 +908,6 @@ public class DistriButeCaseToLab {
 		//--------------------new-----------------------------------------
 		//--------------------old-----------------------------------------
 		/*for (int i = 0; i < Servers.size(); i++) {
-			// 鍒ゆ柇鏄惁鏄痠dle鐘舵��
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
@@ -933,7 +930,6 @@ public class DistriButeCaseToLab {
 				JSONObject labInfo = new JSONObject();
 				labInfo.put("uuid", UUID.randomUUID().toString());
 				labInfo.put("case_list", caseList);
-				// 鏇存柊鏁版嵁搴撳唴鐨勫垎鍙戣〃(鍙湁涓や釜瀛楁锛宑ase_name锛宻erver_name)鐢ㄧ殑replace into鏂规硶
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
