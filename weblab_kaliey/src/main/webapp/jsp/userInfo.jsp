@@ -56,7 +56,7 @@
         <div id="toolbar" style="text-align:left;">
         	<shiro:hasPermission name="user:edit">
 	        <button id="edit" class="btn btn-info">
-				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  Edit 
+				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  <strong>Edit</strong> 
 			</button>
 			</shiro:hasPermission>
 			
@@ -481,7 +481,7 @@ var TableInit = function () {
             striped: false,                      //是否显示行间隔色
             cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
             pagination: true,                   //是否显示分页（*）
-            sortable: false,                     //是否启用排序
+            sortable: true,                     //是否启用排序
             sortOrder: "asc",                   //排序方式
             queryParams: oTableInit.queryParams,//传递参数（*）
             sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
@@ -519,13 +519,15 @@ var TableInit = function () {
                 field: 'roles',
                 title: 'Roles',
                 formatter: 'tagsFormatter'
-            }, {
+            },/*  {
                 field: 'deptid',
-                title: 'Group Id'
-            }, {
+                title: 'Group Id',
+                sortable: true
+            }, */ {
                 field: 'dept_name',
                 title: 'Group Name',
-                formatter: 'iconFormatter'
+                formatter: 'iconFormatter',
+                sortable: true
             }, {
                 field: 'stateflag',
                 title: 'State Flag',
@@ -539,7 +541,9 @@ var TableInit = function () {
         var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
             limit: params.limit,   //页面大小
             offset: params.offset,  //页码
-            username: $("#txt_search_username").val()
+            username: $("#txt_search_username").val(),
+            sort: params.sort,      //排序列名  
+            sortOrder: params.order //排位命令（desc，asc） 
         };
         return temp;
     };
@@ -559,9 +563,11 @@ var ButtonInit = function () {
 };
 function iconFormatter(value, row, index) {
 	if(row.dept_name == 'headquarters'){
-		return value+' <i class="icon-trophy"></i>';
-	}else{
-		return value;
+		return ' <i class="icon-trophy"></i> '+value;
+	}else if(row.dept_name == 'certify'){
+		return ' <i class="icon-user-md"></i> '+value;
+	}else {
+		return ' <i class="icon-user"></i> '+value;
 	}
 }
 function statusFormatter(value, row, index) {

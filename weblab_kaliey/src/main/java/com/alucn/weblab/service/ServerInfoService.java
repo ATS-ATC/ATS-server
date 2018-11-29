@@ -390,7 +390,7 @@ public class ServerInfoService {
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_lab_status_time "
 				+ "where 1=1 "
-				+ "and deptid='"+deptid+"'";
+				+ "and groupid='"+deptid+"'";
 		if(serverName!=null && !"".equals(serverName)) {
 			sql=sql+"and labname like '%"+serverName+"%' ";
 		}
@@ -404,7 +404,7 @@ public class ServerInfoService {
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select count(*) ccount from n_lab_status_time "
 				+ "where 1=1 "
-				+ "and deptid='"+deptid+"'";
+				+ "and groupid='"+deptid+"'";
 		if(serverName!=null && !"".equals(serverName)) {
 			sql=sql+"and labname like '%"+serverName+"%' ";
 		}

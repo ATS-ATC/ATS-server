@@ -63,13 +63,13 @@
 				<span class="glyphicon glyphicon-tag" aria-hidden="true"></span>${releases.version_num }
 			</div>
 			<div class="col-md-10" style="border-left: 1px solid #ddd;">
-				<h2 style="color: #0366D6;">${releases.version_num }</h2>
+				<h2 style="color: #0366D6;"><strong>${releases.version_num }</strong></h2>
 				<blockquote><footer>
 				<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
 				<font size="2" color="gray"><a>${releases.version_owner }</a> released this on ${releases.version_date}</font>
 				</footer></blockquote>
 				<c:forEach items="${releases.source_zip_urls}" var="urls" > 
-					<h3>Download</h3>
+					<h3><strong>Download</strong></h3>
 					<c:forEach var="item" items="${urls}">   
 					<div style="padding-top: 10px;">
 						<span class="glyphicon glyphicon-link" aria-hidden="true"></span>
@@ -92,7 +92,7 @@
 				</div> --%>
 				
 				<br/>
-				<h3>Change History</h3>
+				<h3><strong>Change History</strong></h3>
 				<p>
 					<div id="version_info">${releases.version_info }</div>
 					<span class="glyphicon glyphicon-grain" aria-hidden="true"></span>

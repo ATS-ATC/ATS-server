@@ -3,7 +3,6 @@ package com.alucn.weblab.controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,10 +20,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.apache.tools.ant.taskdefs.Exec;
-import org.apache.tools.ant.taskdefs.Get;
-import org.eclipse.jdt.internal.compiler.lookup.InvocationSite.EmptyWithAstNode;
-import org.hamcrest.core.Is;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,7 +32,6 @@ import com.alucn.casemanager.server.common.model.ServerSort;
 import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.weblab.model.NServer;
 import com.alucn.weblab.model.NUser;
-import com.alucn.weblab.model.Server;
 import com.alucn.weblab.service.LoginService;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
@@ -111,7 +105,7 @@ public class ServerInfoController {
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
 		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-		System.err.println("infos:==============="+infos);
+		//logger.info("infos:==============="+infos);
 		int id =1;
 		for(String info :infos.keySet()) {
 			int pid = 0;
@@ -142,14 +136,14 @@ public class ServerInfoController {
 					HashMap<String,Object> childMap = new LinkedHashMap<String, Object>();
 					id++;
 					JSONObject jsonObject = maps.get(map);
-					System.err.println("===============");
-					System.err.println(jsonObject);
+					//logger.info("===============");
+					//logger.info(jsonObject);
 					//{"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
 					//{"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
 					//"taskStatus":{"status":"Idle","runningCase":""}
 					JSONObject lab = jsonObject.getJSONObject("lab");
-					System.err.println(lab);
-					System.err.println("===============");
+					//logger.info(lab);
+					//logger.info("===============");
 					String serverName = lab.getString("serverName");
 					String serverIp = lab.getString("serverIp");
 					String serverRelease = lab.getString("serverRelease");
@@ -211,7 +205,7 @@ public class ServerInfoController {
 					if(deptid.equals(labdeptid)||hasRole) {
 						resultList.add(childMap);
 					}
-					System.err.println("resultList:========"+resultList);
+					//logger.info("resultList:========"+resultList);
 					id++;
 				}
 			}
@@ -231,7 +225,7 @@ public class ServerInfoController {
 			}
 		}
 		idList.removeAll(setList);
-		System.err.println("idList >> "+idList);
+		//logger.info("idList >> "+idList);
 		ArrayList<HashMap<String, Object>> midResultList = new ArrayList<HashMap<String, Object>>();
 		
 		for (HashMap<String, Object> hashMap : resultList) {
@@ -256,12 +250,12 @@ public class ServerInfoController {
 			JSONObject value = new JSONObject();
 			value.put("text", info);
 			Set<ServerSort> sets = infos.get(info);
-			System.err.println(sets);
+			logger.info(sets);
 			JSONArray childTree = new JSONArray();
 			for (ServerSort set : sets) {
 				JSONObject child = new JSONObject();
 				Map<String, JSONObject> maps = set.getMap();
-				//System.err.println(maps);
+				//logger.info(maps);
 				for (String map : maps.keySet()) {
 					child.put("text", map);
 				}
@@ -280,7 +274,7 @@ public class ServerInfoController {
 		
 		
 		
-		//System.err.println(infos);
+		//logger.info(infos);
 		//{set1=[ServerSort [map={BJRMS21A={"lab":{"serverName":"BJRMS21A","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21B={"lab":{"serverName":"BJRMS21B","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21C={"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21D={"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21E={"lab":{"serverName":"BJRMS21E","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Primary","mateServer":"BJRMS21F","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21F={"lab":{"serverName":"BJRMS21F","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Secondary","mateServer":"BJRMS21E","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}]]}
 		String username = (String) session.getAttribute("login");
 		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
@@ -319,7 +313,7 @@ public class ServerInfoController {
 	/*@RequestMapping(path = "/testGetServerInfo")
 	public String test(Model model){
 		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-		System.out.println("-----------------------infos------------------------------");
+		logger.info("-----------------------infos------------------------------");
 		return null;
 	}*/
 	@RequestMapping(path = "/getServerDetails")
@@ -502,7 +496,7 @@ public class ServerInfoController {
 		String createtime =  new Date().getTime()+"";
 		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", deptid, createid, createtime,"");
 		try {
-			System.out.println("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
+			logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
 			//为了测试注释掉执行部分
 			Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
 			serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime()+"", createtime);
@@ -566,7 +560,7 @@ public class ServerInfoController {
 				String status ="";
 				try {
 					status = lab.getString("status");
-					System.err.println(status);
+					logger.info(status);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -643,7 +637,7 @@ public class ServerInfoController {
         		+ "\"SPA\": "+spa+", "
         		+ "\"ins_flag\": \""+ainsflag+"\"}";
 		
-		//System.err.println(reqData);
+		//logger.info(reqData);
 		/*
 		{
 			"protocol": "ITU",
@@ -658,16 +652,16 @@ public class ServerInfoController {
 		
 		String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
 		//String resResult = "OK";
-		System.err.println("installLab  >> resResult  >>  "+resResult);
+		logger.info("installLab  >> resResult  >>  "+resResult);
 		if("OK".equals(resResult)) {
-			//System.err.println("1");
+			//logger.info("1");
 			result.put("result", "success");
 			result.put("msg", "Congratulations, Installation is underway, please check the log after 10 seconds.");
 			//开启线程，检测状态，等到lab安装完成返回success时genclient
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					//System.err.println("2");
+					//logger.info("2");
 					String addLabFlag="false";//用于添加lab动作记录到数据库
 					int i = 0;
 					int count = 0;
@@ -695,8 +689,7 @@ public class ServerInfoController {
 							//Thread.sleep(1000*10);
 							Date date = new Date();
 							SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); 
-							logger.info(df.format(date)+ " >> installLab >> "+aservername+" thread "+count);
-							System.err.println(df.format(date)+ " >>  installLab >> "+aservername+" thread "+count);
+							logger.info(df.format(date)+ " >>  installLab >> "+aservername+" thread "+count);
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
@@ -734,7 +727,6 @@ public class ServerInfoController {
 								}
 								if("Installing".equals(status) ) {
 									SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); 
-									System.err.println(df.format(new Date())+"  >>  Installing  >>"+i); 
 									logger.info(df.format(new Date())+"  >>  Installing  >>"+i); 
 									/*JSONArray infos = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
 									infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21F\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21E\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
@@ -744,7 +736,7 @@ public class ServerInfoController {
 								}else if ("Succeed".equals(status)) {
 									try {
 										serverInfoService.editLabStatus(status,log,labname,new Date().getTime()+"",createtime+"");
-										System.err.println("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
+										logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
 										logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
 										Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
 										break;
@@ -773,7 +765,6 @@ public class ServerInfoController {
 						try {
 							//等待10分钟
 							Thread.sleep(1000*60*10);
-							System.err.println("10m >> installLab >> "+aservername+" thread "+count);
 							logger.info("10m >> installLab >> "+aservername+" thread "+count);
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
@@ -833,7 +824,7 @@ public class ServerInfoController {
 		reqdate.put("SPA", SPA);
 		
 		//{"ins_flag":"0","protocol":"ANSI","labname":["BJRMS21H"],"DB":["CTRTDB","XBRTDB","GNRTDB","SGLDB","SGLRTDB","SIMDB"],"mate":"N","release":"SP17.9","SPA":["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","ECGS"]}
-		System.out.println("addServerDetails >> reqdate >> "+reqdate);
+		logger.info("addServerDetails >> reqdate >> "+reqdate);
         String reqData = "{\"protocol\": \""+server.getServerProtocol()+"\", "
 		        		+ "\"labname\": [\""+server.getServerName()+"\"], "
 		        		+ "\"DB\": "+DB+", "
@@ -842,10 +833,10 @@ public class ServerInfoController {
 		        		+ "\"SPA\": "+SPA+", "
 		        		+ "\"ins_flag\": \"0\"}";
 
-        System.out.println("addServerDetails >> reqData >> "+reqData);
+        logger.info("addServerDetails >> reqData >> "+reqData);
         String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
         //String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqdate.toString());
-        System.out.println("addServerInfo >> resResult >> "+resResult);
+        logger.info("addServerInfo >> resResult >> "+resResult);
         
         
 	}

@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta http-equiv="refresh" content="60"><!--页面每60秒刷新一次 -->
+<!--<meta http-equiv="refresh" content="60">页面每60秒刷新一次 -->
 <script src="${pageContext.request.contextPath}/js/jquery.min.js"></script>
 
 <script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
@@ -36,7 +36,7 @@ width: 100%;
 <body style="background-color:#ECEFF3;">
 <div class="panel panel-primary" style="margin: 10px;">
     <div class="panel-heading">
-        <h3 class="panel-title">Lab Management</h3>
+        <h3 class="panel-title"><strong>Lab Management</strong></h3>
     </div>
     <div class="panel-body">
     	<div id="toolbar" style="text-align:left;">
@@ -498,6 +498,11 @@ $("#add").click(function(){
 	
 	$("#addModal").modal("show");
 });
+
+
+
+
+
 $(function() {
 	var $table = $('#table');
   	$table.bootstrapTable({
@@ -537,7 +542,7 @@ $(function() {
         		if(row.type == 'set'){
         			return value;
         		}else if(row.type == 'server'){
-	            	var a = '<a href="./getServerDetails.do?serverName='+value+'" >'+value+'</a>';
+	            	var a = '<a href="./getServerDetails.do?serverName='+value+'" ><strong>'+value+'</strong></a>';
 	            	return a;
         		}
             }
@@ -552,19 +557,19 @@ $(function() {
 	      {
 	        field: 'status',
 	        title: 'Status',
-	        align: 'center',
+	        //align: 'center',
 	        formatter: 'statusFormatter'
 	      },{
 		        field: 'serverIp',
-		        title: 'Server IP',
+		        title: 'IP',
 		    }
 	      ,{
 		        field: 'serverRelease',
-		        title: 'Server Release',
+		        title: 'Release',
 		    }
 	      ,{
 		        field: 'serverProtocol',
-		        title: 'Server Protocol',
+		        title: 'Protocol',
 		    }
 	      ,{
 		        field: 'serverType',
@@ -576,20 +581,20 @@ $(function() {
 		    }
 	      ,{
 		        field: 'mateServer',
-		        title: 'Mate Server',
+		        title: 'Mate',
 		    }
 	      ,{
 		        field: 'deptname',
-		        title: 'Group Name',
+		        title: 'Group',
 		    }
-	       /* ,{
+	       ,{
 		        field: 'hodingtime',
-		        title: 'Time',
+		        title: 'Time(d/hh:mm:ss)',
 	      		formatter:function(value,row,index){
-		          	var a = '<a href="./getServerStatusLog.do?serverName='+row.name+'" >'+value+'</a>';
+		          	var a = '<a href="./getServerStatusLog.do?serverName='+row.name+'" ><strong>'+value+'</strong></a>';
 		          	return a;
 		      	}
-		    } */ 
+		    }    
 	    ],
 	    //最主要的就是下面  定义哪一列作为展开项  定义父级标志 这里是pid
 	    //定义的列一定是要在表格中展现的  换言之就是上方有这个列 不然报错
@@ -610,7 +615,17 @@ $(function() {
 	    }
 	    // bootstrap-table-treetreegrid.js 插件配置
 	  });
+
+  	setInterval('myrefresh()',1000*10*2); //指定20秒刷新一次
 });
+function myrefresh() {
+	//alert(1)
+	//$('#table').bootstrapTable('destroy'); 
+	$('#table').bootstrapTable('refresh',{
+		url: 'getServerInfoJson.do'
+	});
+	//alert(2)
+}
 function statusFormatter(value, row, index) {
 	if(row.type == 'set'){
 		return '';

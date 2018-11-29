@@ -1,11 +1,10 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta charset="UTF-8">  
 <meta name="robots" content="noindex,nofollow">  
-<title>500</title>  
+<title>405</title>  
 <style>  
     body{font-size: 14px;font-family: 'helvetica neue',tahoma,arial,'hiragino sans gb','microsoft yahei','Simsun',sans-serif; background-color:#fff; color:#808080;}  
     .wrap{margin:200px auto;width:510px;}  
@@ -21,7 +20,7 @@
         <table>  
             <tr>  
                 <td rowspan="5" style=""><img src="${pageContext.request.contextPath}/images/icons8-box-important-100.png" alt=""></td>  
-                <td class="header">500</td>  
+                <td class="header">405</td>  
             </tr>  
             <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>guoyouworld@163.com</strong> for feedback</td></tr>  
         </table>  

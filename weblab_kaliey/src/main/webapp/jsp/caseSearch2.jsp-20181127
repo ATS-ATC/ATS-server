@@ -504,7 +504,7 @@ $(function() {
 			                <!-- 折叠panel头部 -->
 			                <div class="panel-heading">
 			                    <h4 class="panel-title" data-toggle="collapse" data-target="#chanel_demo">
-			                    <a href="#" ><strong>More Options</strong></a>
+			                    <a href="#" >More Options</a>
 			                    <span class="glyphicon glyphicon-chevron-down navbar-right" style="padding-right: 10px;"></span>
 			                    </h4>
 			                </div>
@@ -512,13 +512,13 @@ $(function() {
 			                <div class="collapse panel-collapse" id="chanel_demo"><!-- 添加一个collapse类会默认隐藏折叠内容 -->
 			                    <div class="panel-body">
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
-											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Author</strong></h5>
+											<div class="col-md-6">
+												<h4 style="display: inline;">Author</h4>
 												<input class="nav navbar-nav navbar-right" type="text" name="author" id="author" value=""
 												style="padding-bottom: 2px; padding-top: 2px;width: 219px;border-radius:4px;">
 											</div>
-											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Base Data</strong></h5>
+											<div class="col-md-6">
+												<h4 style="display: inline;">Base Data</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${base_data!=null && fn:length(base_data) > 0}">
 														<c:forEach items="${base_data}" var="bd">
@@ -527,8 +527,12 @@ $(function() {
 													</c:if>
 												</select>
 											</div>
-											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Mate</strong></h5>
+										</div>
+										
+										
+										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
+											<div class="col-md-6">
+												<h4 style="display: inline;">Mate</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${mate!=null && fn:length(mate) > 0}">
 														<c:forEach items="${mate}" var="m">
@@ -537,10 +541,8 @@ $(function() {
 													</c:if>
 												</select>
 											</div>
-										</div>
-										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
-											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Lab Number</strong></h5>
+											<div class="col-md-6">
+												<h4 style="display: inline;">Lab Number</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${lab_number!=null && fn:length(lab_number) > 0}">
 														<c:forEach items="${lab_number}" var="ln">
@@ -549,8 +551,12 @@ $(function() {
 													</c:if>
 												</select>
 											</div>
-											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Special Data</strong></h5>
+										</div>
+										
+										
+										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
+											<div class="col-md-6 ">
+												<h4 style="display: inline;">Special Data</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${special_data!=null && fn:length(special_data) > 0}">
 														<c:forEach items="${special_data}" var="sd">
@@ -559,8 +565,8 @@ $(function() {
 													</c:if>
 												</select>
 											</div>
-											<div class="col-md-4" >
-												<h5 style="display: inline;"><strong>Porting Release</strong></h5>
+											<div class="col-md-6 " >
+												<h4 style="display: inline;">Porting Release</h4>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${porting_release!=null && fn:length(porting_release) > 0}">
 														<c:forEach items="${porting_release}" var="pr">
@@ -569,8 +575,8 @@ $(function() {
 													</c:if>
 												</select>
 											</div>
+											
 										</div>
-										
 			                    </div>
 			                </div>              
 			            </div>
@@ -580,7 +586,7 @@ $(function() {
             			<div class="row" style="margin-bottom: 10px;">
 							<div class="col-md-4">
 								<div style="margin-right: 13px;">
-									<h5 style="display: inline;"><strong>Release</strong></h5>
+									<h5 style="display: inline;">Release</h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 									    <c:if test="${release!=null && fn:length(release) > 0}">
 											<c:forEach items="${release}" var="r">
@@ -592,7 +598,7 @@ $(function() {
 							</div>
 							<div class="col-md-4">
 								<div style="margin-right: 13px;">
-									<h5 style="display: inline;"><strong>Case Status</strong></h5>
+									<h5 style="display: inline;">Case Status</h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 									    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
 											<c:forEach items="${case_status}" var="cs">
@@ -604,7 +610,7 @@ $(function() {
 							</div>
 							<div class="col-md-4">
 									<div style="margin-right: 28px;">
-									<h5 style="display: inline;"><strong>Customer</strong></h5>
+									<h5 style="display: inline;">Customer</h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 									    <c:if test="${customer!=null && fn:length(customer) > 0}">
 											<c:forEach items="${customer}" var="c">
@@ -618,7 +624,7 @@ $(function() {
             			<div class="row" style="margin-bottom: 10px">
             				<div class="col-md-4">
 	            				<div style="margin-right: 13px;">
-									<h5 style="display: inline;color: red;"><strong>Data Source</strong></h5>
+									<h5 style="display: inline;color: red;">Data Source</h5>
 									<select class="selectpicker nav navbar-nav navbar-right" title="--Please Select--" multiple data-live-search="true" data-max-options="1" >
 									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
 											<c:forEach items="${data_source}" var="ds">
@@ -630,7 +636,7 @@ $(function() {
 							</div>
 							<div class="col-md-4">
 								<div style="margin-right: 0;">
-									<h5 style="display: inline;"><strong>Feature ID</strong></h5>
+									<h5 style="display: inline;">Feature ID</h5>
 									<input class="nav navbar-nav navbar-right" type="text" name="featureid" id="featureid" value=""
 										style="padding-bottom: 2px; padding-top: 2px;width: 219px;margin-right: 0.1px;border-radius:4px;">
 								</div>

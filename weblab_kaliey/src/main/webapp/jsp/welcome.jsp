@@ -120,7 +120,7 @@ $(document).ready(function(){
                           </div>
                           <div class="value">
                               <h1 id="all_case">${caseCount[0].allCase }</h1>
-                              <p>My Case</p>
+                              <p><strong>My Case</strong></p>
                           </div>
                           </a>
                       </section>
@@ -132,7 +132,7 @@ $(document).ready(function(){
                           </div>
                           <div class="value">
                               <h1 id="s_case">${caseCount[0].sCase }</h1>
-                              <p>My Success Case</p>
+                              <p><strong>My Success Case</strong></p>
                           </div>
                       </section>
                   </div>
@@ -143,7 +143,7 @@ $(document).ready(function(){
                           </div>
                           <div class="value">
                               <h1 id="f_case">${caseCount[0].fCase }</h1>
-                              <p>My Fail Case</p>
+                              <p><strong>My Fail Case</strong></p>
                           </div>
                       </section>
                   </div>
@@ -161,7 +161,7 @@ $(document).ready(function(){
                               			0
                               		</c:if>
 								</h1>
-                              <p>My Success Rate</p>
+                              <p><strong>My Success Rate</strong></p>
                           </div>
                       </section>
                   </div>

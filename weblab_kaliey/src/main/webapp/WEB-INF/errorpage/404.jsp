@@ -20,12 +20,12 @@
 	<div class="wrap">  
         <table>  
             <tr>  
-                <td rowspan="5" style=""><img src="${pageContext.request.contextPath}/images/a15b4afegy1fhsfdznep4j2020020web.jpg" alt=""></td>  
-                <td class="header">Sorry! The current page cannot be found</td>  
+                <td rowspan="5" style=""><img src="${pageContext.request.contextPath}/images/icons8-box-important-200.png" alt=""></td>  
+                <td class="header">404</td>  
             </tr>  
             <tr><td>Reason 1: you typed the wrong url</td></tr>  
             <tr><td>Reason 2: this page has been accessed by the webmaster (that is, I...) deleted</td></tr>  
-            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to guoyouworld@163.com for feedback</td></tr>  
+            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>guoyouworld@163.com</strong> for feedback</td></tr>  
         </table>  
     </div>  
 </body>

@@ -110,10 +110,10 @@ public class CaseConfigurationCache {
 							}
 							long nowtime = new Date().getTime();
 							long hodingtime = nowtime-ulasttime;
-							System.err.println("ulaststatus : "+ulaststatus+" status : "+status);
-							System.err.println("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
+							logger.info("ulaststatus : "+ulaststatus+" status : "+status);
+							logger.info("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
 							if(!ulaststatus.equals(status)) {
-								System.out.println(ulaststatus+">>"+status);
+								logger.info(ulaststatus+">>"+status);
 								//此处应该加到数据库做成log
 								//设计表结构：n_lab_status_time
 								//id,labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime,stateflag
@@ -130,6 +130,7 @@ public class CaseConfigurationCache {
 									JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 									String insertLog = "insert into n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
 											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
+									logger.info(insertLog);
 									//jdbc_cf.executeSql(insertLog);
 								} catch (Exception e) {
 									e.printStackTrace();
@@ -213,8 +214,10 @@ public class CaseConfigurationCache {
 			
 			dfttagdaily_sql = "select * from DailyCase where case_name='"+caseName+"'";
 			List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(dfttagdaily_sql, null);
-			String caseerr_sql = "replace into errorcaseinfo (casename, feature, err_reason, err_desc, owner, insert_date, mark_date, email_date, servername) values('"+caseName+"', '"+list_dc.get(0).get("feature_number")+"', '', '', '"+list_dc.get(0).get("author")+"', '"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"', '', '', '"+body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME)+"')";
-			jdbc_cf.executeSql(caseerr_sql);
+			if(list_dc.size()>0) {
+				String caseerr_sql = "replace into errorcaseinfo (casename, feature, err_reason, err_desc, owner, insert_date, mark_date, email_date, servername) values('"+caseName+"', '"+list_dc.get(0).get("feature_number")+"', '', '', '"+list_dc.get(0).get("author")+"', '"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"', '', '', '"+body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME)+"')";
+				jdbc_cf.executeSql(caseerr_sql);
+			}
 		}
 		
 		TelnetCla telnetCla = new TelnetCla(Constant.TMSHOSTNAME, Constant.TMSHOSTPORT, Constant.TMSUSER, Constant.TMSPASSWORD, Constant.TMSUSERAD4, Constant.TMSPASSWORDAD4);

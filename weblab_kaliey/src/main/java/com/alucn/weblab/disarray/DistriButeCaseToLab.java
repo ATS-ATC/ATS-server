@@ -242,7 +242,7 @@ public class DistriButeCaseToLab {
 
 				if (changedKvmList.size() > 0) {
 					PreparedStatement prep = connection
-							.prepareStatement("replace into serverList values( ?, ?, ?, ?);");
+							.prepareStatement("replace into serverList values( ?, ?, ?, ?, ?);");
 
 					for (int i = 0; i < changedKvmList.size(); i++) {
 						serverMem = changedKvmList.getJSONObject(i);

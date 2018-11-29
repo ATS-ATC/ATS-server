@@ -61,8 +61,12 @@ public class QueryCaseInfoService {
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}*/
-	public ArrayList<HashMap<String,Object>> getQueryCaseInfoTableNew(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
+	public ArrayList<HashMap<String,Object>> getQueryCaseInfoTableNew(String userName,String caseStatus,String feature,String offset,String limit,String etype, String sort, String sortOrder, String mate, String lab) throws Exception{
 		ArrayList<HashMap<String,Object>> list = new ArrayList();
+		String sort_new = sort;
+		if("hodingduration".equals(sort)) {
+			sort_new="submit_date";
+		}
 		Class.forName("org.sqlite.JDBC");
 		//Connection connection = null;
 		//Statement state = null;
@@ -95,7 +99,16 @@ public class QueryCaseInfoService {
 		if(!"".equals(feature)) {
 			sql = sql+" and a.feature_number like '%"+feature+"%'";
 		}
+		if(!"".equals(mate)) {
+			sql = sql+" and a.mate = '"+mate+"'";
+		}
+		if(!"".equals(lab)) {
+			sql = sql+" and a.lab_number = '"+lab+"'";
+		}
 		sql = sql+" and a.case_status='"+caseStatus+"'";
+		if(sort_new!=null && !"".equals(sort_new)) {
+			sql=sql+" order by "+sort_new+" "+sortOrder;
+		}
 		if(!"".equals(limit)) {
 			sql = sql+" limit "+offset+","+limit;
 		}
@@ -118,17 +131,23 @@ public class QueryCaseInfoService {
 	
 	
 	
-	public int getQueryCaseInfoTableCount(String userName,String caseStatus,String feature) throws Exception{
+	public int getQueryCaseInfoTableCount(String userName,String caseStatus,String feature, String mate, String lab) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select count(1) from DftTag where 1=1";
+		String sql = "select count(1) from DftTag a where 1=1";
 		/*if(!auth.equals(Constant.AUTH)){
 			sql = sql+" and author='"+userName+"'";
 		}*/
 		if(!"".equals(feature)) {
-			sql = sql+" and feature_number like '%"+feature+"%'";
+			sql = sql+" and a.feature_number like '%"+feature+"%'";
 		}
-		sql = sql+" and case_status='"+caseStatus+"'";
+		if(!"".equals(mate)) {
+			sql = sql+" and a.mate = '"+mate+"'";
+		}
+		if(!"".equals(lab)) {
+			sql = sql+" and a.lab_number = '"+lab+"'";
+		}
+		sql = sql+" and a.case_status='"+caseStatus+"'";
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		int totle =0;
 		for(int i=0; i<result.size();i++){

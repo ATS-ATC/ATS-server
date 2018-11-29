@@ -23,7 +23,7 @@ public class UserService {
 	@Autowired(required=true)
 	private UserDaoImpl userDaoImpl;
 	
-	public ArrayList<HashMap<String, Object>> getAllUserInfoJson(String limit,String offset,String username) throws Exception {
+	public ArrayList<HashMap<String, Object>> getAllUserInfoJson(String limit,String offset,String username, String sort, String sortOrder) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_user a "
@@ -38,7 +38,10 @@ public class UserService {
 		if(username!=null && !"".equals(username)) {
 			sql=sql+"and a.username like '%"+username+"%' ";
 		}
-		sql=sql+"limit "+offset+","+limit;
+		if(sort!=null && !"".equals(sort)) {
+			sql=sql+" order by "+sort+" "+sortOrder;
+		}
+		sql=sql+" limit "+offset+","+limit;
 		System.err.println("UserService >> getAllUserInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;

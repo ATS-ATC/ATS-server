@@ -36,15 +36,27 @@
             <div class="panel-body" style="padding-bottom: 0px;">
                 <form id="formSearch" class="form-horizontal">
                     <div class="form-group" style="margin-top:15px">
-                        <label class="control-label col-sm-2" for="txt_search_feature">Feature</label>
-                        <div class="col-sm-3">
-                            <input type="text" class="form-control" id="txt_search_feature">
+                    	<div class="row">
+	                        <div class="col-sm-3">
+	                        	<h5 style="display: inline;padding-left: 5px;"><strong>Feature</strong></h5>
+	                            <input type="text" class="nav navbar-nav navbar-right" id="txt_search_feature" style="border-radius:4px;padding-left:5px;">
+	                        </div>
+	                        <div class="col-sm-3">
+	                        	<h5 style="display: inline;margin-left: 1px;"><strong>LabNumber</strong></h5>
+	                            <input type="text" class="nav navbar-nav navbar-right" id="txt_search_lab" style="border-radius:4px;padding-left:5px;">
+	                        </div>
+	                        <div class="col-sm-3">
+	                        	<h5 style="display: inline;margin-left: 1px;"><strong>Mate</strong></h5>
+	                            <input type="text" class="nav navbar-nav navbar-right" id="txt_search_mate" style="border-radius:4px;padding-left:5px;">
+	                        </div>
                         </div>
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-4" style="text-align:right;">
-                            <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary ">Search</button>
+                        <div class="row">
+	                        <div class="col-sm-12" style="text-align:right;">
+	                            <button type="button" style="margin-left:50px ;margin-right: 30px" id="btn_query" class="btn btn-primary ">Search</button>
+	                        </div>
                         </div>
                     </div>
+                    
                 </form>
             </div>
         </div> 
@@ -156,7 +168,7 @@ var TableInit = function () {
             striped: true,                      //是否显示行间隔色
             cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
             pagination: true,                   //是否显示分页（*）
-            sortable: false,                     //是否启用排序
+            sortable: true,                     //是否启用排序
             sortOrder: "asc",                   //排序方式
             queryParams: oTableInit.queryParams,//传递参数（*）
             sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
@@ -187,7 +199,8 @@ var TableInit = function () {
             },
             columns: [{
                 field: 'feature_number',
-                title: 'Feature'
+                title: 'Feature',
+                sortable: true
                 /* formatter:function(value,row,index){
                 	var a = '<a href="./getQueryCaseInfoDetails.do?featureName='+value+'" >'+value+'</a>';
                 	return a;
@@ -197,20 +210,38 @@ var TableInit = function () {
                 title: 'CasesName'
             }, {
                 field: 'author',
-                title: 'Author'
+                title: 'Author',
+                sortable: true
             }, {
                 field: 'release',
-                title: 'Release'
+                title: 'Release',
+                sortable: true
             }, {
                 field: 'code_changed_spa',
-                title: 'SPA'
+                title: 'SPA',
+                visible: false //默认不显示
             }, {
                 field: 'functionality',
-                title: 'Functionality'
+                title: 'Functionality',
+                visible: false //默认不显示
             } , {
                 field: 'base_data',
                 title: 'BaseData'
-            }  , {
+            }     , {
+                field: 'call_type',
+                title: 'CallType',
+                visible: false //默认不显示
+            }   , {
+                field: 'customer',
+                title: 'Customer'
+            }, {
+                field: 'porting_release',
+                title: 'PortingRelease'
+            }, {
+                field: 'jira_id',
+                title: 'JiraId',
+                visible: false //默认不显示
+            }, {
                 field: 'case_status',
                 title: 'CaseStatus',
                 formatter:function(value,row,index){
@@ -239,22 +270,17 @@ var TableInit = function () {
 					}
                 	return a;
                 }
-            }   , {
-                field: 'call_type',
-                title: 'CallType'
-            }   , {
-                field: 'customer',
-                title: 'Customer'
-            }, {
-                field: 'porting_release',
-                title: 'PortingRelease'
-            }, {
-                field: 'jira_id',
-                title: 'JiraId',
-                visible: false //默认不显示
             }, {
                 field: 'hodingduration',
                 title: 'HodingDuration',
+                sortable: true,
+                formatter:function(value,row,index){
+                	var a = "";
+                	if(value!=""){
+                		a =value+" day";
+                	}
+                	return a;
+                }
             }/* , {
                 field: 'submit_date',
                 title: 'submit_date',
@@ -269,7 +295,11 @@ var TableInit = function () {
         var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
             limit: params.limit,   //页面大小
             offset: params.offset,  //页码
-            feature: $("#txt_search_feature").val()
+            feature: $("#txt_search_feature").val(),
+            mate: $("#txt_search_mate").val(),
+            labnumber: $("#txt_search_lab").val(),
+            sort: params.sort,      //排序列名  
+            sortOrder: params.order //排位命令（desc，asc） 
         };
         return temp;
     };

@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.dom4j.DocumentException;
 
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;

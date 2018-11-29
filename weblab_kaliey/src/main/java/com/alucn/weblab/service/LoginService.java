@@ -60,9 +60,15 @@ public class LoginService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String password = MD5Util.md5(nuser.getPassword());
-		String sql = "insert into n_user (username,password,deptid) values ('"+nuser.getUsername()+"','"+password+"',"+1+")";
+		String fsql = "select id from n_user where username='"+nuser.getUsername().trim()+"'";;
+		ArrayList<HashMap<String, Object>> flag = userDaoImpl.query(jdbc, fsql);
+		if(flag.size()>0) {
+			return;
+		}
+		String sql = "insert into n_user (username,password,deptid) values ('"+nuser.getUsername().trim()+"','"+password.trim()+"',"+1+")";
+		System.out.println("createLdapUser >> "+sql);
 		userDaoImpl.insert(jdbc, sql);
-		String qsql = "select id from n_user where stateflag=0 and username='"+nuser.getUsername()+"'";;
+		String qsql = "select id from n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";;
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, qsql);
 		int id = Integer.parseInt((String)query.get(0).get("id"));
 		//默认创建的为普通用户  role_id=3
@@ -73,7 +79,7 @@ public class LoginService {
 	public ArrayList<HashMap<String, Object>> queryAllNUser(NUser nuser) throws Exception{
     	String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select * from n_user where username='"+nuser.getUsername()+"'";
+		String sql = "select * from n_user where username='"+nuser.getUsername().trim()+"'";
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
         return result;
 	}
@@ -81,7 +87,7 @@ public class LoginService {
 	public ArrayList<HashMap<String, Object>> queryNUser(NUser nuser) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select * from n_user where stateflag=0 and username='"+nuser.getUsername()+"'";
+		String sql = "select * from n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}

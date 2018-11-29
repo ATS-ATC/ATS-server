@@ -179,8 +179,8 @@
 						            <button type="submit" class="btn btn-default">Search</button>
 						        </form> -->
 					        </li>
-					        <li><a href="${pageContext.request.contextPath}/SACMS.chm"><span class="glyphicon glyphicon-book"></span></a></li>
 							<li><a href="#"><span class="glyphicon glyphicon-user"></span> ${login }</a></li>
+					        <li><a href="${pageContext.request.contextPath}/SACMS.chm"><span class="glyphicon glyphicon-book"></span> readme</a></li>
 				            <li><a href="./userLogout.do"><span class="glyphicon glyphicon-log-in"></span> login out</a></li> 
 				        </ul> 
 				    </div> 

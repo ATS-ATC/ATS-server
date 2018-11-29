@@ -32,7 +32,7 @@
 <body ><!-- style="background-color:#ECEFF3;" -->
     <div class="panel-body" style="padding-bottom:0px;">
         <div class="panel panel-default">
-            <div class="panel-heading">Feature</div>
+            <div class="panel-heading"><strong>Feature</strong></div>
             <div class="panel-body" style="padding-bottom: 0px;">
                 <form id="formSearch" class="form-horizontal">
                     <div class="form-group" style="margin-top:15px">
@@ -106,7 +106,7 @@ var TableInit = function () {
                 field: 'feature',
                 title: 'Feature',
                 formatter:function(value,row,index){
-                	var a = '<a href="./getErrorCaseInfoDetails.do?featureName='+value+'" >'+value+'</a>';
+                	var a = '<a href="./getErrorCaseInfoDetails.do?featureName='+value+'" ><strong>'+value+'</strong></a>';
                 	return a;
                 }
             }, {

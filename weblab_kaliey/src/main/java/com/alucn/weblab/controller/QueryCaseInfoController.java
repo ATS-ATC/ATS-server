@@ -1,7 +1,6 @@
 package com.alucn.weblab.controller;
 
 import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -10,21 +9,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,7 +36,7 @@ import net.sf.json.JSONArray;
 
 @Controller
 public class QueryCaseInfoController { 
-	
+	private static Logger logger = Logger.getLogger(QueryCaseInfoController.class);
 	@Autowired(required=true)
 	private QueryCaseInfoService queryCaseInfoService;
 
@@ -52,6 +47,12 @@ public class QueryCaseInfoController {
 		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
 		String feature = request.getParameter("feature")==null?"":request.getParameter("feature").toString().trim();
+		String mate = request.getParameter("mate")==null?"":request.getParameter("mate").toString().trim();
+		String lab = request.getParameter("labnumber")==null?"":request.getParameter("labnumber").toString().trim();
+		String sort = request.getParameter("sort")==null?"":request.getParameter("sort").toString().trim();
+		String sortOrder = request.getParameter("sortOrder")==null?"":request.getParameter("sortOrder").toString().trim();
+		
+		
 		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		String userName = session.getAttribute("login").toString();
@@ -59,7 +60,7 @@ public class QueryCaseInfoController {
 		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTable(userName, auth, qtype,feature, offset, limit,"all");
 		//int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, auth, qtype,feature);
 		//ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
-		ArrayList<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all");
+		ArrayList<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all",sort,sortOrder,mate,lab);
 		//计算hodingduration
 		if(queryCaseInfoTable.size()>0) {
 			for (HashMap<String, Object> hashMap : queryCaseInfoTable) {
@@ -75,7 +76,7 @@ public class QueryCaseInfoController {
 				}
 			}
 		}
-		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature);
+		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature,mate,lab);
 		//System.out.println("queryCaseInfoTable:========"+queryCaseInfoTable);
 		returnMap.put("rows", queryCaseInfoTable);
 		returnMap.put("total", total);
@@ -101,11 +102,16 @@ public class QueryCaseInfoController {
 		
 		String userName = session.getAttribute("login").toString();
 		//String auth = session.getAttribute("auth").toString();
-		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,"", "", "",etype);
+		ArrayList<HashMap<String, Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,"", "", "",etype,"","","","");
 		
 		if(ftype!=null && !"".equals(ftype)) {
 			if("csv".equals(ftype)) {
-				XSSFWorkbook  wb = new XSSFWorkbook();
+				//System.out.println("java.io.tmpdir  >>  "+System.getProperty("java.io.tmpdir"));
+				
+				//HSSFWorkbook  wb = new HSSFWorkbook();
+				XSSFWorkbook  wb = new XSSFWorkbook();//java.lang.NoSuchFieldError: RETURN_NULL_AND_BLANK
+				/*InputStream iStream = new FileInputStream("");
+				XSSFWorkbook  wb = new XSSFWorkbook(iStream);*/
 				
 				
 				// Style the cell with borders all around.
@@ -137,9 +143,9 @@ public class QueryCaseInfoController {
 			    
 		        Sheet sh = wb.createSheet();
 		        Row title = sh.createRow(0);
-		        //System.err.println("1");
+		        logger.info("XSSFWorkbook : 1");
 		        for(int i=0 ;i<queryCaseInfoTable.size();i++) {
-		        	//System.err.println("queryCaseInfoTable : "+i);
+		        	//logger.info("queryCaseInfoTable : "+i);
 		        	Row row = sh.createRow(i+1);
 		        	HashMap<String,Object> hashMap = queryCaseInfoTable.get(i);
 		        	int j=0;
@@ -147,7 +153,7 @@ public class QueryCaseInfoController {
 		        		//sh.autoSizeColumn(j);自适应单元格长度，会使导出性能下降，慎用
 		        		if(i==0) {
 		        			Cell titleCell = title.createCell(j);
-		        			titleCell.setCellValue(key);
+		        			titleCell.setCellValue(""+key);
 		        			//titleCell.setCellStyle(tstyle);
 		        		}
 		        		Cell cell = row.createCell(j);
@@ -158,7 +164,7 @@ public class QueryCaseInfoController {
 		        	}
 		        	
 		        }
-		        //System.err.println("2");
+		        logger.info("XSSFWorkbook : 2");
 		        Date day=new Date();    
 		        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
 		        //System.out.println(df.format(day));   

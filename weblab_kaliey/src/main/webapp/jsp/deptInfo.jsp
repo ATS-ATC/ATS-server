@@ -62,13 +62,13 @@
 			<shiro:hasPermission name="dept:create">
 			<button id="add" class="btn btn-success">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-				Add
+				<strong>Add</strong>
 			</button>
 			</shiro:hasPermission>
 			<shiro:hasPermission name="dept:edit">
 			<button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-				Edit
+				<strong>Edit</strong>
 			</button>
 			</shiro:hasPermission>
 			<!-- 

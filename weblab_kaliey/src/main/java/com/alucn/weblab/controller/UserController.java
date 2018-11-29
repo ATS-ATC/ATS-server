@@ -156,8 +156,10 @@ public class UserController {
 		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
 		String username = request.getParameter("username")==null?"":request.getParameter("username").toString().trim();
+		String sort = request.getParameter("sort")==null?"":request.getParameter("sort").toString().trim();
+		String sortOrder = request.getParameter("sortOrder")==null?"":request.getParameter("sortOrder").toString().trim();
 		
-		ArrayList<HashMap<String, Object>> allUserInfoJson = userService.getAllUserInfoJson(limit,offset,username);
+		ArrayList<HashMap<String, Object>> allUserInfoJson = userService.getAllUserInfoJson(limit,offset,username,sort,sortOrder);
 		int allUserInfoJsonCount = userService.getAllUserInfoJsonCount(username);
 		
 		resultMap.put("rows", allUserInfoJson);
