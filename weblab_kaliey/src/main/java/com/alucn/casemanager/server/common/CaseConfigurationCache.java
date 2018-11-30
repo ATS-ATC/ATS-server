@@ -231,8 +231,8 @@ public class CaseConfigurationCache {
 				jdbc_df.executeSql(dfttag_sql);
 				String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
 				jdbc_cf.executeSql(dfttagdaily_sql);
-				//getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
-				getTimeCase.analysisCase(0, "D:/dbs/DB/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
+				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
+//				getTimeCase.analysisCase(0, "D:/dbs/DB/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 				if(readUntil){
 					String result = telnetCla.doJob(Constant.TMSUSER,caseName);
 					String[] split = result.split(",");
