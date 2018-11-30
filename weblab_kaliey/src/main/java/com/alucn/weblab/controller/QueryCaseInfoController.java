@@ -27,6 +27,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.alucn.weblab.service.ConfigOptService;
 import com.alucn.weblab.service.QueryCaseInfoService;
 import com.alucn.weblab.utils.TimeUtil;
 import com.alucn.weblab.utils.jsonUtil;
@@ -39,6 +40,8 @@ public class QueryCaseInfoController {
 	private static Logger logger = Logger.getLogger(QueryCaseInfoController.class);
 	@Autowired(required=true)
 	private QueryCaseInfoService queryCaseInfoService;
+	@Autowired(required=true)
+	private ConfigOptService configOptService;
 
 	@RequestMapping(value="/getQueryCaseInfoTable")
 	@ResponseBody
@@ -63,6 +66,17 @@ public class QueryCaseInfoController {
 		ArrayList<HashMap<String,Object>> queryCaseInfoTable = queryCaseInfoService.getQueryCaseInfoTableNew(userName, qtype,feature, offset, limit,"all",sort,sortOrder,mate,lab);
 		//计算hodingduration
 		if(queryCaseInfoTable.size()>0) {
+			String warnning= "0";
+			ArrayList<HashMap<String,Object>> config = configOptService.getConfig();
+			if(config.size()>0) {
+				for (HashMap<String, Object> hashMap : config) {
+					Object con_key = hashMap.get("con_key");
+					Object con_value = hashMap.get("con_value");
+					if("case.dashboard.warning".equals(con_key)) {
+						warnning=""+con_value;
+					}
+				}
+			}
 			for (HashMap<String, Object> hashMap : queryCaseInfoTable) {
 				String submit_date = (String) hashMap.get("submit_date");
 				if(!"".equals(submit_date)&&submit_date!=null) {
@@ -72,8 +86,9 @@ public class QueryCaseInfoController {
 					int equation = TimeUtil.equation(parse.getTime(),date.getTime());
 					hashMap.put("hodingduration", equation);
 				}else {
-					hashMap.put("hodingduration", "");
+					hashMap.put("hodingduration", "-1");
 				}
+				hashMap.put("warnning",warnning);
 			}
 		}
 		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature,mate,lab);

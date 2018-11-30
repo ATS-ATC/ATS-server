@@ -189,7 +189,10 @@ var TableInit = function () {
             rowStyle: function (row, index) {
                 //这里有5个取值代表5中颜色['active', 'success', 'info', 'warning', 'danger'];
                 var strclass = "";
-                if (row.Feature != "1") {
+                if (row.hodingduration >row.warnning) {
+                    strclass = 'danger';//还有一个active
+                }
+                else if (row.hodingduration <= row.warnning) {
                     strclass = 'info';//还有一个active
                 }
                 else {

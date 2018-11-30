@@ -513,23 +513,6 @@ $(function() {
 	    sidePagination: 'server',
 	    //这里是标志id  和 parentIdField有关系
 	    idField: 'id',
-	    rowStyle: function (row, index) {
-            //['active', 'success', 'info', 'warning', 'danger'];
-            var strclass = "";
-            if (row.type == "set") {
-                strclass = 'info';
-            }
-            else {
-                return {};
-            }
-            return { classes: strclass } 
-            /* if (index==1){
-        		return {css:{"background-color":"red"}}
-        	}else{
-        		return {css:{"background-color":"green"}}
-        	} */
-
-        },
 	    columns: [
 	      {
 	        field: 'ck',
