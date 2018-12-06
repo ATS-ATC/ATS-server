@@ -165,6 +165,7 @@ public class DistriButeCaseToLab {
 		JSONArray changedKvmList = new JSONArray();
 		JSONArray needDeleteKvmList = new JSONArray();
 		JSONArray servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//logger.info("updateKvmDB  >> servers1  >>  "+servers);
 		JSONArray serversInDB = getServerInfoFromDB();
 		JSONObject serverDB;
 		JSONObject serverMem;
@@ -174,6 +175,8 @@ public class DistriButeCaseToLab {
 			IsExist = false;
 			for (int j = 0; j < servers.size(); j++) {
 				serverMem = servers.getJSONObject(j).getJSONObject(Constant.LAB);
+				serverMem.put("status",servers.getJSONObject(j).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
+				
 				if (serverDB.getString("serverName").equals(serverMem.getString(Constant.SERVERNAME))) {
 					IsExist = true;
 					if (!serverDB.getString("protocol").equals(serverMem.getString(Constant.SERVERPROTOCOL))) {
@@ -204,10 +207,11 @@ public class DistriButeCaseToLab {
 
 		for (int i = 0; i < servers.size(); i++) {
 			serverMem = servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			serverMem.put("status",servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
+			
 			IsExist = false;
 			for (int j = 0; j < serversInDB.size(); j++) {
-				if (serversInDB.getJSONObject(j).getString("serverName")
-						.equals(serverMem.getString(Constant.SERVERNAME))) {
+				if (serversInDB.getJSONObject(j).getString("serverName").equals(serverMem.getString(Constant.SERVERNAME))) {
 					IsExist = true;
 					break;
 				}
@@ -226,11 +230,11 @@ public class DistriButeCaseToLab {
 				Class.forName("org.sqlite.JDBC");
 				String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 				connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
-
+				//logger.info("updateKvmDB  >> servers2 >>  "+servers);
+				logger.info("updateKvmDB  >>  needDeleteKvmList  >> "+needDeleteKvmList);
+				logger.info("updateKvmDB  >>  changedKvmList  >> "+changedKvmList);
 				if (needDeleteKvmList.size() > 0) {
-					PreparedStatement prep = connection
-							.prepareStatement("delete from serverList where serverName = ?;");
-
+					PreparedStatement prep = connection.prepareStatement("delete from serverList where serverName = ?;");
 					for (int i = 0; i < needDeleteKvmList.size(); i++) {
 						prep.setString(1, needDeleteKvmList.getString(i));
 						prep.addBatch();
@@ -239,18 +243,15 @@ public class DistriButeCaseToLab {
 					prep.executeBatch();
 					connection.setAutoCommit(true);
 				}
-
 				if (changedKvmList.size() > 0) {
-					PreparedStatement prep = connection
-							.prepareStatement("replace into serverList values( ?, ?, ?, ?, ?);");
-
+					PreparedStatement prep = connection.prepareStatement("replace into serverList values( ?, ?, ?, ?, ?);");
 					for (int i = 0; i < changedKvmList.size(); i++) {
 						serverMem = changedKvmList.getJSONObject(i);
 						prep.setString(1, serverMem.getString(Constant.SERVERNAME));
 						prep.setString(2, serverMem.getString(Constant.SERVERPROTOCOL));
 						prep.setString(3, serverMem.getJSONArray(Constant.SERVERSPA).toString());
 						prep.setString(4, serverMem.getJSONArray(Constant.SERVERRTDB).toString());
-						prep.setString(5, serverMem.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
+						prep.setString(5, serverMem.getString(Constant.STATUS));
 						prep.addBatch();
 					}
 					connection.setAutoCommit(false);
@@ -389,8 +390,7 @@ public class DistriButeCaseToLab {
 			JSONArray releaseList = getReleaseList();
 			logger.debug("releaseList: " + releaseList.toString());
 
-			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
-					true, null);
+			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
 			ResultSet result2 = null;
 			if (CaseSearchService.dataBase.equals("DailyCase")) {
 				result2 = state.executeQuery(QuerySql);
@@ -398,8 +398,7 @@ public class DistriButeCaseToLab {
 				result2 = state_DftCaseDB.executeQuery(QuerySql);
 			}
 
-			PreparedStatement prep = connection
-					.prepareStatement("replace into toDistributeCases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			PreparedStatement prep = connection.prepareStatement("replace into toDistributeCases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 
 			boolean isExcute = false;
 
@@ -722,7 +721,7 @@ public class DistriButeCaseToLab {
 					query_sql += "server like '%" + KVMList.getString(i) + "%' or ";
 				}
 				query_sql = query_sql.substring(0, query_sql.length() - 4) + ";";
-				logger.debug(query_sql);
+				logger.info("updatedistributeDB >> KVMList.size() > 0  >> "+query_sql);
 				ResultSet result = state.executeQuery(query_sql);
 				while (result.next()) {
 					caseList.add(result.getString("case_name"));
@@ -733,12 +732,14 @@ public class DistriButeCaseToLab {
 				query_sql = "select case_name from DailyCase where case_status = 'I' order by lab_number asc,special_data asc;";
 				// query_sql = "select case_name from DailyCase where case_name not
 				// in (select case_name from toDistributeCases);";
+				logger.info("updatedistributeDB >> CaseSearchService.sqlAdmin.equals(\"\") 1 >> "+query_sql);
 				ResultSet result2 = state.executeQuery(query_sql);
 				while (result2.next()) {
 					caseList.add(result2.getString("case_name"));
 				}
 
 				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
+				logger.info("updatedistributeDB >> CaseSearchService.sqlAdmin.equals(\"\") 2 >> "+query_sql);
 				state.executeUpdate(query_sql);
 			} else {
 				try {
@@ -747,6 +748,7 @@ public class DistriButeCaseToLab {
 				} catch (Exception e) {
 				} finally {
 					String syncCaseDepends = "replace Into CaseDepends(case_name, SPA, DB, SecData) select case_name, SPA, DB, SecData from dt.CaseDepends;";
+					logger.info("updatedistributeDB >> finally >> "+syncCaseDepends);
 					state.execute(syncCaseDepends);
 				}
 
@@ -754,15 +756,17 @@ public class DistriButeCaseToLab {
 				if (query_sql.contains("DailyCase")) {
 					// query_sql = "select case_name from DailyCase where case_name not
 					// in (select case_name from toDistributeCases);";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DailyCase\") 1 >> "+query_sql);
 					ResultSet result2 = state.executeQuery(query_sql);
 					while (result2.next()) {
 						caseList.add(result2.getString("case_name"));
 					}
-
 					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
 							+ CaseSearchService.sqlAdmin + "));";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DailyCase\") 2 >> "+query_sql);
 					state.executeUpdate(query_sql);
 				} else if (query_sql.contains("DftTag")) {
+					logger.info("updatedistributeDB >> query_sql.contains(\"DftTag\") 1 >> "+query_sql);
 					ResultSet result2 = state_DftCaseDB.executeQuery(query_sql);
 					String tmp = "";
 					while (result2.next()) {
@@ -773,8 +777,10 @@ public class DistriButeCaseToLab {
 						tmp += ",";
 					}
 					tmp = tmp.substring(0, tmp.length() - 1);
+					
 					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
 							+ tmp + "));";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DftTag\") 2 >> "+query_sql);
 					state.executeUpdate(query_sql);
 				}
 			}
@@ -956,8 +962,8 @@ public class DistriButeCaseToLab {
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
 			logger.debug(serverName+" of idle status num "+currentServerNum + "-- reInstallNext "+reInstallNext);
-            if(currentServerNum > 10){
-//            if(currentServerNum > 10  && reInstallNext){
+            if(currentServerNum > 20){
+            	//if(currentServerNum > 10  && reInstallNext){
 				reInstallNext = false;
 				for (int i = 0; i < Servers.size(); i++) {
 					JSONObject serverBody = Servers.getJSONObject(i);
@@ -1002,16 +1008,17 @@ public class DistriButeCaseToLab {
 											reqData = reInstallFailList.get(serverName);
 											reInstallFailList.remove(serverName);
 										}
+										idleNum.put(serverName, 0);
 							            String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
 										logger.debug("lab reinstall... " + serverName+" response result "+resResult);
 										if(Constant.REINSTALLLABOK.equals(resResult)){
 											while(true){
+												idleNum.put(serverName, 0);
 												String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+serverName+".json").getJSONArray("content").getJSONObject(0).getString("status");
 												logger.debug("lab reinstall... " + serverName+" response is "+installLabResult);
 												serverStatus.put(Constant.STATUS, installLabResult);
 			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
 												if(Constant.REINSTALLLABSUCCESS.equals(installLabResult)){
-													idleNum.put(serverName, 0);
 													reInstallNext = true;
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
 													serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);

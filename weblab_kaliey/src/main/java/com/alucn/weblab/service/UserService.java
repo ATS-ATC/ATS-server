@@ -40,6 +40,8 @@ public class UserService {
 		}
 		if(sort!=null && !"".equals(sort)) {
 			sql=sql+" order by "+sort+" "+sortOrder;
+		}else {
+			sql=sql+" order by deptid desc";
 		}
 		sql=sql+" limit "+offset+","+limit;
 		System.err.println("UserService >> getAllUserInfoJson >> sql "+sql);

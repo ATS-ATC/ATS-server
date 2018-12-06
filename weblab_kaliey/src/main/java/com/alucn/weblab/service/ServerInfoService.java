@@ -247,11 +247,7 @@ public class ServerInfoService {
                 }
             }
 			String cmd = "rm -rf /home/huanglei/*"+serverName+"*";
-			String[] cmds = {
-					"/bin/sh",
-					"-c",
-					cmd
-			};
+			String[] cmds = {"/bin/sh","-c",cmd};
 			Process process = Runtime.getRuntime().exec(cmds);
 			int result = process.waitFor();
 			if (process != null) {
@@ -262,7 +258,9 @@ public class ServerInfoService {
 			}else{
 				return "remove server success!";
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return "";
 	}
 	
@@ -385,28 +383,32 @@ public class ServerInfoService {
 		}
 	}
 
-	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, String deptid) throws Exception {
+	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, String deptid, boolean hasRole) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_lab_status_time "
-				+ "where 1=1 "
-				+ "and groupid='"+deptid+"'";
+				+ "where 1=1 ";
+		if(!hasRole) {
+			sql=sql+"and groupid='"+deptid+"'";
+		}
 		if(serverName!=null && !"".equals(serverName)) {
-			sql=sql+"and labname like '%"+serverName+"%' ";
+			sql=sql+"and labname='"+serverName+"' ";
 		}
 		sql=sql+"order by endtime desc limit "+offset+","+limit;
 		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
-	public int getServerStatusLogJsonCount(String limit, String offset, String serverName, String deptid) throws Exception {
+	public int getServerStatusLogJsonCount(String limit, String offset, String serverName, String deptid, boolean hasRole) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select count(*) ccount from n_lab_status_time "
-				+ "where 1=1 "
-				+ "and groupid='"+deptid+"'";
+				+ "where 1=1 ";
+		if(!hasRole) {
+			sql=sql+"and groupid='"+deptid+"'";
+		}
 		if(serverName!=null && !"".equals(serverName)) {
-			sql=sql+"and labname like '%"+serverName+"%' ";
+			sql=sql+"and labname='"+serverName+"' ";
 		}
 		sql=sql+"order by endtime desc limit "+offset+","+limit;
 		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);

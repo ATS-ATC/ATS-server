@@ -36,7 +36,7 @@ public class ShiroPermissionFactory  extends ShiroFilterFactoryBean{
      */  
     @Override  
     public void setFilterChainDefinitions(String definitions) {  
-    	System.err.println("ShiroPermissionFactory >> setFilterChainDefinitions");
+    	//System.err.println("ShiroPermissionFactory >> setFilterChainDefinitions");
     	if(definitions!=null&&!"".endsWith(definitions)) {
     		ShiroPermissionFactory.definitions = definitions;  
             

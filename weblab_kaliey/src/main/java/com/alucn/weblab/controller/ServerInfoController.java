@@ -61,7 +61,9 @@ public class ServerInfoController {
 	
 	//lab变动日志记录表
 	@RequestMapping(path = "/getServerStatusLog")
-	public String getServerStatusLog(Model model){
+	public String getServerStatusLog(HttpServletRequest request,Model model){
+		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
+		model.addAttribute("serverName", serverName);
 		return "serverStatusLog";
 	}
 	@RequestMapping(path = "/getServerStatusLogJson")
@@ -72,21 +74,28 @@ public class ServerInfoController {
 		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
 		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
+		System.err.println(serverName);
 		String username = (String) session.getAttribute("login");
 		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
 		String deptid="";
 		if(deptByUserName.size()==1) {
 			deptid = (String) deptByUserName.get(0).get("deptid");
 		}
-		/*Subject subject = SecurityUtils.getSubject();  
-		boolean hasRole = subject.hasRole("admin");*/
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid);
-		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(limit, offset, serverName, deptid);
+		Subject subject = SecurityUtils.getSubject();  
+		boolean hasRole = subject.hasRole("admin");
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid,hasRole);
+		for (HashMap<String, Object> hashMap : labLogJson) {
+			Long starttime = Long.parseLong((String) hashMap.get("starttime"));
+			Long endtime = Long.parseLong((String)hashMap.get("endtime"));
+			String timeDifference = TimeUtil.getTimeDifference(endtime, starttime);
+			hashMap.put("hodingtime", timeDifference);
+			hashMap.put("starttime", TimeUtil.stampToTime(starttime));    
+			hashMap.put("endtime", TimeUtil.stampToTime(endtime));    
+		}
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(limit, offset, serverName, deptid,hasRole);
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
-		
 		return resultMap;
-		
 	}
 	
 	

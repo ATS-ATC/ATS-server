@@ -61,6 +61,8 @@ public class CaseConfigurationCache {
 			 lock.readLock().unlock();  
 		}
 	}
+	
+	
 	public static JSONArray readOrWriteSingletonCaseProperties(ReadWriteLock lock,boolean isCheck,JSONObject body){
 		if (isCheck) {
 			try {
@@ -131,7 +133,11 @@ public class CaseConfigurationCache {
 									String insertLog = "insert into n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
 											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
 									logger.info(insertLog);
-									//jdbc_cf.executeSql(insertLog);
+									jdbc_cf.executeSql(insertLog);
+									
+									String updateServerList = "update serverList set status='"+status+"' where serverName='"+serverName+"'";
+									jdbc_cf.executeSql(updateServerList);
+									
 								} catch (Exception e) {
 									e.printStackTrace();
 								}

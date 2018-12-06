@@ -71,13 +71,15 @@ public class ErrorCaseInfoService {
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}*/
-	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, String auth) throws Exception{
+	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, boolean checkAllCase) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getErrorCase = "SELECT casename, err_reason, err_desc FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
-		if(!auth.equals(Constant.AUTH)){
+		//if(!checkAllCase.equals(Constant.AUTH)){
+		if(!checkAllCase){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
+		System.out.println(getErrorCase);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}
