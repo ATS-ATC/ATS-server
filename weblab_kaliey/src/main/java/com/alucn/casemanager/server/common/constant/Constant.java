@@ -29,6 +29,7 @@ public class Constant {
 	public static final String RUNNINGCASE = "runningCase";
 	public static final String TASKRESULT = "taskResult";
 	public static final String SUCCESS = "success";
+	public static final String SERVERNUM = "lab_number";
 	public static final String NAME = "name";
 	public static final String TIME = "time";
 	public static final String FAIL = "fail";

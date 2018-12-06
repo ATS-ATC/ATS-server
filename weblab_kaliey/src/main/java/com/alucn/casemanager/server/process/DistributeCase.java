@@ -13,7 +13,6 @@ import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.exception.SysException;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.disarray.DistriButeCaseToLab;
-import com.alucn.weblab.disarray.DbOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -29,10 +28,10 @@ public class DistributeCase implements Runnable{
 	
 	@Override
 	public void run() {
-	    int count = 0;
+	    //int count = 0;
 		while (true) {
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(100000);
 				logger.info("[DistributeCase...]");
 				//distribute case
                 JSONObject caseList = DistriButeCaseToLab.getDistriButeCaseToLab().getDistributeCases().getJSONObject(Constant.AVAILABLECASE);
@@ -45,7 +44,7 @@ public class DistributeCase implements Runnable{
 				distributeCase(toHashMap(caseList));
 				
 				//check the lab status, remove the distributed case list
-				if(count > 10){
+				/*if(count > 10){
 				    DbOperation.SyncDailyCaseFromDftTag();
 				    JSONArray unNeedServers = new JSONArray();
 				    JSONArray currServersStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
@@ -60,7 +59,7 @@ public class DistributeCase implements Runnable{
 	                    DbOperation.DeleteDistributedCase(unNeedServers);
 	                count = 0;
 				}
-				count ++;
+				count ++;*/
 				
 				//TODO
 				//distribute command

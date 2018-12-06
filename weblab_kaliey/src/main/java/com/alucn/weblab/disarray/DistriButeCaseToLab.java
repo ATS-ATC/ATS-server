@@ -36,6 +36,8 @@ import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.model.ServerMate;
 import com.alucn.casemanager.server.common.model.ServerType;
+import com.alucn.casemanager.server.common.util.Fiforeader;
+import com.alucn.casemanager.server.common.util.Fifowriter;
 import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
@@ -51,8 +53,8 @@ public class DistriButeCaseToLab {
 	String specialRelease = "28A,28C,28F,28G,28H";
 	int counterUninsRS=0;
 	Map<String, Integer> idleNum = new HashMap<String, Integer>();
-	Map<String, String> reInstallFailList = new HashMap<String, String>();
-	boolean reInstallNext = true;
+	/*Map<String, String> reInstallFailList = new HashMap<String, String>();
+	boolean reInstallNext = true;*/
 	private DistriButeCaseToLab(){};
 	static DistriButeCaseToLab instance = null;
 
@@ -807,8 +809,26 @@ public class DistriButeCaseToLab {
 
 		}
 	}
-
-	private JSONArray genCaseListToLab(String ServerName) {
+	private JSONArray genCaseListToLab(String serverName) throws Exception {
+		JSONArray caseList = new JSONArray();
+		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		String querySecDataSql = "SELECT T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name WHERE T.server LIKE '%"+serverName+"%' AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData ORDER BY num DESC;";
+		List<Map<String, Object>> secDataList = jdbc_cf.findModeResult(querySecDataSql, null);
+		int readyDistributeCaseNum = 0;
+		for(int i=0; i<secDataList.size(); i++){
+			String queryToDistributeCaseSql = "SELECT T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name WHERE T.server LIKE '%"+serverName+"%' AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = '"+secDataList.get(i).get("SecData")+"';";
+			List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryToDistributeCaseSql, null);
+			for(int j=0; j<toDistributeCaseList.size(); j++){
+				caseList.add(toDistributeCaseList.get(j).get("case_name"));
+				readyDistributeCaseNum++;
+				if (readyDistributeCaseNum >= Integer.valueOf(ConfigProperites.getInstance().getMaxCaseSizeForOneLab())) {
+					return caseList;
+				}
+			}
+		}
+		return caseList;
+	}
+	/*private JSONArray genCaseListToLab(String ServerName) {
 		JSONArray caseList = new JSONArray();
 
 		Connection connection = null;
@@ -819,19 +839,19 @@ public class DistriButeCaseToLab {
 			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 			state = connection.createStatement();
-			/*
+			
 			 * String query_case_sql = "select case_name from DistributedCaseTbl;";
 			 * ResultSet result2 = state.executeQuery(query_case_sql); JSONArray
 			 * case_name_list = new JSONArray(); while (result2.next()) { String Case_name =
 			 * result2.getString("case_name"); case_name_list.add(Case_name); }
 			 * System.err.println("case_name_list:=========="+case_name_list.toString());
-			 */
+			 
 			String query_sql = "select case_name, group_id from toDistributeCases where server like '%" + ServerName
 					+ "%' and case_name not in " + "(select distinct case_name from DistributedCaseTbl)"
-					/*
+					
 					 * + case_name_list.toString().replace("\"", "'").replace("[", "(").replace("]",
 					 * ")")
-					 */
+					 
 					+ " order by group_id";
 			System.out.println("query_sql:========" + query_sql);
 			ResultSet result = state.executeQuery(query_sql);
@@ -874,9 +894,128 @@ public class DistriButeCaseToLab {
 
 		}
 		return caseList;
-	}
-
+	}*/
 	public JSONObject getDistributeCases() throws Exception {
+		JSONObject availableCases = new JSONObject();
+		JSONObject cases = new JSONObject();
+		JSONArray serversList = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
+		JSONObject serverMem;
+		int idleServerNum = 0;
+		int caseListNull = 0;
+		for (int i = 0; i < serversList.size(); i++) {
+			serverMem = serversList.getJSONObject(i).getJSONObject(Constant.LAB);
+			String serverName = serverMem.getString(Constant.SERVERNAME);
+			if (serversList.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE) && !serverMem.getJSONArray(Constant.SERVERSPA).getString(0).equals("SPALIST_XXX")) {
+				idleServerNum++;
+				if (null == idleNum.get(serverName)){
+					idleNum.put(serverName, 1);
+				}else{
+					int numTmp = idleNum.get(serverName)+1;
+					idleNum.put(serverName, numTmp);
+				}
+				logger.debug("idle server: " + serverName);
+				JSONArray caseList = genCaseListToLab(serverName);
+				if(caseList.size()==0){
+					caseListNull++;
+				}
+				JSONObject labInfo = new JSONObject();
+				labInfo.put(Constant.CASELISTUUID, UUID.randomUUID().toString());
+				labInfo.put(Constant.CASELIST, caseList);
+				DbOperation.UpdateDistributedCase(caseList, serverName);
+				cases.put(serverName, labInfo);
+			}else{
+				idleNum.put(serverName, 0);
+			}
+		}
+		if (idleServerNum > serversList.size() && caseListNull == serversList.size()) {
+			if (counterUninsRS == 8640) {
+				logger.debug("send e-mail of Missing spa and rtdb!");
+				counterUninsRS = 0;
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSANSI = getUninstallRS2(serversList,"ANSI");
+				Map<String, Map<String, Map<String, Map<String, String>>>> uninstallRSITU = getUninstallRS2(serversList,"ITU");
+				// send mail
+				JSONArray cc_list = new JSONArray();
+				JSONArray to_list = new JSONArray();
+				cc_list.add("lei.k.huang@alcatel-lucent.com");
+				cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+				to_list.add("chen.k.wang@nokia-sbell.com");
+				SendMail.genReport(cc_list, to_list, uninstallRSANSI, uninstallRSITU);
+			}
+			counterUninsRS++;
+		}
+		//Automatically determine case dependencies and send installed requests.
+		for(String serverName: idleNum.keySet()){
+			int currentServerNum = idleNum.get(serverName);
+			logger.debug(serverName+" of idle status num "+currentServerNum);
+            if(currentServerNum > 10){
+				for (int i = 0; i < serversList.size(); i++) {
+					JSONObject serverBody = serversList.getJSONObject(i);
+					JSONObject serverMemTwo = serverBody.getJSONObject(Constant.LAB);
+					JSONObject serverStatus = serverBody.getJSONObject(Constant.TASKSTATUS);
+					String serverNameTwo = serverMemTwo.getString(Constant.SERVERNAME);
+					JSONArray SPA = removeRelease(serverMemTwo.getJSONArray(Constant.SERVERSPA));
+					JSONArray DB = removeRelease(serverMemTwo.getJSONArray(Constant.SERVERRTDB));
+					String protocol = serverMemTwo.getString(Constant.SERVERPROTOCOL);
+					String release = serverMemTwo.getString(Constant.SERVERRELEASE);
+					if (serverNameTwo.equals(serverName) && serverStatus.equals(Constant.CASESTATUSIDLE)) {
+						JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
+						JSONObject installedLabInfo = new JSONObject();
+		            	if(installedLab.containsKey(serverName)){
+		            		installedLabInfo = installedLab.getJSONObject(serverName);
+		            	}
+		            	installedLabInfo.put(Constant.SERVERRELEASE, release);
+	            		installedLabInfo.put(Constant.SERVERPROTOCOL, protocol);
+	            		installedLabInfo.put(Constant.SERVERNUM, "1");
+	            		installedLabInfo.put(Constant.SERVERMATE, "N");
+	            		installedLabInfo.put(Constant.STATUS, "");
+	            		installedLabInfo.put(Constant.SERVERSPA, SPA);
+	            		installedLabInfo.put(Constant.SERVERRTDB, DB);
+	            		installedLab.put(serverName, installedLabInfo);
+		            	Fifowriter.writerFile("/home/huanglei/DB", "installLab.json", installedLab.toString());
+					
+						Thread installLabThread = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									while(true){
+										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine(""));
+										String installedStatus = installedLab.getJSONObject(serverName).getString(Constant.STATUS);
+										serverStatus.put(Constant.STATUS, installedStatus);
+	                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+										if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
+											idleNum.put(serverName, 0);
+											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+											serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
+		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+											break;
+										}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
+											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+											JSONArray cc_list = new JSONArray();
+											JSONArray to_list = new JSONArray();
+											cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+											to_list.add("xiuyun.he@nokia-sbell.com");
+											SendMail.genReport(cc_list, to_list, serverName);
+											serverStatus.put(Constant.STATUS, installedStatus);
+		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+											break;
+										}
+											Thread.sleep(100000);
+									}
+								} catch (Exception e) {
+									logger.error("lab reinstall exception... " + serverName, e);
+								}
+							}
+						});
+						installLabThread.start();
+					}
+				}
+			}
+			Thread.sleep(1000);
+		}
+		availableCases.put("availableCase", cases);
+		return availableCases;
+	}
+	/*public JSONObject getDistributeCases() throws Exception {
 		JSONObject AvailableCases = new JSONObject();
 		JSONObject Cases = new JSONObject();
 		JSONArray changedKvmList = updateKvmDB();
@@ -913,7 +1052,7 @@ public class DistriButeCaseToLab {
 		}
 		//--------------------new-----------------------------------------
 		//--------------------old-----------------------------------------
-		/*for (int i = 0; i < Servers.size(); i++) {
+		for (int i = 0; i < Servers.size(); i++) {
 			if (Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS)
 					.equals(Constant.CASESTATUSIDLE)) {
 				idleServerNum++;
@@ -939,7 +1078,7 @@ public class DistriButeCaseToLab {
 				DbOperation.UpdateDistributedCase(caseList, serverName);
 				Cases.put(serverName, labInfo);
 			}
-		}*/
+		}
 		//--------------------old-----------------------------------------
 		// Original send email logic reservation,Change == to > never go.
 		if (idleServerNum > Servers.size() && caseListNull == Servers.size()) {
@@ -971,7 +1110,7 @@ public class DistriButeCaseToLab {
 					JSONObject serverStatus = serverBody.getJSONObject(Constant.TASKSTATUS);
 					String serverName2 = serverMem.getString(Constant.SERVERNAME);
 					if (serverName2.equals(serverName) && Servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
-						/*String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
+						String serverProtocol = serverMem.getString(Constant.SERVERPROTOCOL);
 						String serverRelease = serverMem.getString(Constant.SERVERRELEASE);
 						JSONArray serverSpa = serverMem.getJSONArray(Constant.SERVERSPA);
 						JSONArray serverRtdb = serverMem.getJSONArray(Constant.SERVERRTDB);
@@ -980,7 +1119,7 @@ public class DistriButeCaseToLab {
 						Map<String,Map<String,Map<String,Map<String,String>>>> unInstallRSANSI = getUninstallRS2(tempArray, serverProtocol);
 						Set<String> unInstallSpa = unInstallRSANSI.get("SPA").get(serverName).get("SPA").keySet();
 						Set<String> unInstallRtdb = unInstallRSANSI.get("RTDB").get(serverName).get("RTDB").keySet();
-						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){*/
+						if(unInstallSpa.size()==0 && unInstallRtdb.size()==0){
 							logger.debug("no matching case can run on " + serverName +" need reinstall");
 							Thread installLabThread = new Thread(new Runnable() {
 								@Override
@@ -1023,11 +1162,11 @@ public class DistriButeCaseToLab {
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult);
 													serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
 				                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-													/*if(getProcess(serverName)){
+													if(getProcess(serverName)){
 														String[] cmd = new String[] { "/bin/sh", "-c", "sh /home/huanglei/ATC_"+serverName+"/start.sh"};
 											            Runtime.getRuntime().exec(cmd);
 														logger.debug("lab reinstall completed... " + serverName+" is started");
-													}*/
+													}
 													break;
 												}else if(Constant.REINSTALLLABFAIL.equals(installLabResult)){
 													logger.debug("lab reinstall completed... " + serverName+" response result "+installLabResult+" and add reqData :"+reqData+" to failed list");
@@ -1061,7 +1200,7 @@ public class DistriButeCaseToLab {
 								}
 							});
 							installLabThread.start();
-						/*}else{
+						}else{
 							Iterator<String> iteratorSpa = unInstallSpa.iterator();
 							while(iteratorSpa.hasNext()){
 								serverSpa.add(iteratorSpa.next());
@@ -1082,7 +1221,7 @@ public class DistriButeCaseToLab {
 								}
 								Thread.sleep(100000);
 							}
-						}*/
+						}
 					}
 				}
 			}
@@ -1090,7 +1229,7 @@ public class DistriButeCaseToLab {
 		}
 		AvailableCases.put("availableCase", Cases);
 		return AvailableCases;
-	}
+	}*/
 
 	/*private Map<String,Map<String,String>> getUninstallRS(JSONArray Servers, String protocol) throws Exception{
 		Map<String,String> rtdbMap = new HashMap<String,String>();

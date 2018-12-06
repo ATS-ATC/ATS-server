@@ -217,7 +217,7 @@ public class SendMail {
 		SendMail.Send("Daily certified case failure check " + dateTime, sb.toString(), to_list, cc_list);
 	}
 	
-	public static void genReport(JSONArray cc_list, JSONArray to_list, String serverName, String reqData){
+	public static void genReport(JSONArray cc_list, JSONArray to_list, String serverName){
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		String dateTime = df.format(new Date());
 		StringBuilder sb = new StringBuilder();
@@ -233,8 +233,6 @@ public class SendMail {
 		sb.append("<body>");
 		sb.append("<p><span style=\"background:#cccc33;\">@xiuyun!</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+ serverName +" installation failure, please deal with it in time.</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Strong>RequestData:</Strong></span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+reqData+"</span></p>");
 		sb.append("<br/><br/>");
 		sb.append("</body></html>");
 		SendMail.Send("Lab Installation Failure " + dateTime, sb.toString(), to_list, cc_list);
