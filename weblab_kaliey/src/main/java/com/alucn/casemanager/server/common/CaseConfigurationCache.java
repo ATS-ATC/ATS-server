@@ -210,8 +210,11 @@ public class CaseConfigurationCache {
 			String dfttag_sql = "update DftTag set case_status='F',status_owner='ATS' where case_name='"+caseName+"'";
 			jdbc_df.executeSql(dfttag_sql);
 			String dfttagdaily_sql = "update DailyCase set case_status='F',status_owner='ATS' where case_name='"+caseName+"'";
+			String toDistri_sql = "delete from toDistributeCases where case_name='"+caseName+"'";
+			String toDistriTbl_sql = "delete from DistributedCaseTbl where case_name='"+caseName+"'";
 			jdbc_cf.executeSql(dfttagdaily_sql);
-			
+			jdbc_cf.executeSql(toDistri_sql);
+			jdbc_cf.executeSql(toDistriTbl_sql);
 			dfttagdaily_sql = "select * from DailyCase where case_name='"+caseName+"'";
 			List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(dfttagdaily_sql, null);
 			if(list_dc.size()>0) {
@@ -230,7 +233,11 @@ public class CaseConfigurationCache {
 				String dfttag_sql = "update DftTag set case_status='S', status_owner='ATS', case_cost="+caseTime+" where case_name='"+caseName+"'";
 				jdbc_df.executeSql(dfttag_sql);
 				String dfttagdaily_sql = "delete from DailyCase where case_name='"+caseName+"'";
+				String toDistri_sql = "delete from toDistributeCases where case_name='"+caseName+"'";
+				String toDistriTbl_sql = "delete from DistributedCaseTbl where case_name='"+caseName+"'";
 				jdbc_cf.executeSql(dfttagdaily_sql);
+				jdbc_cf.executeSql(toDistri_sql);
+				jdbc_cf.executeSql(toDistriTbl_sql);
 				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 //				getTimeCase.analysisCase(0, "D:/dbs/DB/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 				if(readUntil){
