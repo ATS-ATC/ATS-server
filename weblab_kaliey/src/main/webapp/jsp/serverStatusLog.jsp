@@ -264,17 +264,20 @@
 					field : 'protocol',
 					title : 'Protocol',
 				}, {
+					field : 'startstatus',
+					title : 'StartStatus',
+				}, {
+					field : 'starttime',
+					title : 'StartTime',
+				}, {
 					field : 'endstatus',
 					title : 'EndStatus',
 				}, {
 					field : 'endtime',
 					title : 'EndTime',
 				}, {
-					field : 'startstatus',
-					title : 'StartStatus',
-				}, {
-					field : 'starttime',
-					title : 'StartTime',
+					field : 'hodingtime',
+					title : 'Time(d/hh:mm:ss)',
 				}]
 			});
 		};
@@ -284,7 +287,7 @@
 			var temp = { //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
 				limit : params.limit, //页面大小
 				offset : params.offset, //页码
-				deptname : $("#txt_search_dept").val()
+				serverName : '${serverName}'
 			};
 			return temp;
 		};

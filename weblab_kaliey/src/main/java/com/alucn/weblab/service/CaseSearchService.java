@@ -526,17 +526,27 @@ public class CaseSearchService {
 					JSONArray spaArray = (JSONArray) serverAttr.get("spaList");
 					JSONArray rtdbArray = (JSONArray) serverAttr.get("rtdbList");
 					List spaList = JSONArray.toList(spaArray);
+					List spaList2 = new ArrayList<>(); 
+					for (Object object : spaList) {
+						spaList2.add((""+object).trim().replaceAll("\\d+\\w?$", "").replace(".*", "").replace("RTDB ", "").toUpperCase());
+					}
 					List rtdbList = JSONArray.toList(rtdbArray);
+					List rtdbList2 = new ArrayList<>(); 
+					for (Object object : rtdbList) {
+						rtdbList2.add((""+object).trim().replaceAll("\\d+\\w?$", "").replace(".*", "").replace("RTDB ", "").toUpperCase());
+					}
 					//满足条件的case
-					System.err.println(spaList.containsAll(l_spa));
-					System.err.println(rtdbList.containsAll(l_db));
-					System.err.println(spaList+"\n"+l_spa);
-					System.err.println(rtdbList+"\n"+l_db);
-					if(spaList.containsAll(l_spa) && rtdbList.containsAll(l_db)) {
+					System.err.println(spaList2.containsAll(l_spa));
+					System.err.println(rtdbList2.containsAll(l_db));
+					System.err.println(spaList2+"\n"+l_spa);
+					System.err.println(rtdbList2+"\n"+l_db);
+					/*if(spaList2.containsAll(l_spa) && rtdbList2.containsAll(l_db)) {
 						csList.add("\""+serverName+"\"");
 					}else {
-						cfList.add(serverName+":"+spaList.containsAll(l_spa)+":"+rtdbList.containsAll(l_db));
-					}
+						cfList.add(serverName+":"+spaList2.containsAll(l_spa)+":"+rtdbList2.containsAll(l_db));
+					}*/
+					//暂不check运行条件
+					csList.add("\""+serverName+"\"");
 				}
 				if(csList.size()>0) {
 					System.out.println("csList:========="+csList);
@@ -558,7 +568,7 @@ public class CaseSearchService {
 							+query.get(i).get("customer")+"', "
 							+gid+");";
 					System.out.println("disSql:="+disSql);
-					//caseSearchDaoImpl.insert(jdbc, disSql);
+					caseSearchDaoImpl.insert(jdbc, disSql);
 				}else {
 					cfMap.put(query.get(i).get("case_name").toString(), cfList);
 				}

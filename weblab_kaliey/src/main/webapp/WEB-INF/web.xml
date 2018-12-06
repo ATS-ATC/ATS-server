@@ -66,9 +66,13 @@
 	<listener>
     	<listener-class>com.alucn.casemanager.server.listener.MainListener</listener-class>
 	</listener>
+	<!-- <listener>
+		<listener-class>com.alucn.casemanager.server.listener.ServerListener</listener-class>	
+	</listener>
 	<listener>
 		<listener-class>com.alucn.casemanager.server.listener.SocketListener</listener-class>	
-	</listener>
+	</listener> -->
+	
 	<!-- 错误跳转页面 -->
     <error-page>
         <error-code>404</error-code>

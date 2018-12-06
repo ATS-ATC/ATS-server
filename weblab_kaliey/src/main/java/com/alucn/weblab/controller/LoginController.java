@@ -1,8 +1,11 @@
 package com.alucn.weblab.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.shiro.SecurityUtils;
@@ -27,9 +30,17 @@ public class LoginController {
 	private LoginService loginService;
 	
 	@RequestMapping(path = "/userLogin")
-    public String login(Model model) {
-		model.addAttribute("loginResult", "login");
-        return "login";
+    public String login(HttpSession session,Model model) {
+		/*Object loginAttribute = session.getAttribute("login");
+		if("".equals(loginAttribute)) {*/
+			model.addAttribute("loginResult", "login");
+			long token=System.currentTimeMillis();
+			session.setAttribute("token", token);
+	        return "login";
+		/*}else {
+			System.err.println("loginAttribute   >>   "+loginAttribute);
+			return "redirect:/getMain.do";
+		}*/
     }
 	
 	@RequestMapping(path = "/userLogout")
@@ -42,11 +53,29 @@ public class LoginController {
 			 /*session.removeAttribute("login");
 			 session.invalidate();*/
 	     }
-        return "login";
+		//session.invalidate();
+		/*long token=System.currentTimeMillis();
+		session.setAttribute("token", token);
+        return "login";*/
+		return "redirect:/";
     }
 	
 	@RequestMapping(value = "/userLoginCheckOut", method = RequestMethod.POST)
-    public String loginCheckOut(NUser nuser, HttpSession session, Model model) throws Exception {
+    public String loginCheckOut(NUser nuser, HttpSession session, Model model,HttpServletRequest request,HttpServletResponse response) throws Exception {
+		String Reqtoken = request.getParameter("Reqtoken")==null?"":request.getParameter("Reqtoken").toString().trim();
+		String loginToken = ""+session.getAttribute("token");
+		System.err.println(Reqtoken+"=========="+new Date().getTime());
+		System.err.println(loginToken+"=========="+new Date().getTime());
+		if (Reqtoken==null || loginToken==null || !loginToken.equals(Reqtoken)) { 
+			Object loginAttribute = session.getAttribute("login");
+			if(!"".equals(loginAttribute)) {
+				System.err.println("loginAttribute   >>   "+loginAttribute);
+				return "redirect:/getMain.do";
+			}
+			return "login";
+		}else {
+			session.removeAttribute("token");
+		}
 		String returnDec = "";
 		//单点登录root
 		if(loginService.authAdministrator(nuser)){

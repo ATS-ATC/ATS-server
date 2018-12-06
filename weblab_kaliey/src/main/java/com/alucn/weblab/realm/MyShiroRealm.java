@@ -23,7 +23,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 	
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		System.err.println("PrincipalCollection >> doGetAuthorizationInfo");
+		//System.err.println("PrincipalCollection >> doGetAuthorizationInfo");
 		String username = (String)principals.fromRealm(getName()).iterator().next();
 		if(username!=null){
 			ArrayList<HashMap<String, Object>> pers = new ArrayList<HashMap<String, Object>>();
@@ -37,7 +37,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 						String role_name = (String)hashMap.get("role_name");
 						roles.add(role_name);
 					}
-					System.err.println("doGetAuthorizationInfo   role_name:======="+roles);
+					//System.err.println("doGetAuthorizationInfo   role_name:======="+roles);
 					//logger.info("doGetAuthorizationInfo   role_name:======="+roles);
 					info.addRoles(roles);
 				}
@@ -45,7 +45,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 		             for(HashMap<String, Object> each:pers){
 		                 //将权限资源添加到用户信息中  
 		            	 String permission_name = (String)each.get("permission_name");
-		            	 System.err.println("doGetAuthorizationInfo   permission_name:======="+permission_name);
+		            	 //System.err.println("doGetAuthorizationInfo   permission_name:======="+permission_name);
 		            	 //logger.info("doGetAuthorizationInfo   permission_name:======="+permission_name);
 		            	 if(permission_name!=null&&!"".equals(permission_name)) {
 		            		 info.addStringPermission(permission_name);
@@ -62,7 +62,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken at) {
-		System.err.println("AuthenticationToken >> doGetAuthenticationInfo");
+		 //System.err.println("AuthenticationToken >> doGetAuthenticationInfo");
 		 UsernamePasswordToken token = (UsernamePasswordToken) at;
 		 // 通过表单接收的用户名 
 		 String username  = token.getUsername();
@@ -78,7 +78,7 @@ public class MyShiroRealm extends  AuthorizingRealm{
 				}
 			 	if (queryNUser.size()>0) {  
 			 		//logger.info("doGetAuthenticationInfo:========="+queryNUser.get(0).get("password"));
-			 		logger.info("doGetAuthenticationInfo:========="+password);
+			 		//logger.info("doGetAuthenticationInfo:========="+password);
 			 		return new SimpleAuthenticationInfo(queryNUser.get(0).get("username"), password, getName());  
 			 	} 
 	 	}

@@ -44,6 +44,261 @@ public class DistriButeCaseToLab {
 		return instance;
 	}
 
+	private JSONArray getServerInfoFromDB() {
+
+		Connection connection = null;
+		Statement state = null;
+
+		JSONArray ServerInfos = new JSONArray();
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+			state = connection.createStatement();
+			String query_sql = "select * from serverList;";
+			ResultSet result = state.executeQuery(query_sql);
+			ResultSetMetaData metaData = result.getMetaData();
+			int ColumnCount = metaData.getColumnCount();
+			while (result.next()) {
+				JSONObject ServerInfo = new JSONObject();
+				for (int i = 1; i <= ColumnCount; i++) {
+					ServerInfo.put(metaData.getColumnName(i), result.getString(i));
+				}
+				ServerInfos.add(ServerInfo);
+			}
+
+		} catch (SQLException e1) {
+			logger.error(e1);
+		} catch (Exception e2) {
+			logger.error(e2);
+		} finally {
+			try {
+				if (state != null) {
+					state.close();
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e3) {
+				logger.error(e3);
+			}
+		}
+		return ServerInfos;
+	}
+
+	private boolean isInJSONArray(Object value, JSONArray list) {
+		for (int i = 0; i < list.size(); i++) {
+			if (String.valueOf(value).equals(String.valueOf(list.get(i)))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isSameJSONArrayWithJSONArray(JSONArray value, JSONArray list) {
+		if (value.size() != list.size()) {
+			return false;
+		}
+		for (int i = 0; i < value.size(); i++) {
+			if (!isInJSONArray(value.getString(i), list)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isInJSONArrayWithoutCase(Object value, JSONArray list) {
+		for (int i = 0; i < list.size(); i++) {
+			String A_value = String.valueOf(list.get(i));
+			if (A_value.equalsIgnoreCase(String.valueOf(value))
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "DB")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "RTDB")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "V7")
+					|| A_value.equalsIgnoreCase(String.valueOf(value) + "7")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isLabListContainsCaseList(JSONArray A, JSONArray B) {
+		for (int i = 0; i < B.size(); i++) {
+			if (!isInJSONArrayWithoutCase(B.getString(i), A)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private int postionInJSONArray(Object value, JSONArray list) {
+		for (int i = 0; i < list.size(); i++) {
+			String A_value = String.valueOf(list.get(i));
+			if (A_value.equalsIgnoreCase(String.valueOf(value))) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	private JSONArray updateKvmDB() {
+		JSONArray changedList = new JSONArray();
+		JSONArray changedKvmList = new JSONArray();
+		JSONArray needDeleteKvmList = new JSONArray();
+		JSONArray servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//logger.info("updateKvmDB  >> servers1  >>  "+servers);
+		JSONArray serversInDB = getServerInfoFromDB();
+		JSONObject serverDB;
+		JSONObject serverMem;
+		boolean IsExist;
+		for (int i = 0; i < serversInDB.size(); i++) {
+			serverDB = serversInDB.getJSONObject(i);
+			IsExist = false;
+			for (int j = 0; j < servers.size(); j++) {
+				serverMem = servers.getJSONObject(j).getJSONObject(Constant.LAB);
+				serverMem.put("status",servers.getJSONObject(j).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
+				
+				if (serverDB.getString("serverName").equals(serverMem.getString(Constant.SERVERNAME))) {
+					IsExist = true;
+					if (!serverDB.getString("protocol").equals(serverMem.getString(Constant.SERVERPROTOCOL))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
+						break;
+					}
+					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(serverDB.getString("SPA")),
+							serverMem.getJSONArray(Constant.SERVERSPA))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
+						break;
+					}
+					if (!isSameJSONArrayWithJSONArray(JSONArray.fromObject(serverDB.getString("RTDB")),
+							serverMem.getJSONArray(Constant.SERVERRTDB))) {
+						changedKvmList.add(serverMem);
+						changedList.add(serverMem.getString(Constant.SERVERNAME));
+						break;
+					}
+				}
+			}
+			if (!IsExist) {
+				needDeleteKvmList.add(serverDB.getString("serverName"));
+				changedList.add(serverDB.getString("serverName"));
+			}
+
+		}
+
+		for (int i = 0; i < servers.size(); i++) {
+			serverMem = servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			serverMem.put("status",servers.getJSONObject(i).getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS));
+			
+			IsExist = false;
+			for (int j = 0; j < serversInDB.size(); j++) {
+				if (serversInDB.getJSONObject(j).getString("serverName").equals(serverMem.getString(Constant.SERVERNAME))) {
+					IsExist = true;
+					break;
+				}
+			}
+			if (!IsExist) {
+				changedKvmList.add(serverMem);
+				changedList.add(serverMem.getString(Constant.SERVERNAME));
+			}
+		}
+
+		if (needDeleteKvmList.size() > 0 || changedKvmList.size() > 0) {
+			Connection connection = null;
+			Statement state = null;
+
+			try {
+				Class.forName("org.sqlite.JDBC");
+				String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+				connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+				//logger.info("updateKvmDB  >> servers2 >>  "+servers);
+				logger.info("updateKvmDB  >>  needDeleteKvmList  >> "+needDeleteKvmList);
+				logger.info("updateKvmDB  >>  changedKvmList  >> "+changedKvmList);
+				if (needDeleteKvmList.size() > 0) {
+					PreparedStatement prep = connection.prepareStatement("delete from serverList where serverName = ?;");
+					for (int i = 0; i < needDeleteKvmList.size(); i++) {
+						prep.setString(1, needDeleteKvmList.getString(i));
+						prep.addBatch();
+					}
+					connection.setAutoCommit(false);
+					prep.executeBatch();
+					connection.setAutoCommit(true);
+				}
+				if (changedKvmList.size() > 0) {
+					PreparedStatement prep = connection.prepareStatement("replace into serverList values( ?, ?, ?, ?, ?);");
+					for (int i = 0; i < changedKvmList.size(); i++) {
+						serverMem = changedKvmList.getJSONObject(i);
+						prep.setString(1, serverMem.getString(Constant.SERVERNAME));
+						prep.setString(2, serverMem.getString(Constant.SERVERPROTOCOL));
+						prep.setString(3, serverMem.getJSONArray(Constant.SERVERSPA).toString());
+						prep.setString(4, serverMem.getJSONArray(Constant.SERVERRTDB).toString());
+						prep.setString(5, serverMem.getString(Constant.STATUS));
+						prep.addBatch();
+					}
+					connection.setAutoCommit(false);
+					prep.executeBatch();
+					connection.setAutoCommit(true);
+				}
+			} catch (SQLException e1) {
+				logger.error(e1);
+			} catch (Exception e2) {
+				logger.error(e2);
+			} finally {
+				try {
+					if (state != null) {
+						state.close();
+					}
+					if (connection != null) {
+						connection.close();
+					}
+				} catch (SQLException e3) {
+					logger.error(e3);
+				}
+			}
+		}
+		return changedList;
+	}
+
+	private JSONArray getReleaseList() {
+		JSONArray releaseArray = new JSONArray();
+		URL url;
+		try {
+			url = new URL("http://135.251.249.250/hg/SurepayDraft/rawfile/tip/.info/TagConfig.json");
+			InputStream inputStream = null;
+			InputStreamReader inputStreamReader = null;
+			BufferedReader reader = null;
+			String tempLine, response = "";
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setDoOutput(true);
+			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+				inputStream = connection.getInputStream();
+				inputStreamReader = new InputStreamReader(inputStream);
+				reader = new BufferedReader(inputStreamReader);
+
+				while ((tempLine = reader.readLine()) != null) {
+					response += tempLine;
+
+				}
+				JSONObject tagInfos = JSONObject.fromObject(response);
+				JSONArray SingleList = tagInfos.getJSONArray("single");
+				for (int i = 0; i < SingleList.size(); i++) {
+					if (SingleList.getJSONObject(i).getString("name").equals("release")) {
+						releaseArray = SingleList.getJSONObject(i).getJSONArray("value");
+						break;
+					}
+				}
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (ProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return releaseArray;
+	}
+
 	private JSONArray removeRelease(JSONArray list) {
 
 		JSONArray jsonList = new JSONArray();
@@ -57,6 +312,252 @@ public class DistriButeCaseToLab {
 			jsonList.add(temp);
 		}
 		return jsonList;
+	}
+
+	private void updateCaseStatusDB(JSONArray caseList) {
+		Connection connection = null;
+		Statement state = null;
+
+		Connection connection_DftCaseDB = null;
+		Statement state_DftCaseDB = null;
+
+		String QuerySql = null;
+		String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		String DftCaseDB = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+		String caseListStr = caseList.toString().replace("\"", "'").replace("[", "(").replace("]", ")");
+		int GroupId = 0;
+		try {
+			Class.forName("org.sqlite.JDBC");
+
+			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+			connection_DftCaseDB = DriverManager.getConnection("jdbc:sqlite:" + DftCaseDB);
+			state = connection.createStatement();
+			state_DftCaseDB = connection_DftCaseDB.createStatement();
+
+			QuerySql = "select max(group_id) from toDistributeCases where case_name not in " + caseListStr;
+			try {
+				ResultSet result = state.executeQuery(QuerySql);
+				while (result.next()) {
+					try {
+						GroupId = result.getInt("max(group_id)");
+					} catch (Exception e) {
+						GroupId = 0;
+						logger.error(e);
+					}
+				}
+			} catch (Exception e) {
+				logger.error(e);
+				GroupId = 0;
+
+			}
+
+			QuerySql = "select D.case_name, D.base_data, D.special_data, D.lab_number, D.mate, D.customer, D.release, D.porting_release, C.SPA, C.DB as RTDB, C.SecData as second_data "
+					+ "from " + CaseSearchService.dataBase
+					+ " as D, CaseDepends as C where D.case_name = C.case_name and D.case_name in " + caseListStr
+					+ " order by D.lab_number, D.mate, D.special_data,  D.base_data, C.SecData, D.case_name;";
+			// int change_num = state.executeUpdate(UpdateSql);
+			// logger.error(QuerySql);
+			String caseName;
+			String old_lab_number = "INIT", new_lab_number;
+			String old_mate = "INIT", new_mate;
+			String old_special_data = "INIT", new_special_data;
+			String old_base_data = "INIT", new_base_data;
+			String old_second_data = "INIT", new_second_data;
+			String SPA, RTDB;
+			String customer, release, porting_release;
+			JSONArray spaArray, rtdbArray;
+			boolean IsSame = true;
+
+			JSONArray releaseList = getReleaseList();
+			logger.debug("releaseList: " + releaseList.toString());
+
+			JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+			ResultSet result2 = null;
+			if (CaseSearchService.dataBase.equals("DailyCase")) {
+				result2 = state.executeQuery(QuerySql);
+			} else {
+				result2 = state_DftCaseDB.executeQuery(QuerySql);
+			}
+
+			PreparedStatement prep = connection.prepareStatement("replace into toDistributeCases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+
+			boolean isExcute = false;
+
+			while (result2.next()) {
+				caseName = result2.getString("case_name");
+				new_lab_number = result2.getString("lab_number");
+				new_mate = result2.getString("mate");
+				new_special_data = result2.getString("special_data");
+				new_base_data = result2.getString("base_data");
+				new_second_data = caseName.split("/")[0] + "/" + result2.getString("second_data");
+				customer = result2.getString("customer");
+				release = result2.getString("release");
+				porting_release = result2.getString("porting_release");
+				SPA = result2.getString("SPA");
+				RTDB = result2.getString("RTDB");
+				// lineMate = result2.getString("LineMate");
+				// groupMate = result2.getString("GroupMate");
+				spaArray = JSONArray.fromObject(SPA.split(","));
+				rtdbArray = JSONArray.fromObject(RTDB.split(","));
+				JSONArray kvmList = new JSONArray();
+				String serverName = null;
+				Map<String, Set<Map<String, JSONObject>>> serversMap = getServers(Servers);
+				JSONArray infos = new JSONArray();
+
+				if (new_mate.equals(Constant.MATEN)) {
+					if (new_lab_number.equals("2")) {// L/G >=3 do not
+						for (String key : serversMap.keySet()) {
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))) {
+										infos.add(value);
+									}
+								}
+							}
+						}
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+					} else if (new_lab_number.equals("1")) {// lab 1
+						JSONArray infosLine = new JSONArray();
+						for (String key : serversMap.keySet()) {
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.STANDALONE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))
+											&& ServerMate.N.getName().equals(
+													value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))) {
+										infos.add(value);// Standalone
+									}
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))) {
+										infosLine.add(value);// L/G nomate
+									}
+								}
+							}
+						}
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+						if ("".equals(serverName)) {
+							serverName = gerServer(infosLine, customer, release, porting_release, releaseList, spaArray,
+									rtdbArray);
+						}
+					}
+				} else if (new_mate.equals(Constant.MATEY)) {
+					if (Integer.parseInt(new_lab_number) >= 3) {
+						// if(groupMate.equals("N")){
+						for (String key : serversMap.keySet()) {
+							Iterator<Map<String, JSONObject>> iterator = serversMap.get(key).iterator();
+							while (iterator.hasNext()) {
+								for (JSONObject value : iterator.next().values()) {
+									if (ServerType.LINE.getName()
+											.equals(value.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE))
+											&& ServerMate.PRIMARY.getName().equals(
+													value.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE))) {
+										infos.add(value);
+									}
+								}
+							}
+						}
+						serverName = gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+								rtdbArray);
+						/*
+						 * }else { JSONArray infos = new JSONArray(); for(String key :
+						 * serversMap.keySet()){ Iterator<Map<String, JSONObject>> iterator =
+						 * serversMap.get(key).iterator(); while(iterator.hasNext()){ for(JSONObject
+						 * value : iterator.next().values()){
+						 * if("L".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).
+						 * getString(Constant.SERVERTPYE)) &&
+						 * "P".equals(value.getJSONObject(Constant.BODY).getJSONObject(Constant.LAB).
+						 * getString(Constant.SERVERMATE))){ infos.add(value); } } } } serverName =
+						 * gerServer(infos, customer, release, porting_release, releaseList, spaArray,
+						 * rtdbArray); }
+						 */
+					}
+				}
+				if ("".equals(serverName)) {
+					continue;
+				}
+
+				// logger.error("ServerName:"+serverName + "---" + "CaseName:"+caseName +
+				// "new_lab_number:"+new_lab_number + "new_mate:"+new_mate +
+				// "customer:"+customer + "release:"+release+
+				// "porting_release:"+porting_release);
+				kvmList.add(serverName);
+				if (!new_lab_number.equals(old_lab_number)) {
+					IsSame = false;
+					// logger.error(old_lab_number + " --- " + new_lab_number);
+				}
+				if (!new_mate.equals(old_mate)) {
+					IsSame = false;
+					// logger.error(old_mate + " --- " + new_mate);
+				}
+				if (!new_special_data.equals(old_special_data)) {
+					IsSame = false;
+					// logger.error(old_special_data + " --- " +
+					// new_special_data);
+				}
+				if (!new_base_data.equals(old_base_data)) {
+					IsSame = false;
+					// logger.error(old_base_data + " --- " + new_base_data);
+				}
+				if (!new_second_data.equals(old_second_data)) {
+					IsSame = false;
+					// logger.error(old_second_data + " --- " +
+					// new_second_data);
+				}
+
+				if (!IsSame) {
+					old_lab_number = new_lab_number;
+					old_mate = new_mate;
+					old_special_data = new_special_data;
+					old_base_data = new_base_data;
+					old_second_data = new_second_data;
+					GroupId++;
+					IsSame = true;
+				}
+
+				prep.setString(1, caseName);
+				prep.setString(2, new_lab_number);
+				prep.setString(3, new_mate);
+				prep.setString(4, new_special_data);
+				prep.setString(5, new_base_data);
+				prep.setString(6, new_second_data);
+				prep.setString(7, release);
+				prep.setString(8, porting_release);
+				prep.setString(9, spaArray.toString());
+				prep.setString(10, rtdbArray.toString());
+				prep.setString(11, kvmList.toString());
+				prep.setString(12, customer);
+				prep.setInt(13, GroupId);
+				prep.addBatch();
+				isExcute = true;
+			}
+			if (isExcute) {
+				connection.setAutoCommit(false);
+				prep.executeBatch();
+				connection.setAutoCommit(true);
+			}
+		} catch (SQLException e1) {
+			logger.error(e1);
+		} catch (Exception e2) {
+			logger.error(e2);
+
+		} finally {
+			try {
+				if (state != null) {
+					state.close();
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e3) {
+
+				e3.printStackTrace();
+			}
+		}
 	}
 
 	public Map<String, Set<Map<String, JSONObject>>> getServers(JSONArray infos) {
@@ -112,6 +613,182 @@ public class DistriButeCaseToLab {
 	}
 	
 	private JSONArray genCaseListToLab(String serverName) throws Exception {
+		String serverName = "";
+		String serverNameTmp = "";
+		for (int i = 0; i < Servers.size(); i++) {
+			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+			serverName = ServerMem.getString(Constant.SERVERNAME);
+			JSONArray spaList = removeRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
+			JSONArray rtdbList = removeRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
+			String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
+			String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
+			// logger.error("Server: " + spaList.toString() + " ---- " +
+			// rtdbList.toString());
+			// logger.error(" ---------------------------- " + serverName + "
+			// ------------------------------");
+			if (!isLabListContainsCaseList(spaList, spaArray)) {
+				continue;
+			}
+			if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
+				// logger.error("Server: " + rtdbList.toString() + "case: " +
+				// rtdbArray.toString());
+				continue;
+			}
+			if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
+					|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
+				// logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
+				continue;
+			}
+			boolean isReleaseMath = false;
+			// logger.error(serverRelease + " --- " + release);
+			if (serverRelease.equals(release)) {
+				isReleaseMath = true;
+				return serverName;
+			} else {
+				JSONArray portingReleaseList = JSONArray
+						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
+				// logger.error(serverRelease + " --- " + portingReleaseList);
+				if (isInJSONArray(serverRelease, portingReleaseList)) {
+					isReleaseMath = true;
+				} else {
+					if (porting_release.endsWith("+")) {
+						int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
+						// logger.error(serverRelease + " --- " + releaseList);
+						if (serverReleasePostion != -1) {
+							int LastReleasePostion = postionInJSONArray(porting_release.substring(
+									porting_release.lastIndexOf(",") + 1, porting_release.length() - 1), releaseList);
+							if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
+								isReleaseMath = true;
+							}
+						}
+					}
+				}
+
+			}
+
+			if (isReleaseMath) {
+				serverNameTmp = serverName;
+			} else {
+				// logger.debug("case_name: " + caseName + " Server: " + serverName);
+				continue;
+			}
+		}
+
+		return serverNameTmp;
+	}
+
+	private void updatedistributeDB(JSONArray KVMList) {
+		JSONArray caseList = new JSONArray();
+
+		Connection connection = null;
+		Statement state = null;
+
+		Connection connection_DftCaseDB = null;
+		Statement state_DftCaseDB = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			String DftCaseDB = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
+			connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
+			connection_DftCaseDB = DriverManager.getConnection("jdbc:sqlite:" + DftCaseDB);
+			state = connection.createStatement();
+			state_DftCaseDB = connection_DftCaseDB.createStatement();
+			String query_sql;
+			if (KVMList.size() > 0) {
+				query_sql = "select case_name from toDistributeCases where ";
+				for (int i = 0; i < KVMList.size(); i++) {
+					query_sql += "server like '%" + KVMList.getString(i) + "%' or ";
+				}
+				query_sql = query_sql.substring(0, query_sql.length() - 4) + ";";
+				logger.info("updatedistributeDB >> KVMList.size() > 0  >> "+query_sql);
+				ResultSet result = state.executeQuery(query_sql);
+				while (result.next()) {
+					caseList.add(result.getString("case_name"));
+				}
+			}
+
+			if (CaseSearchService.sqlAdmin.equals("")) {
+				query_sql = "select case_name from DailyCase where case_status = 'I' order by lab_number asc,special_data asc;";
+				// query_sql = "select case_name from DailyCase where case_name not
+				// in (select case_name from toDistributeCases);";
+				logger.info("updatedistributeDB >> CaseSearchService.sqlAdmin.equals(\"\") 1 >> "+query_sql);
+				ResultSet result2 = state.executeQuery(query_sql);
+				while (result2.next()) {
+					caseList.add(result2.getString("case_name"));
+				}
+
+				query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in (select case_name from DailyCase where case_status = 'I'));";
+				logger.info("updatedistributeDB >> CaseSearchService.sqlAdmin.equals(\"\") 2 >> "+query_sql);
+				state.executeUpdate(query_sql);
+			} else {
+				try {
+					String attachDatabase = "ATTACH '" + DftCaseDB + "' As dt;";
+					state.execute(attachDatabase);
+				} catch (Exception e) {
+				} finally {
+					String syncCaseDepends = "replace Into CaseDepends(case_name, SPA, DB, SecData) select case_name, SPA, DB, SecData from dt.CaseDepends;";
+					logger.info("updatedistributeDB >> finally >> "+syncCaseDepends);
+					state.execute(syncCaseDepends);
+				}
+
+				query_sql = CaseSearchService.sqlAdmin;
+				if (query_sql.contains("DailyCase")) {
+					// query_sql = "select case_name from DailyCase where case_name not
+					// in (select case_name from toDistributeCases);";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DailyCase\") 1 >> "+query_sql);
+					ResultSet result2 = state.executeQuery(query_sql);
+					while (result2.next()) {
+						caseList.add(result2.getString("case_name"));
+					}
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
+							+ CaseSearchService.sqlAdmin + "));";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DailyCase\") 2 >> "+query_sql);
+					state.executeUpdate(query_sql);
+				} else if (query_sql.contains("DftTag")) {
+					logger.info("updatedistributeDB >> query_sql.contains(\"DftTag\") 1 >> "+query_sql);
+					ResultSet result2 = state_DftCaseDB.executeQuery(query_sql);
+					String tmp = "";
+					while (result2.next()) {
+						tmp += "\"";
+						caseList.add(result2.getString("case_name"));
+						tmp += result2.getString("case_name");
+						tmp += "\"";
+						tmp += ",";
+					}
+					tmp = tmp.substring(0, tmp.length() - 1);
+					
+					query_sql = "delete from toDistributeCases where case_name in (select case_name from toDistributeCases where case_name not in ("
+							+ tmp + "));";
+					logger.info("updatedistributeDB >> query_sql.contains(\"DftTag\") 2 >> "+query_sql);
+					state.executeUpdate(query_sql);
+				}
+			}
+			if (caseList.size() > 0) {
+				updateCaseStatusDB(caseList);
+			}
+		} catch (SQLException e1) {
+			logger.error(e1);
+		} catch (Exception e2) {
+
+			logger.error(e2);
+		} finally {
+			try {
+				if (state != null) {
+					state.close();
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e3) {
+
+				e3.printStackTrace();
+			}
+
+		}
+	}
+
+	private JSONArray genCaseListToLab(String ServerName) {
 		JSONArray caseList = new JSONArray();
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		String querySecDataSql = "SELECT T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name WHERE T.server LIKE '%"+serverName+"%' AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData ORDER BY num DESC;";
