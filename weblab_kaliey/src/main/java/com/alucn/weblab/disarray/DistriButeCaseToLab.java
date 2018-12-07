@@ -947,7 +947,7 @@ public class DistriButeCaseToLab {
 		for(String serverName: idleNum.keySet()){
 			int currentServerNum = idleNum.get(serverName);
 			logger.debug(serverName+" of idle status num "+currentServerNum);
-            if(currentServerNum > 10){
+            if(currentServerNum > 1){
 				for (int i = 0; i < serversList.size(); i++) {
 					JSONObject serverBody = serversList.getJSONObject(i);
 					JSONObject serverMemTwo = serverBody.getJSONObject(Constant.LAB);
@@ -957,7 +957,7 @@ public class DistriButeCaseToLab {
 					JSONArray DB = removeRelease(serverMemTwo.getJSONArray(Constant.SERVERRTDB));
 					String protocol = serverMemTwo.getString(Constant.SERVERPROTOCOL);
 					String release = serverMemTwo.getString(Constant.SERVERRELEASE);
-					if (serverNameTwo.equals(serverName) && serverStatus.equals(Constant.CASESTATUSIDLE)) {
+					if (serverNameTwo.equals(serverName) && serverStatus.getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
 						JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
 						JSONObject installedLabInfo = new JSONObject();
 		            	if(installedLab.containsKey(serverName)){
@@ -978,28 +978,30 @@ public class DistriButeCaseToLab {
 							public void run() {
 								try {
 									while(true){
-										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine(""));
+										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
 										String installedStatus = installedLab.getJSONObject(serverName).getString(Constant.STATUS);
-										serverStatus.put(Constant.STATUS, installedStatus);
-	                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-										if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
-											idleNum.put(serverName, 0);
-											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
-											serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
-		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-											break;
-										}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
-											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
-											JSONArray cc_list = new JSONArray();
-											JSONArray to_list = new JSONArray();
-											cc_list.add("Haiqi.Wang@alcatel-lucent.com");
-											to_list.add("xiuyun.he@nokia-sbell.com");
-											SendMail.genReport(cc_list, to_list, serverName);
+										if(installedStatus!=null && !"".equals(installedStatus)) {
 											serverStatus.put(Constant.STATUS, installedStatus);
-		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-											break;
+											CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+											if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
+												idleNum.put(serverName, 0);
+												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+												serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
+												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												break;
+											}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
+												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+												JSONArray cc_list = new JSONArray();
+												JSONArray to_list = new JSONArray();
+												cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+												to_list.add("xiuyun.he@nokia-sbell.com");
+												SendMail.genReport(cc_list, to_list, serverName);
+												serverStatus.put(Constant.STATUS, installedStatus);
+												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												break;
+											}
 										}
-											Thread.sleep(100000);
+										Thread.sleep(100000);
 									}
 								} catch (Exception e) {
 									logger.error("lab reinstall exception... " + serverName, e);
