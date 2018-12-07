@@ -612,70 +612,6 @@ public class DistriButeCaseToLab {
 		return setMap;
 	}
 	
-	private JSONArray genCaseListToLab(String serverName) throws Exception {
-		String serverName = "";
-		String serverNameTmp = "";
-		for (int i = 0; i < Servers.size(); i++) {
-			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-			serverName = ServerMem.getString(Constant.SERVERNAME);
-			JSONArray spaList = removeRelease(ServerMem.getJSONArray(Constant.SERVERSPA));
-			JSONArray rtdbList = removeRelease(ServerMem.getJSONArray(Constant.SERVERRTDB));
-			String serverProtocol = ServerMem.getString(Constant.SERVERPROTOCOL);
-			String serverRelease = ServerMem.getString(Constant.SERVERRELEASE);
-			// logger.error("Server: " + spaList.toString() + " ---- " +
-			// rtdbList.toString());
-			// logger.error(" ---------------------------- " + serverName + "
-			// ------------------------------");
-			if (!isLabListContainsCaseList(spaList, spaArray)) {
-				continue;
-			}
-			if (!isLabListContainsCaseList(rtdbList, rtdbArray)) {
-				// logger.error("Server: " + rtdbList.toString() + "case: " +
-				// rtdbArray.toString());
-				continue;
-			}
-			if ((serverProtocol.equals("ANSI") && !customer.equalsIgnoreCase("VZW"))
-					|| (serverProtocol.equals("ITU") && customer.equalsIgnoreCase("VZW"))) {
-				// logger.error("serverProtocol: " + serverProtocol + " customer: " + customer);
-				continue;
-			}
-			boolean isReleaseMath = false;
-			// logger.error(serverRelease + " --- " + release);
-			if (serverRelease.equals(release)) {
-				isReleaseMath = true;
-				return serverName;
-			} else {
-				JSONArray portingReleaseList = JSONArray
-						.fromObject("[\"" + porting_release.replace("+", "").replace(",", "\",\"") + "\"]");
-				// logger.error(serverRelease + " --- " + portingReleaseList);
-				if (isInJSONArray(serverRelease, portingReleaseList)) {
-					isReleaseMath = true;
-				} else {
-					if (porting_release.endsWith("+")) {
-						int serverReleasePostion = postionInJSONArray(serverRelease, releaseList);
-						// logger.error(serverRelease + " --- " + releaseList);
-						if (serverReleasePostion != -1) {
-							int LastReleasePostion = postionInJSONArray(porting_release.substring(
-									porting_release.lastIndexOf(",") + 1, porting_release.length() - 1), releaseList);
-							if (LastReleasePostion != -1 && serverReleasePostion >= LastReleasePostion) {
-								isReleaseMath = true;
-							}
-						}
-					}
-				}
-
-			}
-
-			if (isReleaseMath) {
-				serverNameTmp = serverName;
-			} else {
-				// logger.debug("case_name: " + caseName + " Server: " + serverName);
-				continue;
-			}
-		}
-
-		return serverNameTmp;
-	}
 
 	private void updatedistributeDB(JSONArray KVMList) {
 		JSONArray caseList = new JSONArray();
@@ -891,26 +827,28 @@ public class DistriButeCaseToLab {
 							public void run() {
 								try {
 									while(true){
-										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine(""));
+										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
 										String installedStatus = installedLab.getJSONObject(serverName).getString(Constant.STATUS);
-										serverStatus.put(Constant.STATUS, installedStatus);
-	                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-										if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
-											idleNum.put(serverName, 0);
-											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
-											serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
-		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-											break;
-										}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
-											logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
-											JSONArray cc_list = new JSONArray();
-											JSONArray to_list = new JSONArray();
-											cc_list.add("Haiqi.Wang@alcatel-lucent.com");
-											to_list.add("xiuyun.he@nokia-sbell.com");
-											SendMail.genReport(cc_list, to_list, serverName);
+										if(installedStatus.equals("")){
 											serverStatus.put(Constant.STATUS, installedStatus);
 		                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-											break;
+											if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
+												idleNum.put(serverName, 0);
+												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+												serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
+			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												break;
+											}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
+												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+												JSONArray cc_list = new JSONArray();
+												JSONArray to_list = new JSONArray();
+												cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+												to_list.add("xiuyun.he@nokia-sbell.com");
+												SendMail.genReport(cc_list, to_list, serverName);
+												serverStatus.put(Constant.STATUS, installedStatus);
+			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												break;
+											}
 										}
 											Thread.sleep(100000);
 									}
