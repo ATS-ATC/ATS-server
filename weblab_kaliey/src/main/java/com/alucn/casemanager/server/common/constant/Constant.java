@@ -42,6 +42,7 @@ public class Constant {
 	public static final String ACKUPDATE = "ACKUPDATESUCCESS";
 	public static final String DATASOURCE = "sqlite-0";
 	public static final String REINSTALLLABSUCCESS = "Succeed";
+	public static final String REINSTALLLABCOMPLETE = "Complete";
 	public static final String REINSTALLLABOK = "OK";
 	public static final String REINSTALLLABFAIL = "Failed";
 	public static final String CASESTATUSREADY = "Ready";
