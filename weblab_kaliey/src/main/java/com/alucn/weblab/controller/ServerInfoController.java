@@ -92,7 +92,7 @@ public class ServerInfoController {
 			hashMap.put("starttime", TimeUtil.stampToTime(starttime));    
 			hashMap.put("endtime", TimeUtil.stampToTime(endtime));    
 		}
-		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(limit, offset, serverName, deptid,hasRole);
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptid,hasRole);
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
 		return resultMap;
