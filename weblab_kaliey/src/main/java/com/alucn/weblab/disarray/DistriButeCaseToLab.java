@@ -183,6 +183,7 @@ public class DistriButeCaseToLab {
 												JSONArray cc_list = new JSONArray();
 												JSONArray to_list = new JSONArray();
 												cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+												cc_list.add("lei.k.huang@nokia-sbell.com");
 												to_list.add("xiuyun.he@nokia-sbell.com");
 												SendMail.genReport(cc_list, to_list, serverName);
 												serverStatus.put(Constant.STATUS, installedStatus);
@@ -202,8 +203,6 @@ public class DistriButeCaseToLab {
 											Thread.sleep(100000);
 										} catch (InterruptedException e) {}
 									}
-								} catch (Exception e) {
-									logger.error("lab reinstall exception... " + serverName, e);
 								}
 							}
 						});
