@@ -212,6 +212,12 @@ var TableInit = function () {
                 field: 'case_name',
                 title: 'CasesName'
             }, {
+                field: 'lab_number',
+                title: 'LabNumber'
+            }, {
+                field: 'mate',
+                title: 'Mate'
+            }, {
                 field: 'author',
                 title: 'Author',
                 sortable: true

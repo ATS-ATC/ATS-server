@@ -99,6 +99,8 @@ public class CaseConfigurationCache {
 						if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
 							//singletonCaseProperties.remove(i);
 							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+							status = status.equals("Succeed")?"Idle":status;
+							status = status.equals("ReadyInstall")?"Idle":status;
 							
 							String ulaststatus="";
 							long ulasttime = new Date().getTime();
@@ -114,7 +116,7 @@ public class CaseConfigurationCache {
 							long hodingtime = nowtime-ulasttime;
 							logger.info("ulaststatus : "+ulaststatus+" status : "+status);
 							logger.info("ulasttime : "+ulasttime+" nowtime : "+ nowtime+" >> "+hodingtime);
-							if(!ulaststatus.equals(status)) {
+							if(!ulaststatus.equals(status)&&!ulaststatus.equals("Succeed")) {
 								logger.info(ulaststatus+">>"+status);
 								//此处应该加到数据库做成log
 								//设计表结构：n_lab_status_time

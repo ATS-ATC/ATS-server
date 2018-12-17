@@ -32,6 +32,7 @@ public class DistriButeCaseToLab {
 	String specialRelease = "28A,28C,28F,28G,28H";
 	int counterUninsRS=0;
 	Map<String, Integer> idleNum = new HashMap<String, Integer>();
+	private List<Object> listParams = new ArrayList<Object>();
 	private DistriButeCaseToLab(){};
 	static DistriButeCaseToLab instance = null;
 
@@ -59,12 +60,16 @@ public class DistriButeCaseToLab {
 	private JSONArray genCaseListToLab(String serverName) throws Exception {
 		JSONArray caseList = new JSONArray();
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-		String querySecDataSql = "SELECT T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name WHERE T.server LIKE '%"+serverName+"%' AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData ORDER BY num DESC;";
-		List<Map<String, Object>> secDataList = jdbc_cf.findModeResult(querySecDataSql, null);
+		String querySecDataSql = "SELECT D.base_data, T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData, D.base_data ORDER BY num DESC;";
+		listParams.clear();
+		listParams.add("%"+serverName+"%");
+		List<Map<String, Object>> secDataList = jdbc_cf.findModeResult(querySecDataSql, listParams);
 		int readyDistributeCaseNum = 0;
 		for(int i=0; i<secDataList.size(); i++){
-			String queryToDistributeCaseSql = "SELECT T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name WHERE T.server LIKE '%"+serverName+"%' AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = '"+secDataList.get(i).get("SecData")+"';";
-			List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryToDistributeCaseSql, null);
+			listParams.add(secDataList.get(i).get("SecData"));
+			listParams.add(secDataList.get(i).get("base_data"));
+			String queryToDistributeCaseSql = "SELECT D.base_data, T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = ? and D.base_data = ? ;";
+			List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryToDistributeCaseSql, listParams);
 			for(int j=0; j<toDistributeCaseList.size(); j++){
 				caseList.add(toDistributeCaseList.get(j).get("case_name"));
 				readyDistributeCaseNum++;
@@ -72,6 +77,7 @@ public class DistriButeCaseToLab {
 					return caseList;
 				}
 			}
+			break;
 		}
 		return caseList;
 	}
@@ -102,7 +108,6 @@ public class DistriButeCaseToLab {
 				JSONObject labInfo = new JSONObject();
 				labInfo.put(Constant.CASELISTUUID, UUID.randomUUID().toString());
 				labInfo.put(Constant.CASELIST, caseList);
-				DbOperation.UpdateDistributedCase(caseList, serverName);
 				cases.put(serverName, labInfo);
 			}else{
 				idleNum.put(serverName, 0);
@@ -157,15 +162,17 @@ public class DistriButeCaseToLab {
 						Thread installLabThread = new Thread(new Runnable() {
 							@Override
 							public void run() {
-								try {
-									while(true){
+								while(true){
+									try {
+										idleNum.put(serverName, 0);
+//										serverStatus.put(Constant.STATUS, Constant.LABSTATUSREADYINSTALL);
+//										CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
 										JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
 										String installedStatus = installedLab.getJSONObject(serverName).getString(Constant.STATUS);
 										if(installedStatus!=null && !"".equals(installedStatus)) {
 											serverStatus.put(Constant.STATUS, installedStatus);
 											CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
 											if(Constant.REINSTALLLABSUCCESS.equals(installedStatus)){
-												idleNum.put(serverName, 0);
 												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
 												serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
 												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
@@ -187,10 +194,13 @@ public class DistriButeCaseToLab {
 												break;
 											}
 										}
-										Thread.sleep(100000);
+									} catch (Exception e) {
+										logger.error("lab reinstall exception... " + serverName, e);
+									}finally{
+										try {
+											Thread.sleep(100000);
+										} catch (InterruptedException e) {}
 									}
-								} catch (Exception e) {
-									logger.error("lab reinstall exception... " + serverName, e);
 								}
 							}
 						});
@@ -198,7 +208,7 @@ public class DistriButeCaseToLab {
 					}
 				}
 			}
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		}
 		availableCases.put("availableCase", cases);
 		return availableCases;

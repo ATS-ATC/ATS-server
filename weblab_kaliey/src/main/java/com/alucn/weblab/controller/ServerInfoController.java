@@ -81,7 +81,7 @@ public class ServerInfoController {
 		if(deptByUserName.size()==1) {
 			deptid = (String) deptByUserName.get(0).get("deptid");
 		}
-		Subject subject = SecurityUtils.getSubject();  
+		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
 		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid,hasRole);
 		for (HashMap<String, Object> hashMap : labLogJson) {

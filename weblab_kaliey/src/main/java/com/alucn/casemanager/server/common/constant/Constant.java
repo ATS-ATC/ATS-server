@@ -19,6 +19,7 @@ public class Constant {
 	public static final String SERVERRELEASE = "serverRelease";
 	public static final String SERVERTYPE = "serverType";
 	public static final String SERVERMATE = "serverMate";
+	public static final String SERVERNUM = "lab_number";
 	public static final String SERVERPROTOCOL = "serverProtocol";
 	public static final String MATESERVER = "mateServer";
 	public static final String SETNAME = "setName";
@@ -29,7 +30,6 @@ public class Constant {
 	public static final String RUNNINGCASE = "runningCase";
 	public static final String TASKRESULT = "taskResult";
 	public static final String SUCCESS = "success";
-	public static final String SERVERNUM = "lab_number";
 	public static final String NAME = "name";
 	public static final String TIME = "time";
 	public static final String FAIL = "fail";
@@ -42,10 +42,11 @@ public class Constant {
 	public static final String ACKUPDATE = "ACKUPDATESUCCESS";
 	public static final String DATASOURCE = "sqlite-0";
 	public static final String REINSTALLLABSUCCESS = "Succeed";
-	public static final String REINSTALLLABCOMPLETE = "Complete";
 	public static final String REINSTALLLABOK = "OK";
 	public static final String REINSTALLLABFAIL = "Failed";
+	public static final String REINSTALLLABCOMPLETE = "Complete";
 	public static final String CASESTATUSREADY = "Ready";
+	public static final String LABSTATUSREADYINSTALL = "ReadyInstall";
 	public static final String CASESTATUSDEAD = "Dead";
 	public static final String CASESTATUSIDLE = "Idle";
 	public static final String CASESTATUSFINSHED = "Finished";

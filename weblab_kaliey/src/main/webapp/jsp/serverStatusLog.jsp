@@ -266,6 +266,7 @@
 				}, {
 					field : 'startstatus',
 					title : 'StartStatus',
+					formatter: 'statusFormatter'
 				}, {
 					field : 'starttime',
 					title : 'StartTime',
@@ -278,6 +279,7 @@
 				}, {
 					field : 'hodingtime',
 					title : 'Time(d/hh:mm:ss)',
+					formatter: 'countFormatter'
 				}]
 			});
 		};
@@ -315,6 +317,21 @@
 	}
 	function countFormatter(value, row, index) {
 		return "<span class='badge' >" + value + "</span>";
+	}
+	function statusFormatter(value, row, index) {
+			if (value == 'Idle') {
+			    return '<span class="label label-success">Idle</span>';
+		  	} else if(value == 'Dead'){
+			    return '<span class="label label-danger">Dead</span>';
+		  	} else if(value == 'Running'){
+			    return '<span class="label label-warning">Running</span>';
+		  	} else if(value == 'Ready'){
+			    return '<span class="label label-info">Ready</span>';
+		  	} else if(value == 'Finished'){
+			    return '<span class="label label-default">Finished</span>';
+		  	}else{
+		  		return '<span class="label label-default">'+value+'</span>';
+		  	}
 	}
 </script>
 </html>
