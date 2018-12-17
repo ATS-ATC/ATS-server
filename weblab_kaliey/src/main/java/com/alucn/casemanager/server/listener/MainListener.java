@@ -68,7 +68,7 @@ public class MainListener implements ServletContextListener{
 				
 				File file = new File(configFilesPath);
 				if(file.isDirectory()){
-					logger.info("[ Profile path ]"+configFilesPath);
+					logger.info("[ Profile path ] "+configFilesPath);
 					
 					ServerListener serverListener = new ServerListener();
 					serverListener.initialize();

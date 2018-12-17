@@ -81,7 +81,7 @@ public class ServerInfoController {
 		if(deptByUserName.size()==1) {
 			deptid = (String) deptByUserName.get(0).get("deptid");
 		}
-		Subject subject = SecurityUtils.getSubject();  
+		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
 		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid,hasRole);
 		for (HashMap<String, Object> hashMap : labLogJson) {
@@ -92,7 +92,7 @@ public class ServerInfoController {
 			hashMap.put("starttime", TimeUtil.stampToTime(starttime));    
 			hashMap.put("endtime", TimeUtil.stampToTime(endtime));    
 		}
-		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(limit, offset, serverName, deptid,hasRole);
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptid,hasRole);
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
 		return resultMap;

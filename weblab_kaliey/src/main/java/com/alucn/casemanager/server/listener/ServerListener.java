@@ -19,6 +19,7 @@ import javax.servlet.ServletContextListener;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.HttpReq;
+import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 
 import net.sf.json.JSONArray;
@@ -32,41 +33,49 @@ public class ServerListener implements ServletContextListener {
 		System.out.println("ServerListener >> contextInitialized");
 		new Thread(new Runnable() {
 			public void run() {
-				Connection connection = null;
+				//Connection connection = null;
 				try {
-					Class.forName("org.sqlite.JDBC");
+					/*Class.forName("org.sqlite.JDBC");
 					String CaseInfoDB = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 					connection = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 					String sql ="select * from serverList where status='Installing'";
 					PreparedStatement prep = connection.prepareStatement(sql);
 					ResultSet executeQuery = prep.executeQuery();
-					List<Map<Object, Object>> resultSetToList = new ArrayList<Map<Object, Object>>();
-					if(executeQuery.next()) {
-						resultSetToList = resultSetToList(executeQuery);
-					}
-					System.out.println("Installing server >> "+resultSetToList);
-					if(resultSetToList.size()>0) {
+					System.out.println("Installing server executeQuery >> "+executeQuery);*/
+					
+					
+					String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+					JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+					String queryConfigs = "select * from serverList where status='Installing'";
+					ArrayList<HashMap<String,Object>> configs = jdbc.query(queryConfigs);
+					
+					System.out.println("Installing server >> "+configs);
+					if(configs.size()>0) {
 						List<String> serverListDB = new ArrayList<>();
-						for (Map<Object, Object> map : resultSetToList) {
+						for (HashMap<String, Object> map : configs) {
 							String serverName = ""+map.get("serverName");
 							serverListDB.add(serverName);
 						}
 						while(true) {
+							System.out.println("while >> "+serverListDB);
 							if(serverListDB.size()==0) { 
+								System.out.println("while >> serverListDB.size()==0  >>  break");
 								break;
 							}else {
 								List serverListSYS = new ArrayList<>();
 								JSONArray currServersStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
+								System.out.println("currServersStatus  >> "+currServersStatus);
 								if(currServersStatus.size()>0) {
 									for(int i=0; i<currServersStatus.size();i++){
 										JSONObject tmpJsonObject = currServersStatus.getJSONObject(i);
 										String serverName = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 										serverListSYS.add(serverName);
 									}
+									System.out.println("serverListSYS >> "+serverListSYS);
 									serverListSYS.retainAll(serverListDB);
+									System.out.println("serverListSYS >> retainAll >> "+serverListSYS);
 									if(serverListSYS.size()>0) {
-										System.out.println("serverListSYS >> "+serverListSYS);
-										System.out.println("serverListDB >> "+serverListDB);
+										//System.out.println("serverListDB >> "+serverListDB);
 										for (Object object : serverListSYS) {
 											//改内存为installing
 											addToSYSLabStatus(currServersStatus,""+object,"Installing");

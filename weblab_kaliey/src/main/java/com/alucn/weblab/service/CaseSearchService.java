@@ -390,7 +390,7 @@ public class CaseSearchService {
 			
 			
 			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-			String query_sql="select max(group_id) gid from toDistributeCases";
+			String query_sql="select max(group_id)+1 gid from toDistributeCases";
 			String gid = caseSearchDaoImpl.query(jdbc, query_sql).get(0).get("gid").toString();
 			
 			

@@ -9,7 +9,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.log4j.Logger;
@@ -17,6 +20,7 @@ import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.exception.SysException;
+import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 
 import net.sf.json.JSONArray;
@@ -119,18 +123,41 @@ public class ReceiveAndSendRun implements Runnable {
 		public SendMessage(){}
 		@Override
 		public void run() {
-			logger.info(serverName+ "socket pipe send message thread is started");			
+			logger.info(serverName+ "socket pipe send message thread is started");
+			JdbcUtil jdbc_cf = null;
+			List<Object> listParams = new ArrayList<Object>();
+			List<Object[]> paramsList = new ArrayList<Object[]>();
 			while(true){
-				try {					
+				try {
+					if(jdbc_cf == null){
+						jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+					}
 					JSONArray currServersStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
 					for(int i=0; i<currServersStatus.size();i++){
                         JSONObject tmpJsonObject = (JSONObject) currServersStatus.get(i);
                         String serverNameIn = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
                         String status = tmpJsonObject.getJSONObject(Constant.TASKSTATUS).getString(Constant.STATUS);
                         if(serverName.equals(serverNameIn) && status.equals(Constant.CASESTATUSIDLE)){
-                        	String message = sendMessageBlockingQueue.take();
-        					sendMessage(message);
-        					logger.info(serverNameIn+ " socket pipe send message of queue "+ message);
+                        	String queryDistributedCaseTb = "SELECT * FROM DistributedCaseTbl WHERE server_name LIKE ?;";
+                        	listParams.clear();
+                        	listParams.add("%"+serverName+"%");
+                            List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryDistributedCaseTb, listParams);
+                            if(toDistributeCaseList.size()==0){
+                            	String message = sendMessageBlockingQueue.take();
+            					sendMessage(message);
+            					logger.info(serverNameIn+ " socket pipe send message of queue "+ message);
+            					String replaceDistributedCaseTb = "replace into DistributedCaseTbl(case_name, server_name) values (?, ?);";
+            					JSONObject availableCase = JSONObject.fromObject("{"+message+"}");
+            					paramsList.clear();
+            					JSONArray case_list = availableCase.getJSONObject(Constant.AVAILABLECASE).getJSONArray(Constant.CASELIST);
+            					for(int j=0; j<case_list.size(); j++){
+            						Object [] paramsArray = new Object[2];
+            						paramsArray[0] = case_list.get(j);
+            						paramsArray[1] = serverName;
+            						paramsList.add(paramsArray);
+            					}
+            					jdbc_cf.executeBatch(replaceDistributedCaseTb, paramsList);
+                            }
                         }
 					}
 				}catch (SysException e) {

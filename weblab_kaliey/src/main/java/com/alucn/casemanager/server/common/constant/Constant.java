@@ -44,7 +44,9 @@ public class Constant {
 	public static final String REINSTALLLABSUCCESS = "Succeed";
 	public static final String REINSTALLLABOK = "OK";
 	public static final String REINSTALLLABFAIL = "Failed";
+	public static final String REINSTALLLABCOMPLETE = "Complete";
 	public static final String CASESTATUSREADY = "Ready";
+	public static final String LABSTATUSREADYINSTALL = "ReadyInstall";
 	public static final String CASESTATUSDEAD = "Dead";
 	public static final String CASESTATUSIDLE = "Idle";
 	public static final String CASESTATUSFINSHED = "Finished";
