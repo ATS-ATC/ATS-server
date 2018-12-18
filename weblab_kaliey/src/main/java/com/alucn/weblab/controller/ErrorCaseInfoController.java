@@ -64,10 +64,10 @@ public class ErrorCaseInfoController {
 		String userName = session.getAttribute("login").toString();
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasARole = subject.hasRole("admin");
-        //boolean hasSRole = subject.hasRole("super");
+        boolean hasSRole = subject.hasRole("super");
 		boolean checkAllCase = false;
-		//if (hasARole || hasSRole) {
-		if (hasARole) {
+		if (hasARole || hasSRole) {
+		//if (hasARole) {
 			checkAllCase = true;
 		}
         
