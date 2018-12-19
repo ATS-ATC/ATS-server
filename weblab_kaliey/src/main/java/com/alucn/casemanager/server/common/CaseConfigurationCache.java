@@ -101,6 +101,7 @@ public class CaseConfigurationCache {
 							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
 							status = status.equals("Succeed")?"Idle":status;
 							status = status.equals("ReadyInstall")?"Idle":status;
+							status = status.equals("getInstalling")?"Installing":status;
 							
 							String ulaststatus="";
 							long ulasttime = new Date().getTime();

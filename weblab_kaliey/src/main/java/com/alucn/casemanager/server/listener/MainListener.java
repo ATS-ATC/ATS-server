@@ -70,10 +70,10 @@ public class MainListener implements ServletContextListener{
 				if(file.isDirectory()){
 					logger.info("[ Profile path ] "+configFilesPath);
 					
-					ServerListener serverListener = new ServerListener();
+					/*ServerListener serverListener = new ServerListener();
 					serverListener.initialize();
 					
-					Thread.sleep(1000*5);
+					Thread.sleep(1000*5);*/
 
 					//start socket listener
 					SocketListener socketListener = new SocketListener();

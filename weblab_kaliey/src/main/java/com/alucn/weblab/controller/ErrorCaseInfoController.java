@@ -51,8 +51,13 @@ public class ErrorCaseInfoController {
 		//String auth = session.getAttribute("auth").toString();
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
-		ArrayList<HashMap<String, Object>> failCaseList = errorCaseInfoService.getErrorCaseInfoTable(userName,feature, hasRole,offset,limit);
-		int errorCaseInfoTableCount = errorCaseInfoService.getErrorCaseInfoTableCount(userName,feature, hasRole);
+        boolean hasSRole = subject.hasRole("super");
+		boolean checkAllCase = false;
+		if (hasRole || hasSRole) {
+			checkAllCase = true;
+		}
+		ArrayList<HashMap<String, Object>> failCaseList = errorCaseInfoService.getErrorCaseInfoTable(userName,feature, checkAllCase,offset,limit);
+		int errorCaseInfoTableCount = errorCaseInfoService.getErrorCaseInfoTableCount(userName,feature, checkAllCase);
 		returnMap.put("rows", failCaseList);
 		returnMap.put("total", errorCaseInfoTableCount);
 		return returnMap;
