@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -182,10 +183,11 @@ public class DistriButeCaseToLab {
 												JSONArray cc_list = new JSONArray();
 												JSONArray to_list = new JSONArray();
 												cc_list.add("Haiqi.Wang@alcatel-lucent.com");
+												cc_list.add("lei.k.huang@nokia-sbell.com");
 												to_list.add("xiuyun.he@nokia-sbell.com");
 												SendMail.genReport(cc_list, to_list, serverName);
 												serverStatus.put(Constant.STATUS, installedStatus);
-												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
 												break;
 											}else if(Constant.REINSTALLLABCOMPLETE.equals(installedStatus)){
 												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);

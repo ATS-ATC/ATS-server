@@ -247,7 +247,6 @@ public class CaseConfigurationCache {
 				jdbc_cf.executeSql(dfttagdaily_sql);
 				jdbc_cf.executeSql(toDistri_sql);
 				jdbc_cf.executeSql(toDistriTbl_sql);
-				
 				getTimeCase.analysisCase(0, "/home/surepayftp/DftCase/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 //				getTimeCase.analysisCase(0, "D:/dbs/DB/"+caseName.split("/")[0], caseName.split("/")[1], caseName.split("/")[0], true, 0,"", false) ;
 				if(readUntil){

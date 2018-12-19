@@ -59,8 +59,7 @@ public class DistributeCase implements Runnable{
 	                    DbOperation.DeleteDistributedCase(unNeedServers);
 	                count = 0;
 				}
-				count ++;*/
-				
+				count ++;*/		
 				//TODO
 				//distribute command
 				distributeCommand(null);
