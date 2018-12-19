@@ -1,1 +1,6 @@
 /target/
+/bin/
+weblab_kaliey/.classpath
+weblab_kaliey/.settings/org.eclipse.core.resources.prefs
+weblab_kaliey/.settings/org.eclipse.wst.common.component
+weblab_kaliey/.settings/org.eclipse.wst.common.project.facet.core.xml
