@@ -360,7 +360,9 @@ $("#sroles").click(function(){
 	        var str ='';
 			for (i=0;i<data.length ;i++ ){
 				var slabel ="";
+				var sdisabled = "";
 				if(data[i].role_name=="admin"){
+					sdisabled = "disabled";
 					slabel="danger";
 				}else if (data[i].role_name=="super") {
 					slabel="primary";
@@ -375,10 +377,9 @@ $("#sroles").click(function(){
 				}else {
 					scheck='';
 				}
-				str = str+
-				'<div class="checkbox" style="display: inline;">'+ //onmouseover ="showRolePermission(&apos;'+data[i].role_name+'&apos;)" onmouseout ="hideRolePermission()"
+				str = str+'<div class="checkbox" style="display: inline;">'+ //onmouseover ="showRolePermission(&apos;'+data[i].role_name+'&apos;)" onmouseout ="hideRolePermission()"
 				    '<label>'+
-				        '<input type="checkbox" name="rolesCheck" value="'+data[i].role_name+'" '+scheck+'><span class="label label-'+slabel+'">'+data[i].role_name+'</span>'+
+				        '<input type="checkbox" name="rolesCheck" value="'+data[i].role_name+'" '+scheck+' '+sdisabled+'><span class="label label-'+slabel+'">'+data[i].role_name+'</span>'+
 				    '</label>'+
 				'</div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 			} 

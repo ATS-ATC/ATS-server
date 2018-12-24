@@ -77,6 +77,12 @@ public class CaseConfigurationCache {
 				boolean isExist = false;
 				String serverName = body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
+				JdbcUtil jdbc_cf = null;
+				try {
+					jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
 				//判断内存中是否有server信息，
 				//1、如果没有直接将client传过来的添加进去
 				if(singletonCaseProperties.size()==0){
@@ -86,6 +92,13 @@ public class CaseConfigurationCache {
 					//body.getJSONObject(Constant.LAB).put("lasttime", TimeUtil.stampToTime(new Date().getTime()));
 					body.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
 					//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
+					String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
+					String updateServerList = "replace into serverList values('"+serverName+"','','','','"+laststatus+"','"+deptid+"')";
+					try {
+						jdbc_cf.executeSql(updateServerList);
+					} catch (ClassNotFoundException e1) {
+						e1.printStackTrace();
+					}
 					//-----------------------------------------------------------------------------------------------
 					logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 					//System.out.println("0==[add host "+serverName+" status : "+taskStatus+"]");
@@ -96,9 +109,20 @@ public class CaseConfigurationCache {
 					for(int i=0; i<singletonCaseProperties.size();i++){
 						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
 						//当内存中的server与client中传过来的server匹配时：用client的更新server信息
+						
 						if(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME).equals(serverName)){
 							//singletonCaseProperties.remove(i);
 							String status = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
+							String ip = body.getJSONObject(Constant.LAB).getString(Constant.IP);
+							String serverRelease = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRELEASE);
+							String serverProtocol = body.getJSONObject(Constant.LAB).getString(Constant.SERVERPROTOCOL);
+							String serverSPA = body.getJSONObject(Constant.LAB).getString(Constant.SERVERSPA);
+							String serverRTDB = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRTDB);
+							String serverType = body.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE);
+							String mateServer = body.getJSONObject(Constant.LAB).getString(Constant.MATESERVER);
+							String serverMate = body.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE);
+							String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
+							
 							status = status.equals("Succeed")?"Idle":status;
 							status = status.equals("ReadyInstall")?"Idle":status;
 							status = status.equals("getInstalling")?"Installing":status;
@@ -112,6 +136,12 @@ public class CaseConfigurationCache {
 								e.printStackTrace();
 								tmpJsonObject.getJSONObject(Constant.LAB).put("laststatus", status);
 								tmpJsonObject.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
+								String updateServerList = "replace into serverList values('"+serverName+"','','','','"+status+"','"+deptid+"')";
+								try {
+									jdbc_cf.executeSql(updateServerList);
+								} catch (ClassNotFoundException e1) {
+									e1.printStackTrace();
+								}
 							}
 							long nowtime = new Date().getTime();
 							long hodingtime = nowtime-ulasttime;
@@ -123,22 +153,12 @@ public class CaseConfigurationCache {
 								//设计表结构：n_lab_status_time
 								//id,labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime,stateflag
 								try {
-									String ip = body.getJSONObject(Constant.LAB).getString(Constant.IP);
-									String serverRelease = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRELEASE);
-									String serverProtocol = body.getJSONObject(Constant.LAB).getString(Constant.SERVERPROTOCOL);
-									String serverSPA = body.getJSONObject(Constant.LAB).getString(Constant.SERVERSPA);
-									String serverRTDB = body.getJSONObject(Constant.LAB).getString(Constant.SERVERRTDB);
-									String serverType = body.getJSONObject(Constant.LAB).getString(Constant.SERVERTYPE);
-									String mateServer = body.getJSONObject(Constant.LAB).getString(Constant.MATESERVER);
-									String serverMate = body.getJSONObject(Constant.LAB).getString(Constant.SERVERMATE);
-									String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
-									JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 									String insertLog = "insert into n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
 											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
 									logger.info(insertLog);
 									jdbc_cf.executeSql(insertLog);
 									
-									String updateServerList = "update serverList set status='"+status+"' where serverName='"+serverName+"'";
+									String updateServerList = "update serverList set status='"+status+"',deptid='"+deptid+"' where serverName='"+serverName+"'";
 									jdbc_cf.executeSql(updateServerList);
 									
 								} catch (Exception e) {
@@ -149,6 +169,12 @@ public class CaseConfigurationCache {
 							}else {
 								body.getJSONObject(Constant.LAB).put("laststatus", ulaststatus);
 								body.getJSONObject(Constant.LAB).put("lasttime", ulasttime);
+								String updateServerList = "replace into serverList values('"+serverName+"','','','','"+ulaststatus+"','"+deptid+"')";
+								try {
+									jdbc_cf.executeSql(updateServerList);
+								} catch (ClassNotFoundException e1) {
+									e1.printStackTrace();
+								}
 							}
 							singletonCaseProperties.set(i,body);
 							isExist = true;
@@ -164,6 +190,13 @@ public class CaseConfigurationCache {
 							//body.getJSONObject(Constant.LAB).put("lasttime", TimeUtil.stampToTime(new Date().getTime()));
 							body.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
 							//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
+							String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
+							String updateServerList = "replace into serverList values('"+serverName+"','','','','"+laststatus+"','"+deptid+"')";
+							try {
+								jdbc_cf.executeSql(updateServerList);
+							} catch (ClassNotFoundException e1) {
+								e1.printStackTrace();
+							}
 							//-----------------------------------------------------------------------------------------------
 							logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 							//System.out.println("!0==[add host "+serverName+" status : "+taskStatus+"]");
@@ -175,6 +208,12 @@ public class CaseConfigurationCache {
 					for(int i=0; i<singletonCaseProperties.size();i++){
 						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
 						if(removeListServer.contains(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
+							String updateServerList = "delete from serverList where serverName ='"+tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME)+"'";
+							try {
+								jdbc_cf.executeSql(updateServerList);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 							singletonCaseProperties.remove(i);
 						}
 					}

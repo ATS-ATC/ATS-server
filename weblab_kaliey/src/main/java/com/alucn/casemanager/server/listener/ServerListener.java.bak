@@ -46,8 +46,7 @@ public class ServerListener implements ServletContextListener {
 					
 					String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 					JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-					String queryConfigs = "select * from serverList";
-					//String queryConfigs = "select * from serverList where status='Installing'";
+					String queryConfigs = "select * from serverList where status='Installing'";
 					ArrayList<HashMap<String,Object>> configs = jdbc.query(queryConfigs);
 					
 					System.out.println("Installing server >> "+configs);
@@ -57,26 +56,12 @@ public class ServerListener implements ServletContextListener {
 							String serverName = ""+map.get("serverName");
 							serverListDB.add(serverName);
 						}
-						int count = 0;
 						while(true) {
 							System.out.println("while >> "+serverListDB);
-							if(serverListDB.size()==0) {
+							if(serverListDB.size()==0) { 
 								System.out.println("while >> serverListDB.size()==0  >>  break");
 								break;
 							}else {
-								if(count>=60) {//等待10分钟，如果十分钟还没有则在内存中放入lost状态
-									JSONArray infos = new JSONArray();
-									//有个个问题是：不能精确到组，丢失的lab只能放到1组，
-									//需要在serverList中添加一个字段deptid
-									//在其他insert的地方添加字段
-									for (String serverName : serverListDB) {
-										infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"deptid\":\"1\",\"serverName\":\""+serverName+"\",\"serverIp\":\"0.0.0.0\",\"serverRelease\":\"SP**.*\",\"serverProtocol\":\"*\",\"serverType\": \"Line\",\"serverMate\": \"Standalone\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[],\"serverRTDB\":[]},\"taskStatus\":{\"status\":\"Lost\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
-									}
-									for(int i=0; i<infos.size(); i++){
-										CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,infos.getJSONObject(i).getJSONObject(Constant.BODY));
-									}
-									break;
-								}
 								List serverListSYS = new ArrayList<>();
 								JSONArray currServersStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
 								System.out.println("currServersStatus  >> "+currServersStatus);
@@ -86,12 +71,43 @@ public class ServerListener implements ServletContextListener {
 										String serverName = tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 										serverListSYS.add(serverName);
 									}
-									System.out.println("serverListDB >> "+serverListDB);
-									serverListDB.removeAll(serverListSYS);
-									System.out.println("serverListDB >> removeAll >> "+serverListDB);
+									System.out.println("serverListSYS >> "+serverListSYS);
+									serverListSYS.retainAll(serverListDB);
+									System.out.println("serverListSYS >> retainAll >> "+serverListSYS);
+									if(serverListSYS.size()>0) {
+										//System.out.println("serverListDB >> "+serverListDB);
+										for (Object object : serverListSYS) {
+											//改内存为installing
+											addToSYSLabStatus(currServersStatus,""+object,"Installing");
+											//起线程监控状态
+											new Thread(new Runnable() {
+												@Override
+												public void run() {
+													while(true) {
+														String installLabResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+object+".json").getJSONArray("content").getJSONObject(0).getString("status");
+														if(Constant.REINSTALLLABSUCCESS.equals(installLabResult)){
+															addToSYSLabStatus(currServersStatus,""+object,"Idle");
+															break;
+														}else if(Constant.REINSTALLLABFAIL.equals(installLabResult)){
+															addToSYSLabStatus(currServersStatus,""+object,"Failed");
+															break;
+														}
+														try {
+															Thread.sleep(1000*60);
+														} catch (InterruptedException e) {
+															e.printStackTrace();
+														}
+													}
+													Thread.currentThread().interrupt();
+													System.out.println("serverList is installed , break thread.");
+													return;
+												}
+											}).start();
+											serverListDB.remove(""+object);
+										}
+									}
 								}
-								count++;
-								Thread.sleep(1000*10); //10s检查一次
+								Thread.sleep(1000*10);
 							}
 						}
 					}else {

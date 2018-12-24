@@ -170,6 +170,7 @@
 						modal : true,
 						buttons : {
 							"Confirm" : function() {
+								//alert("condition");
 								$.post("./removeServerInfo.do", {
 									condition : condition,
 								}, function(data) {
@@ -218,12 +219,13 @@
 		});
 
 		$("#removeServer").click(function() {
-			var serverName = document.getElementById("featureid").value;
+			var serverName = document.getElementById("serverName").value;
+			//alert(serverName);
 			confirmRemoveServer(serverName, "Confirm to remove this server?");
 		});
 
 		$("#cancelAll").click(function() {
-			var serverName = document.getElementById("featureid").value;
+			var serverName = document.getElementById("serverName").value;
 			confirmCancelAll(serverName, "Confirm to cancel all running cases?");
 		});
 
@@ -237,7 +239,7 @@
 				<table class="table">
 					<tr>
 						<td>Server:</td>
-						<td><span class="subdetail" id="serverName">${info.lab.serverName}</span></td>
+						<td><input style="display: none" id="serverName" value='${info.lab.serverName}'/>${info.lab.serverName}</td>
 						<td>IP:</td>
 						<td><span class="subdetail">${info.lab.serverIp}</span></td>
 					</tr>

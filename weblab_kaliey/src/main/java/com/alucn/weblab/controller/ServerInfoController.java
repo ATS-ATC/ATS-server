@@ -882,6 +882,7 @@ public class ServerInfoController {
 
 	@RequestMapping(path = "/removeServerInfo")
 	public void removeServerInfo(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
+		//System.out.println("1111111111111111111"+condition);
 		out.write(serverInfoService.removeServerInfo(condition));
 	}
 	
