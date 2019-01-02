@@ -29,6 +29,7 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.dao.impl.CaseSearchDaoImpl;
+import com.alucn.weblab.utils.StringUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -49,7 +50,7 @@ public class CaseSearchService {
 	//private Lock lock = new ReentrantLock(true);
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	public Map<String, List<String>> getCaseSearch(String deptid,boolean hasRole) throws NumberFormatException, InterruptedException, IOException{
+	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
 		String tagConfig = MainListener.configFilesPath+File.separator+"TagConfig.json";
 		//D:\eclipse-jee-oxygen-3a-win32-x86_64\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp1\wtpwebapps\weblab_kaliey\conf\TagConfig.json
 		//System.err.println("getCaseSearch >> tagConfig >> "+tagConfig);
@@ -68,19 +69,26 @@ public class CaseSearchService {
 			caseSearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
 		}
 		
+		
 		JSONArray multiple = caseSearchItems.getJSONArray("multiple");
 		for(int i=0; i<multiple.size(); i++){
 			JSONObject caseSearchItem = multiple.getJSONObject(i);
 			caseSearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
 		}
 		
+		return caseSearchItemMap;
+	}
+	
+	public Map<String, List<String>> getCaseServer(String deptid,boolean hasRole){
+		Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		List<String> serversName = new ArrayList<String>();
 		for (int i = 0; i < Servers.size(); i++) {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
 			String serverName = ServerMem.getString(Constant.SERVERNAME);
 			String sdeptid = ServerMem.getString("deptid");
-			if(sdeptid.equals(deptid)||hasRole) {
+			//if(sdeptid.equals(deptid)||hasRole) {
+			if(sdeptid.equals(deptid)) {
 				serversName.add(serverName);
 			}
 		}
@@ -708,28 +716,45 @@ public class CaseSearchService {
 		}
 		return returnMap;
 	}
-	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType, String deptid,Boolean adminFlag) throws Exception {
+	public Object searchCaseRunLogInfo(Map<String, Object> param, String auth, String retrunType, List<String> deptids,Boolean adminFlag) throws Exception {
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 		/*String sql ="select int_id,title,server_info,condition,author,datetime from n_rerunning_case_tbl where stateflag='0' order by datetime desc";*/
-		String sql = "";
+		/*String dept_ids = "";
 		if(adminFlag) {
-			sql ="select a.int_id,a.title,a.server_info,a.condition,a.author,a.datetime,b.deptid from n_rerunning_case_tbl a " + 
-					"left join n_user b on a.author=b.username and b.deptid='"+deptid+"' and b.stateflag='0 ' " + 
-					"where a.stateflag='0' order by a.datetime desc";
+			String dsql = "select id deptid from n_dept where stateflag=0";
+			ArrayList<HashMap<String, Object>> queryDept = caseSearchDaoImpl.query(jdbc, dsql);
+			List<String> allDeptids= new ArrayList<String>();
+			if(queryDept.size()>0) {
+				for (HashMap<String, Object> hashMap : queryDept) {
+					String deptid = ""+hashMap.get("deptid");
+					if(deptid!=null && !"".equals(deptid)) {
+						allDeptids.add(deptid);
+					}
+				}
+			}
+			dept_ids = StringUtil.formatSplitList(allDeptids);
 		}else {
-			sql ="select a.int_id,a.title,a.server_info,a.condition,a.author,a.datetime,b.deptid from n_rerunning_case_tbl a " + 
-					"join n_user b on a.author=b.username and b.deptid='"+deptid+"' and b.stateflag='0 ' " + 
-					"where a.stateflag='0' order by a.datetime desc";
+			dept_ids = StringUtil.formatSplitList(deptids);
+		}*/
+		String sql ="select distinct a.int_id,a.title,a.server_info,a.condition,a.author,a.datetime from n_rerunning_case_tbl a " + 
+				"left join n_user b on a.author=b.username and b.stateflag='0' " + 
+				"left join n_user_dept c on b.id=c.user_id  and c.stateflag='0' " + 
+				"where a.stateflag='0' "; 
+		if(!adminFlag) {
+			String dept_ids = StringUtil.formatSplitList(deptids);
+			sql =sql +"and c.dept_id in("+dept_ids+") ";
 		}
+			sql =sql +"order by a.datetime desc ";
 		/*if(auth=="all") {
 			
 		}*/
-		System.err.println("searchCaseRunLogInfo  >>  "+sql);
+		System.out.println("searchCaseRunLogInfo  >>  "+sql);
 		if(retrunType=="rows") {
 			if(""!=param.get("offset")&& ""!=param.get("limit")){
 				sql +=" limit "+param.get("offset")+","+param.get("limit");
 			}
 		}
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if(retrunType=="rows") {
 			return query;

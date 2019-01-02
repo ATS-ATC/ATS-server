@@ -10,8 +10,8 @@
 <script src="./jquery/jquery-3.2.1.js"></script>
 <script src="./bootstrap/js/bootstrap.min.js"></script>
 <script src="./js/bootstrap-select.min.js"></script>
-<link href="./jquery-ui/jquery-ui.min.css" rel="stylesheet">
 <link href="./css/bootstrap-select.min.css" rel="stylesheet">
+<link href="./jquery-ui/jquery-ui.min.css" rel="stylesheet">
 <script src="./jquery-ui/jquery-ui.min.js"></script>
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
 <script src="${pageContext.request.contextPath}/js/loading.js"></script>
@@ -106,10 +106,10 @@ $(function() {
         }, {
             field: 'datetime',
             title: 'Date Time'
-        },{
+        }/* ,{
         	field: 'deptid',
             title: 'Group Id'
-        }
+        } */
         ]
     });
 	//var u = Math.random(1000)
@@ -406,8 +406,11 @@ $(function() {
 	
 	var ids="";
 	$("#Rerunning").click(function(){
-		var server =$('#server').val(); 
-		if(server.length==0){
+		var server =$('#server').val();
+		if(server==null){
+			alert("Please select a server to run case !");
+			return false;
+		}else if(server.length==0){
 			alert("Please select a server to run case !");
 			return false;
 		}
@@ -486,6 +489,41 @@ $(function() {
 	
 	$(".fixed-table-container").css("padding-bottom","41px");
 });
+
+
+function selectApar(){
+	var deptid = $("#dept").val();
+	if(deptid==""){
+		$("#dserver").html("");
+		return;
+	}
+	//alert(dept);
+	$("#dserver").removeAttr("style");
+	//$("#server").find("option:not(:first)").remove();
+	
+	$.ajax({
+		url : "searchDeptServer.do?deptid="+deptid,
+		success : function(data) {
+			//alert(data);
+			/* for ( var i in data) {
+				var temp = data[i].apartmentName;
+				$("#server").append(new Option(temp,temp));
+			} */
+			var dept="<select class='selectpicker' title='--Please Select--' id='server' multiple data-live-search='true'>"
+				//var dept="";
+				for(i=0;i<data.length;i++){
+					dept=dept+"<option value='"+data[i]+"'>"+data[i]+"</option>";
+				}
+			dept=dept+"</select>";
+			$("#dserver").html(dept);
+			$('#server').selectpicker('refresh');
+		}
+	})
+	
+}
+
+
+
 </script>
 </head>
 <body>
@@ -619,7 +657,7 @@ $(function() {
             				<div class="col-md-4">
 	            				<div style="margin-right: 13px;">
 									<h5 style="display: inline;color: red;"><strong>Data Source</strong></h5>
-									<select class="selectpicker nav navbar-nav navbar-right" title="--Please Select--" multiple data-live-search="true" data-max-options="1" >
+									<select class="selectpicker nav navbar-nav navbar-right"  data-live-search="true" data-max-options="1" >
 									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
 											<c:forEach items="${data_source}" var="ds">
 												<option name='ds' value="${ds}">${ds}</option>
@@ -690,15 +728,25 @@ $(function() {
 				                <div class="row">
 					                <div class="col-md-12">
 					                	<h4 style="display: inline;">Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
-										<select id="server" name="server" title="--Please Select--" class="selectpicker" multiple data-live-search="true" ><!-- data-max-options="1" -->
-											<c:if test="${servers!=null && fn:length(servers) > 0}">
+										<select id="dept" name="dept" onchange="selectApar()" title="--Please Select Group--" class="selectpicker" multiple data-live-search="true" data-max-options="1"><!-- data-max-options="1" -->
+											<c:if test="${deptmap!=null && fn:length(deptmap) > 0}">
 												<%-- <% if(auth.equals("errorCases")){ %> --%>
+													<c:forEach items="${deptmap}" var="s">
+														<option name='s' value="${s.value}">${s.key}</option>
+													</c:forEach>
+												<%-- <%}%> --%>
+											</c:if>
+										</select>
+										<span id="dserver" style="display: none;"></span>
+										<%--<select id="server" name="server" title="--Please Select--" class="selectpicker" multiple data-live-search="true" disabled="disabled"><!-- data-max-options="1" -->
+											 <c:if test="${servers!=null && fn:length(servers) > 0}">
+												<% if(auth.equals("errorCases")){ %>
 													<c:forEach items="${servers}" var="s">
 														<option name='s' value="${s}">${s}</option>
 													</c:forEach>
-												<%-- <%}%> --%>
-												</c:if>
-										</select>
+												<%}%>
+												</c:if> 
+										</select>--%>
 									</div>
 								</div>
 				            </div>

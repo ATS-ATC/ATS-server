@@ -74,7 +74,7 @@ public class ErrorCaseInfoService {
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, boolean checkAllCase) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getErrorCase = "SELECT casename, err_reason, err_desc FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
+		String getErrorCase = "SELECT casename, err_reason, err_desc, report_path FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
 		//if(!checkAllCase.equals(Constant.AUTH)){
 		if(!checkAllCase){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";

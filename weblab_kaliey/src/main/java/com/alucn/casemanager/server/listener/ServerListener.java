@@ -53,9 +53,13 @@ public class ServerListener implements ServletContextListener {
 					System.out.println("Installing server >> "+configs);
 					if(configs.size()>0) {
 						List<String> serverListDB = new ArrayList<>();
+						Map<String, String> serverListMDB = new HashMap<String, String>();
+						
 						for (HashMap<String, Object> map : configs) {
 							String serverName = ""+map.get("serverName");
+							String deptid = ""+map.get("deptid");
 							serverListDB.add(serverName);
+							serverListMDB.put(serverName, deptid);
 						}
 						int count = 0;
 						while(true) {
@@ -66,11 +70,9 @@ public class ServerListener implements ServletContextListener {
 							}else {
 								if(count>=60) {//等待10分钟，如果十分钟还没有则在内存中放入lost状态
 									JSONArray infos = new JSONArray();
-									//有个个问题是：不能精确到组，丢失的lab只能放到1组，
-									//需要在serverList中添加一个字段deptid
 									//在其他insert的地方添加字段
 									for (String serverName : serverListDB) {
-										infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"deptid\":\"1\",\"serverName\":\""+serverName+"\",\"serverIp\":\"0.0.0.0\",\"serverRelease\":\"SP**.*\",\"serverProtocol\":\"*\",\"serverType\": \"Line\",\"serverMate\": \"Standalone\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[],\"serverRTDB\":[]},\"taskStatus\":{\"status\":\"Lost\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+										infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"deptid\":\""+serverListMDB.get(serverName)+"\",\"serverName\":\""+serverName+"\",\"serverIp\":\"0.0.0.0\",\"serverRelease\":\"SP**.*\",\"serverProtocol\":\"*\",\"serverType\": \"Line\",\"serverMate\": \"Standalone\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[],\"serverRTDB\":[]},\"taskStatus\":{\"status\":\"Lost\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
 									}
 									for(int i=0; i<infos.size(); i++){
 										CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,infos.getJSONObject(i).getJSONObject(Constant.BODY));

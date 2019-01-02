@@ -114,30 +114,28 @@ $(document).ready(function() {
 							<h4 class="col-md-12 column">Failed Cases</h4>
 							<c:forEach items="${errorCaseList}" var="errorCaseMap">
 								<div class="col-xs-6 col-sm-3 column">
-									<label class="checkbox-inline"> <c:choose>
-											<c:when
-												test="${errorCaseMap.err_reason!=null && errorCaseMap.err_reason!=\"\"}">
-												<input type="checkbox" name="errorcases"
-													value="<c:out value="${errorCaseMap.casename}"/>" disabled>
-												<span style="color: green"><c:out
-														value="${errorCaseMap.casename}" />-Reason:<c:out
-														value="${errorCaseMap.err_reason}" />-Desc:<c:out
-														value="${errorCaseMap.err_desc}" /></span>
+									<label class="checkbox-inline"> 
+									<c:choose>
+											<c:when test="${errorCaseMap.err_reason!=null && errorCaseMap.err_reason!=\"\"}">
+												<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>" disabled />
+												<span style="color: green">
+														<c:out value="${errorCaseMap.casename}" />-Reason:
+														<c:out value="${errorCaseMap.err_reason}" />-Desc:
+														<c:out value="${errorCaseMap.err_desc}" />
+												</span>
 											</c:when>
 											<c:otherwise>
 												<c:set var="flag" value="true" />
 												<c:forEach items="${errorCaseListHis}" var="errorCaseMapHis">
 													<!-- <div class="col-xs-6 col-sm-3 column">
 													<label class="checkbox-inline"> -->
-													<c:if
-														test="${errorCaseMapHis.casename == errorCaseMap.casename && errorCaseMapHis.err_reason!=\"\"&& errorCaseMapHis.err_reason!=null}">
-														<input type="checkbox" name="errorcases"
-															value="<c:out value="${errorCaseMapHis.casename}"/>"
-															disabled>
-														<span style="color: orange"><c:out
-																value="${errorCaseMapHis.casename}" />-Reason:<c:out
-																value="${errorCaseMapHis.err_reason}" />-Desc:<c:out
-																value="${errorCaseMapHis.err_desc}" /></span>
+													<c:if test="${errorCaseMapHis.casename == errorCaseMap.casename && errorCaseMapHis.err_reason!=\"\"&& errorCaseMapHis.err_reason!=null}">
+														<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMapHis.casename}"/>" disabled />
+														<span style="color: orange">
+																<c:out value="${errorCaseMapHis.casename}" ></c:out>-Reason:
+																<c:out value="${errorCaseMapHis.err_reason}" ></c:out>-Desc:
+																<c:out value="${errorCaseMapHis.err_desc}" ></c:out>
+														</span>
 														<c:set var="flag" value="false" />
 													</c:if>
 													<!-- <c:choose>
@@ -152,15 +150,16 @@ $(document).ready(function() {
 												</div> -->
 												</c:forEach>
 												<c:if test="${flag }">
-													<input type="checkbox" name="errorcases"
-														value="<c:out value="${errorCaseMap.casename}"/>">
-													<span style="color: red"><c:out
-															value="${errorCaseMap.casename}" /></span>
+													<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>">
+													<span style="color: red"><c:out value="${errorCaseMap.casename}" /></span>
 												</c:if>
 												<!--<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>"><span style="color: red"><c:out value="${errorCaseMap.casename}"/></span>     
 									   		-->
 											</c:otherwise>
 										</c:choose>
+										<c:if test="${errorCaseMap.report_path!=null}">
+									   		<a href="${errorCaseMap.report_path }" target="_blank"><span class="glyphicon glyphicon-link"></span></a>
+										</c:if>
 									</label>
 								</div>
 							</c:forEach>

@@ -1,11 +1,40 @@
 package com.alucn.weblab.utils;
 
+import java.util.List;
+
 public class StringUtil {
 	
 	public static void main(String[] args) {
 		String string = "CTRTDB,XBRTDB,GNRTDB,SGLDB,SGLRTDB,SIMDB";
 		String jsonString = formatJsonString(string);
 		System.out.println(jsonString);
+	}
+	/**
+	 * 
+	 * <pre>
+	 * Example: 
+	 * Description: 
+	 * 				  1,2,3
+	 *              ↓ ↓ ↓ ↓ ↓
+	 *             '1','2','3'
+	 * Arguments: 
+	 * Return: String
+	 * Variable：
+	 * </pre>
+	 */
+	public static String formatSplitList(List<String> str) {
+		String inString = "";
+		if(str.size()>0) {
+			for (int i =0 ;i<str.size();i++) {
+				if(i==str.size()-1) {
+					inString=inString+"'"+str.get(i)+"'";
+				}else {
+					inString=inString+"'"+str.get(i)+"',";
+				}
+			}
+		}
+		//System.out.println(inString);
+		return inString;
 	}
 	/**
 	 * 

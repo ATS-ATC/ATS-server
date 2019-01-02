@@ -71,9 +71,9 @@ public class MainListener implements ServletContextListener{
 					logger.info("[ Profile path ] "+configFilesPath);
 					
 					/*ServerListener serverListener = new ServerListener();
-					serverListener.initialize();
+					serverListener.initialize();*/
 					
-					Thread.sleep(1000*5);*/
+					Thread.sleep(1000*5);
 
 					//start socket listener
 					SocketListener socketListener = new SocketListener();

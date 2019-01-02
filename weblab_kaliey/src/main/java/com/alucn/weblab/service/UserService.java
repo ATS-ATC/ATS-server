@@ -26,7 +26,7 @@ public class UserService {
 	public ArrayList<HashMap<String, Object>> getAllUserInfoJson(String limit,String offset,String username, String sort, String sortOrder) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select * from n_user a "
+		/*String sql = "select * from n_user a "
 				+ "left join n_dept b on a.deptid=b.id and b.stateflag=0 "
 				+"left join ( " + 
 						"select user_id,group_concat(distinct b.role_name) roles from n_user_role a " + 
@@ -34,7 +34,23 @@ public class UserService {
 						"where a.stateflag=0 " + 
 						"group by a.user_id " + 
 				") c on a.id=c.user_id "
-				+ "where 1=1 ";
+				+ "where 1=1 ";*/
+		String sql = "select * from n_user a  " + 
+				"left join ( " + 
+				"select user_id,group_concat(distinct b.dept_name ) depts,group_concat(distinct b.id) deptids from ( " + 
+				"select * from n_user_dept order by dept_id " + 
+				") a " + 
+				"left join n_dept b on a.dept_id=b.id and b.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"group by a.user_id " + 
+				") b on a.id=b.user_id " + 
+				"left join ( " + 
+				"select user_id,group_concat(distinct b.role_name) roles from n_user_role a " + 
+				"left join n_role b on a.role_id=b.id and b.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"group by a.user_id " + 
+				") c on a.id=c.user_id " + 
+				"where 1=1 ";
 		if(username!=null && !"".equals(username)) {
 			sql=sql+"and a.username like '%"+username+"%' ";
 		}
@@ -100,7 +116,7 @@ public class UserService {
 	public ArrayList<HashMap<String, Object>> getUserInfoById(String id) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select a.id,a.username,a.deptid,a.stateflag,b.roles,c.dept_name from n_user a  " + 
+		/*String sql = "select a.id,a.username,a.deptid,a.stateflag,b.roles,c.dept_name from n_user a  " + 
 				"left join ( " + 
 				"select user_id,group_concat(distinct b.role_name) roles from n_user_role a  " + 
 				"left join n_role b on a.role_id=b.id and b.stateflag=0 " + 
@@ -108,6 +124,23 @@ public class UserService {
 				"group by a.user_id " + 
 				") b on a.id=b.user_id " + 
 				"left join n_dept c on a.deptid=c.id and c.stateflag=0 "+
+				"where 1=1 "+
+				"and a.id='"+id+"'";*/
+		String sql = "select a.id,a.username,a.deptid,a.stateflag,b.roles,c.depts,c.deptids from n_user a " + 
+				"left join ( " + 
+				"select user_id,group_concat(distinct b.role_name) roles from n_user_role a  " + 
+				"left join n_role b on a.role_id=b.id and b.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"group by a.user_id " + 
+				") b on a.id=b.user_id " + 
+				"left join ( " + 
+				"select user_id,group_concat(distinct b.dept_name ) depts,group_concat(distinct b.id) deptids from ( " + 
+				"select * from n_user_dept order by dept_id " + 
+				") a " + 
+				"left join n_dept b on a.dept_id=b.id and b.stateflag=0 " + 
+				"where a.stateflag=0 " + 
+				"group by a.user_id " + 
+				") c on a.id=c.user_id " + 
 				"where 1=1 "+
 				"and a.id='"+id+"'";
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
@@ -159,15 +192,81 @@ public class UserService {
 				}
 			}
 			if(edept!=null&&!"".equals(edept)) {
-				sql="update n_user set deptid="+edept+" where id="+id;
+				/*sql="update n_user set deptid="+edept+" where id="+id;
 				try {
 					System.err.println("editUserInfo >> deptid >> "+sql);
 					userDaoImpl.update(jdbc, sql);
 				} catch (Exception e) {
 					e.printStackTrace();
 					return "fail";
+				}*/
+				String[] split = edept.split(",");
+				List<String> edeptList = arrayToList(split);
+				
+				String edepts = (String) userInfoById.get(0).get("deptids");
+				String[] split2 = edepts.split(",");
+				List<String> edeptsList = arrayToList(split2);
+				List<String> midList = arrayToList(edeptsList);
+				
+				
+				//需要删除的部门（）
+				System.out.println("editUserInfo >> removeAll before >> edeptsList "+edeptsList);
+				edeptsList.removeAll(edeptList);
+				System.out.println("editUserInfo >> removeAll after >> edeptsList "+edeptsList);
+				
+				if(edeptsList.size()>0) {
+					String inString ="";
+					for (int i =0 ;i<edeptsList.size();i++) {
+						if(i==edeptsList.size()-1) {
+							inString=inString+"'"+edeptsList.get(i)+"'";
+						}else {
+							inString=inString+"'"+edeptsList.get(i)+"',";
+						}
+					}
+					//delete from n_user_role where user_id='1' and role_id in(select id from n_role where role_name in("super","user"));
+					sql="delete from n_user_dept where user_id='"+id+"' and dept_id in(select id from n_dept where id in("+inString+"))";
+					try {
+						System.err.println("editUserInfo >> delete >> "+sql);
+						userDaoImpl.delete(jdbc, sql);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return "fail";
+					}
+				}
+				
+				//需要新加的部门
+				System.out.println("editUserInfo >> removeAll before >> edeptList "+edeptList);
+				edeptList.removeAll(midList);
+				System.out.println("editUserInfo >> removeAll after >> edeptList "+edeptList);
+				
+				if(edeptList.size()>0) {
+					String inString ="";
+					for (int i =0 ;i<edeptList.size();i++) {
+						if(i==edeptList.size()-1) {
+							inString=inString+"'"+edeptList.get(i)+"'";
+						}else {
+							inString=inString+"'"+edeptList.get(i)+"',";
+						}
+					}
+					sql="insert into n_user_dept (user_id,dept_id) " + 
+							"select "+id+",id from n_dept " + 
+							"where id in("+inString+") " + 
+							"and id not in ( " + 
+							"select dept_id from n_user_dept where user_id="+id+" and stateflag=0 " + 
+							")";
+					try {
+						System.err.println("editUserInfo >> insert >> "+sql);
+						userDaoImpl.insert(jdbc, sql);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return "fail";
+					}
 				}
 			}
+			
+			
+			
+			
 			//第二步：对比旧有信息与前端传来的信息差异
 			if(erole!=null&&!"".equals(erole)) {
 				String[] split = erole.split(",");
@@ -183,7 +282,7 @@ public class UserService {
 				//需要删除的角色（）
 				System.out.println("editUserInfo >> removeAll before >> rolesList "+rolesList);
 				rolesList.removeAll(eroleList);
-				System.out.println("editUserInfo >> removeAll before >>  rolesList "+rolesList);
+				System.out.println("editUserInfo >> removeAll after >>  rolesList "+rolesList);
 				if(rolesList.size()>0) {
 					String inString ="";
 					for (int i =0 ;i<rolesList.size();i++) {
@@ -256,7 +355,7 @@ public class UserService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select a.id,a.dept_name,a.remark,a.stateflag,ifnull(b.ccount,\"0\") ccount from n_dept a "
-				+"left join(select deptid,count(1) ccount from n_user group by deptid) b on a.id=b.deptid "
+				+"left join(select dept_id,count(1) ccount from n_user_dept group by dept_id) b on a.id=b.dept_id "
 				+ "where 1=1 ";
 		if(deptname!=null && !"".equals(deptname)) {
 			sql=sql+"and a.dept_name like '%"+deptname+"%' ";
@@ -300,7 +399,7 @@ public class UserService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select a.id,ifnull(b.ccount,\"0\") ccount from n_dept a "
-				+"left join(select deptid,count(1) ccount from n_user group by deptid) b on a.id=b.deptid "
+				+"left join(select dept_id,count(1) ccount from n_user_dept group by dept_id) b on a.id=b.dept_id "
 				+ "where 1=1 ";
 		if(id!=null && !"".equals(id)) {
 			sql=sql+"and a.id="+id+" ";
@@ -318,7 +417,7 @@ public class UserService {
 		
 		
 		String sql = "select a.id,a.dept_name,a.remark,a.stateflag,ifnull(b.ccount,\"0\") ccount from n_dept a " + 
-				"left join(select deptid,count(1) ccount from n_user group by deptid) b on a.id=b.deptid " + 
+				"left join(select dept_id,count(1) ccount from n_user_dept group by dept_id) b on a.id=b.dept_id " + 
 				"where 1=1 and a.id="+id;
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()==0) {

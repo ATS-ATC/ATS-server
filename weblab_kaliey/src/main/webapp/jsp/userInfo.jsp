@@ -20,6 +20,10 @@
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
 
 <link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
+
+<script src="${pageContext.request.contextPath}/js/bootstrap-select.min.js"></script>
+<link href="${pageContext.request.contextPath}/css/bootstrap-select.min.css" rel="stylesheet">
+
  <style  type="text/css">
 .dropdown-toggle{
 	padding-top: 3px;
@@ -118,8 +122,9 @@
 								  <div class="form-group">
 								    <label for="edept" class="col-sm-2 control-label" style="text-align: left;">group</label>
 								    <div class="col-sm-6" id="sedept">
-								      <input type="text" class="form-control" id="edept"  placeholder="dept" disabled="disabled" style="display: inline;">
-								    </div>
+<!-- 								    <input type="text" class="form-control" id="edept"  placeholder="dept" disabled="disabled" style="display: inline;">
+								      	<select id="edept" name="edept" class="selectpicker" style="display: none;"></select>
+ -->								</div>
 								    <div class="col-sm-4" style="padding-left: 0px;">
 								    	<span id="sdept" class="glyphicon glyphicon-edit btn" aria-hidden="true" style="display: inline;"></span>
 								    </div>
@@ -178,6 +183,8 @@
 $("#editSubmit").click(function(){
 	var ehroles = $("#ehroles").val();
 	var edept = $("#edept").val();
+	/* alert(edept);
+	return;  */
 	var estateflag = $("input[name='optionsRadios']:checked").val();
 	/* alert(ehroles);
 	alert(edept);
@@ -189,7 +196,7 @@ $("#editSubmit").click(function(){
 	aroles=a[0].roles.split(","); //字符分割
 	aroles.sort();
 	
-	var adept = a[0].deptid;
+	var adept = a[0].deptids;
 	var amstateflag = a[0].stateflag;
 	var astateflag="normal";
 	if(amstateflag!=0){
@@ -208,7 +215,11 @@ $("#editSubmit").click(function(){
 	}else {
 		sdata=sdata+"erole=&";
 	}
-	if(edept!=adept){
+	//alert(adept+"=="+edept);
+	if(edept==""){
+		alert("At least checked one group");
+		return;
+	}else if(edept!=adept){
 		sdata=sdata+"edept="+edept+"&";
 		updateflag="0";
 	}else {
@@ -279,10 +290,12 @@ $("#sdept").click(function(){
 		url:"getAllDept.do",
 		success: function(data){
 			var scheck="";
-			var dept="<select class='form-control'id='edept' >"
+			var dept="<select class='selectpicker' id='edept' multiple data-live-search='true'>"
+			//var dept="";
 			for(i=0;i<data.length;i++){
 				//alert(data[i].dept_name)
-				if(data[i].dept_name==a[0].dept_name){
+				//if(data[i].dept_name==a[0].dept_name){
+				if(a[0].depts.indexOf(data[i].dept_name)>=0){
 					scheck="selected";
 				}else {
 					scheck="";
@@ -291,6 +304,10 @@ $("#sdept").click(function(){
 			}
 			dept=dept+"</select>";
 			$("#sedept").html(dept);
+			//$("#sedept").html("");
+			//$("#edept.selectpicker").append(dept);
+			$('#edept').selectpicker('refresh');
+			$('#edept').removeAttr("style");
 		}
 	});	
 })
@@ -437,8 +454,8 @@ $("#edit").click(function(){
 		var tag = tagStyle(strs);
 		tag=tag+"<input id='ehroles' value='"+strs+"' type='hidden' />";
 		$("#eroles").html(tag);
-		var edept = "<input type='text' id='edept' value='"+a[0].deptid+"' style='display: none;'>"+
-		"<input type='text' class='form-control' value='"+a[0].dept_name+"' placeholder='dept' disabled='disabled' style='display: inline;'>";
+		var edept = "<input type='text' id='edept' value='"+a[0].deptids+"' style='display: none;'>"+
+		"<input type='text' class='form-control' value='"+a[0].depts+"' placeholder='dept' disabled='disabled' style='display: inline;'>";
 		$("#sedept").html(edept);
 		$("#estateflag").val(a[0].dept_name);
 		if(a[0].stateflag==0){
@@ -520,14 +537,17 @@ var TableInit = function () {
                 field: 'roles',
                 title: 'Roles',
                 formatter: 'tagsFormatter'
-            },/*  {
+            },/* {
+                field: 'deptids',
+                title: 'deptids',
+            },  {
                 field: 'deptid',
                 title: 'Group Id',
                 sortable: true
             }, */ {
-                field: 'dept_name',
+                field: 'depts',
                 title: 'Group Name',
-                formatter: 'iconFormatter',
+                //formatter: 'iconFormatter',
                 sortable: true
             }, {
                 field: 'stateflag',

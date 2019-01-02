@@ -65,7 +65,7 @@ public class LoginService {
 		if(flag.size()>0) {
 			return;
 		}
-		String sql = "insert into n_user (username,password,deptid) values ('"+nuser.getUsername().trim()+"','"+password.trim()+"',"+1+")";
+		String sql = "insert into n_user (username,password) values ('"+nuser.getUsername().trim()+"','"+password.trim()+"')";
 		System.out.println("createLdapUser >> "+sql);
 		userDaoImpl.insert(jdbc, sql);
 		String qsql = "select id from n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";;
@@ -74,6 +74,9 @@ public class LoginService {
 		//默认创建的为普通用户  role_id=3
 		String rsql = "insert into n_user_role (user_id,role_id) values ("+id+","+3+")";
 		userDaoImpl.insert(jdbc, rsql);
+		//默认创建的为普通部门  role_id=1
+		String dsql = "insert into n_user_dept (user_id,dept_id) values ("+id+","+1+")";
+		userDaoImpl.insert(jdbc, dsql);
 	} 
 	//不排除逻辑删除账号
 	public ArrayList<HashMap<String, Object>> queryAllNUser(NUser nuser) throws Exception{
@@ -129,14 +132,41 @@ public class LoginService {
 		this.userDaoImpl = userDaoImpl;
 	}
 
-	public ArrayList<HashMap<String, Object>> getDeptByUserName(String username) throws Exception {
+	public ArrayList<HashMap<String, Object>> getDeptIdsByUserName(String username) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select distinct dept_id from n_user_dept "
+				+ "where stateflag=0 "
+				+ "and user_id in (select id from n_user where stateflag=0 and username='"+username+"')";
+		System.err.println(sql);
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	public ArrayList<HashMap<String, Object>> getDeptsByUserName(String username) throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select a.dept_id,b.dept_name from n_user_dept a " + 
+				"left join n_dept b on a.dept_id=b.id " + 
+				"where a.stateflag=0 " + 
+				"and a.user_id in (select id from n_user where stateflag=0 and username='"+username+"')";
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	public ArrayList<HashMap<String, Object>> getDeptsByAdmin() throws Exception {
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String sql = "select id dept_id,dept_name from n_dept where stateflag=0";
+		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+		return result;
+	}
+/*	public ArrayList<HashMap<String, Object>> getDeptByUserName(String username) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_user a left join n_dept b on a.deptid=b.id and b.stateflag=0 where a.stateflag=0 and a.username='"+username+"'";
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
-
+*/
 	public ArrayList<HashMap<String, Object>> getDeptById(String deptid) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);

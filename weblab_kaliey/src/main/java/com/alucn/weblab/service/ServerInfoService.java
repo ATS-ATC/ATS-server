@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -29,6 +30,7 @@ import com.alucn.weblab.dao.impl.ServerInfoDaoImpl;
 import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NServer;
 import com.alucn.weblab.model.Server;
+import com.alucn.weblab.utils.StringUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -351,30 +353,33 @@ public class ServerInfoService {
 		
 	}
 
-	public ArrayList<HashMap<String, Object>> getLabLogJson(String limit, String offset, String labname, String deptid) throws Exception {
+	public ArrayList<HashMap<String, Object>> getLabLogJson(String limit, String offset, String labname, List<String> deptids) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String dept_ids = StringUtil.formatSplitList(deptids);
+		
 		String sql = "select * from n_add_lab_status "
 				+ "where 1=1 "
-				+ "and deptid='"+deptid+"'";
+				+ "and deptid in ("+dept_ids+") ";
 		if(labname!=null && !"".equals(labname)) {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
 		sql=sql+"order by createtime desc limit "+offset+","+limit;
-		System.err.println("UserService >> getAllDeptInfoJson >> sql "+sql);
+		System.out.println("ServerInfoService >> getAllDeptInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
-	public int getLabLogJsonCount(String labname, String deptid) throws Exception {
+	public int getLabLogJsonCount(String labname, List<String> deptids) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		String dept_ids = StringUtil.formatSplitList(deptids);
 		String sql = "select count(1) ccount from n_add_lab_status "
 				+ "where 1=1 "
-				+ "and deptid='"+deptid+"'";
+				+ "and deptid in ("+dept_ids+") ";
 		if(labname!=null && !"".equals(labname)) {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
-		System.err.println("UserService >> getAllDeptInfoJson >> sql "+sql);
+		System.out.println("ServerInfoService >> getAllDeptInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -383,35 +388,37 @@ public class ServerInfoService {
 		}
 	}
 
-	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, String deptid, boolean hasRole) throws Exception {
+	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, List<String> deptids, boolean hasRole) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select * from n_lab_status_time "
 				+ "where 1=1 ";
 		if(!hasRole) {
-			sql=sql+"and groupid='"+deptid+"'";
+			String dept_ids = StringUtil.formatSplitList(deptids);
+			sql=sql+"and groupid in ("+dept_ids+") ";
 		}
 		if(serverName!=null && !"".equals(serverName)) {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		sql=sql+"order by endtime desc limit "+offset+","+limit;
-		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);
+		System.out.println("ServerInfoService >> getServerStatusLogJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
-	public int getServerStatusLogJsonCount(String serverName, String deptid, boolean hasRole) throws Exception {
+	public int getServerStatusLogJsonCount(String serverName, List<String> deptids, boolean hasRole) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String sql = "select count(*) ccount from n_lab_status_time "
 				+ "where 1=1 ";
 		if(!hasRole) {
-			sql=sql+"and groupid='"+deptid+"'";
+			String dept_ids = StringUtil.formatSplitList(deptids);
+			sql=sql+"and groupidin("+dept_ids+") ";
 		}
 		if(serverName!=null && !"".equals(serverName)) {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		//sql=sql+"order by endtime desc limit "+offset+","+limit;
-		System.err.println("UserService >> getServerStatusLogJson >> sql "+sql);
+		System.err.println("ServerInfoService >> getServerStatusLogJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));

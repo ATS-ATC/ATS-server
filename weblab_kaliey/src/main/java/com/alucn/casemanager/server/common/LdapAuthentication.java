@@ -78,7 +78,8 @@ public class LdapAuthentication {
         ad4_server_list.add("135.251.33.43");
         ad4_server_list.add("135.252.44.225");
         ad4_server_list.add("135.251.33.52");
-        while(try_times < 4)
+        ad4_server_list.add("135.239.2.82");
+        while(try_times < 5)
         {
             
             Hashtable env = new Hashtable();

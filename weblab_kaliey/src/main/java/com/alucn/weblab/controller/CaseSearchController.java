@@ -64,7 +64,7 @@ public class CaseSearchController {
 	@RequestMapping(path = "/searchInfo")
 	public String searchInfo(HttpSession session,Model model) throws Exception{
 		String username = session.getAttribute("login").toString();
-		NUser user = new NUser();
+		/*NUser user = new NUser();
 		user.setUsername(username);
 		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
 		String deptid= "";
@@ -75,13 +75,47 @@ public class CaseSearchController {
 		}
 		if(queryNUser.size()>0) {
 			deptid = (String) queryNUser.get(0).get("deptid");
-		}
+		}*/
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
-		model.addAllAttributes(caseSearchService.getCaseSearch(deptid,hasRole));
+		ArrayList<HashMap<String,Object>> deptsByUserName = new ArrayList<HashMap<String,Object>>();
+		if(hasRole) {
+			deptsByUserName = loginService.getDeptsByAdmin();
+		}else {
+			deptsByUserName = loginService.getDeptsByUserName(username);
+		}
+		Map<Object, Object> deptmap  = new HashMap<Object, Object>();
+		if(deptsByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptsByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				String deptName = ""+hashMap.get("dept_name");
+				if(deptid!=null && !"".equals(deptid)) {
+					deptmap.put(deptName,deptid);
+				}
+			}
+		}
+		model.addAttribute("deptmap", deptmap);
+		
+		model.addAllAttributes(caseSearchService.getCaseSearch());
+		//model.addAllAttributes(caseSearchService.getCaseSearch(deptid,hasRole));
 		return "caseSearch";
 	}
 	
+	@RequestMapping(path = "/searchDeptServer")
+	@ResponseBody
+	public List<String> searchDeptServer(HttpSession session,HttpServletRequest request ) throws Exception{
+		String deptid = request.getParameter("deptid")==null?"":request.getParameter("deptid").toString().trim();
+		
+		System.out.println("searchDeptServer deptid : "+deptid);
+		
+		Subject subject = SecurityUtils.getSubject();  
+        boolean hasRole = subject.hasRole("admin");
+		
+		Map<String, List<String>> caseSearch = caseSearchService.getCaseServer(deptid,hasRole);
+		List<String> list = caseSearch.get("servers");
+		
+		return list;
+	}
 	@RequestMapping(path = "/searchCaseInfo")
 	@ResponseBody
 	public Map<String,Object> searchCaseInfo(HttpSession session, String condition,HttpServletRequest request ) throws Exception{
@@ -113,7 +147,7 @@ public class CaseSearchController {
 		paramMap.put("offset", offset);
 		
 		String username = session.getAttribute("login").toString();
-		NUser user = new NUser();
+		/*NUser user = new NUser();
 		user.setUsername(username);
 		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
 		String deptid= "";
@@ -124,12 +158,23 @@ public class CaseSearchController {
 		}
 		if(queryNUser.size()>0) {
 			deptid = (String) queryNUser.get(0).get("deptid");
+		}*/
+		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
+		List<String> deptids= new ArrayList<String>();
+		if(deptByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				if(deptid!=null && !"".equals(deptid)) {
+					deptids.add(deptid);
+				}
+			}
+			//deptid = (String) deptByUserName.get(0).get("dept_id");
 		}
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
 		
-		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total",deptid,hasRole));
-		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptid,hasRole));
+		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total",deptids,hasRole));
+		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptids,hasRole));
 		return returnMap;
 	}
 	@RequestMapping(path = "/searchCaseRunLogInfo")

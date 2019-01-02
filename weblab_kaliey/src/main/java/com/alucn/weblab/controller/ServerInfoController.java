@@ -76,14 +76,20 @@ public class ServerInfoController {
 		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
 		System.err.println(serverName);
 		String username = (String) session.getAttribute("login");
-		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
-		String deptid="";
-		if(deptByUserName.size()==1) {
-			deptid = (String) deptByUserName.get(0).get("deptid");
+		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
+		List<String> deptids= new ArrayList<String>();
+		if(deptByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				if(deptid!=null && !"".equals(deptid)) {
+					deptids.add(deptid);
+				}
+			}
+			//deptid = (String) deptByUserName.get(0).get("dept_id");
 		}
 		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptid,hasRole);
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptids,hasRole);
 		for (HashMap<String, Object> hashMap : labLogJson) {
 			Long starttime = Long.parseLong((String) hashMap.get("starttime"));
 			Long endtime = Long.parseLong((String)hashMap.get("endtime"));
@@ -92,7 +98,7 @@ public class ServerInfoController {
 			hashMap.put("starttime", TimeUtil.stampToTime(starttime));    
 			hashMap.put("endtime", TimeUtil.stampToTime(endtime));    
 		}
-		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptid,hasRole);
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptids,hasRole);
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
 		return resultMap;
@@ -105,12 +111,6 @@ public class ServerInfoController {
 	public ArrayList<HashMap<String, Object>> getServerInfoJson(HttpSession session) throws Exception{
 		
 		ArrayList<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
-		String username = (String) session.getAttribute("login");
-		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
-		String deptid="";
-		if(deptByUserName.size()==1) {
-			deptid = (String) deptByUserName.get(0).get("deptid");
-		}
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
 		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
@@ -210,8 +210,19 @@ public class ServerInfoController {
 					childMap.put("mateServer", mateServer);
 					childMap.put("deptname", deptname);
 					childMap.put("hodingtime", timeDifference);
-					
-					if(deptid.equals(labdeptid)||hasRole) {
+					String username = (String) session.getAttribute("login");
+					ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
+					List<String> deptids= new ArrayList<>();
+					if(deptByUserName.size()>0) {
+						for (HashMap<String, Object> hashMap : deptByUserName) {
+							String deptid = ""+hashMap.get("dept_id");
+							if(deptid!=null && !"".equals(deptid)) {
+								deptids.add(deptid);
+							}
+						}
+						//deptid = (String) deptByUserName.get(0).get("deptid");
+					}
+					if(deptids.contains(labdeptid)||hasRole) {
 						resultList.add(childMap);
 					}
 					//logger.info("resultList:========"+resultList);
@@ -286,15 +297,28 @@ public class ServerInfoController {
 		//logger.info(infos);
 		//{set1=[ServerSort [map={BJRMS21A={"lab":{"serverName":"BJRMS21A","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21B={"lab":{"serverName":"BJRMS21B","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21C={"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21D={"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21E={"lab":{"serverName":"BJRMS21E","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Primary","mateServer":"BJRMS21F","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21F={"lab":{"serverName":"BJRMS21F","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Secondary","mateServer":"BJRMS21E","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}]]}
 		String username = (String) session.getAttribute("login");
-		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
-		String deptname="";
-		String deptid="";
-		if(deptByUserName.size()==1) {
-			deptname = (String) deptByUserName.get(0).get("dept_name");
-			deptid = (String) deptByUserName.get(0).get("deptid");
+		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptsByUserName(username);
+		/*String deptname="";
+		String deptid="";*/
+		Map<Object, Object> deptmap  = new HashMap<Object, Object>();
+		List<String> deptids= new ArrayList<>();
+		if(deptByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				String deptName = ""+hashMap.get("dept_name");
+				if(deptid!=null && !"".equals(deptid)) {
+					deptmap.put(deptName,deptid);
+					//deptmap.put("deptName",deptName);
+					//deptmap.put("deptid",deptid);
+					deptids.add(deptid);
+				}
+			}
+			//deptname = (String) deptByUserName.get(0).get("dept_name");
+			//deptid = (String) deptByUserName.get(0).get("deptid");
 		}
-		model.addAttribute("deptname", deptname);
-		model.addAttribute("deptid", deptid);
+		model.addAttribute("deptmap", deptmap);
+		//model.addAttribute("deptname", deptname);
+		//model.addAttribute("deptid", deptid);
 		model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
 		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
 		//result.put("Servers", Servers);
@@ -309,7 +333,7 @@ public class ServerInfoController {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				if(deptid.equals(sdeptid)) {
+				if(deptids.contains(sdeptid)) {
 					String setName = lab.getString("setName");
 					sets.add(setName);
 				}
@@ -355,12 +379,22 @@ public class ServerInfoController {
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
 		String labname = request.getParameter("labname")==null?"":request.getParameter("labname").toString().trim();
 		String username = (String) session.getAttribute("login");
-		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptByUserName(username);
-		String deptid="";
-		if(deptByUserName.size()==1) {
-			deptid = (String) deptByUserName.get(0).get("deptid");
+		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
+		
+		//System.out.println("addlablogJson : "+deptByUserName);
+		
+		List<String> deptids= new ArrayList<>();
+		if(deptByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				//System.out.println(deptid);
+				if(deptid!=null && !"".equals(deptid)) {
+					deptids.add(deptid);
+				}
+			}
 		}
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit,offset,labname,deptid);
+		//System.out.println(deptids);
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit,offset,labname,deptids);
 		if(labLogJson.size()>0) {
 			for (HashMap<String, Object> hashMap : labLogJson) {
 				String createtime = (String) hashMap.get("createtime");
@@ -371,7 +405,7 @@ public class ServerInfoController {
 				hashMap.put("createtime", format);
 			}
 		}
-		int labLogJsonCount = serverInfoService.getLabLogJsonCount(labname,deptid);
+		int labLogJsonCount = serverInfoService.getLabLogJsonCount(labname,deptids);
 		
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
@@ -484,14 +518,15 @@ public class ServerInfoController {
 		String enwtpps = request.getParameter("enwtpps")==null?"":request.getParameter("enwtpps").toString().trim();
 		String ss7 = request.getParameter("ss7")==null?"":request.getParameter("ss7").toString().trim();
 		String setname = request.getParameter("setname")==null?"":request.getParameter("setname").toString().trim();
+		String ehdept = request.getParameter("ehdept")==null?"":request.getParameter("ehdept").toString().trim();
 		String username = session.getAttribute("login").toString();
 		
-		
+		System.out.println("ehdept:"+ehdept);
 		
 		NUser user = new NUser();
 		user.setUsername(username);
 		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
-		String deptid= "";
+		//String deptid= "";
 		String createid= "";
 		try {
 			queryNUser = loginService.queryNUser(user);
@@ -499,15 +534,15 @@ public class ServerInfoController {
 			e.printStackTrace();
 		}
 		if(queryNUser.size()>0) {
-			deptid = (String) queryNUser.get(0).get("deptid");
+			//deptid = (String) queryNUser.get(0).get("deptid");
 			createid = (String) queryNUser.get(0).get("id");
 		}
 		String createtime =  new Date().getTime()+"";
-		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", deptid, createid, createtime,"");
+		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", ehdept, createid, createtime,"");
 		try {
-			logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
+			logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+ehdept);
 			//为了测试注释掉执行部分
-			Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+deptid);
+			Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+ehdept);
 			serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime()+"", createtime);
 			result.put("result", "success");
 		}catch (Exception e) {

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestList {
@@ -30,7 +32,7 @@ public class TestList {
 	    System.out.println(list1);
 	}
 	
-	@Test
+	//@Test
 	public void testMapList() {
 		List<Map> list1 = new ArrayList<Map>();
 		Map map1 = new HashMap<>();
@@ -55,5 +57,24 @@ public class TestList {
 	    // 差集
 	    //list1.removeAll(list2);
 	    System.out.println(list1);
+	}
+	@Test
+	public void testMap() {
+		Map<String,String> map1 = new HashMap<>();
+		map1.put("A", "a");
+		map1.put("B", "b");
+		map1.put("C", "c");
+	    Map<String,String> map2 = new HashMap<>();
+	    map2.put("B", "b");
+		map2.put("C", "c");
+		map2.put("D", "d");
+		Set<String> keySet1 = map1.keySet();
+		Set<String> keySet2 = map2.keySet();
+		
+		//keySet1.removeAll(keySet2);
+		map1.remove("A");
+		
+		//System.out.println(keySet1);
+		System.out.println(map1);
 	}
 }

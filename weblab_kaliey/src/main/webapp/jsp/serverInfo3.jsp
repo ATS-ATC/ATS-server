@@ -143,8 +143,15 @@ width: 100%;
 							    </div>
 							    <label for="adept" class="col-sm-2 control-label" style="text-align: left;">group</label>
 							    <div class="col-sm-4">
-									<input type="text" class="form-control" id="adept"  placeholder="dept" style="display: inline;" value="${deptname }" disabled="disabled">
-									<input type="text" class="form-control" id="hdept"  style="display: none;" value="${deptid }" >
+									<%-- <input type="text" class="form-control" id="adept"  placeholder="dept" style="display: inline;" value="${deptmap }" disabled="disabled">
+									<input type="text" class="form-control" id="hdept"  style="display: none;" value="${deptid }" > --%>
+									<select id="hdept" class="selectpicker"  data-live-search="true" data-max-options="1">
+									<c:forEach var="item" items="${deptmap}">   
+										<option value="${item.value}">${item.key}</option>
+									</c:forEach>
+									</select>  
+<%-- 									<input type="text" class="form-control" id="adept"  placeholder="dept" style="display: inline;" value="${deptname }" disabled="disabled">
+									<input type="text" class="form-control" id="hdept"  style="display: none;" value="${deptid }" > --%>
 							    </div>
 							  </div>
 							  <div class="form-group">
@@ -248,6 +255,17 @@ width: 100%;
 									    </div>
 								  </div>
 								  <div class="form-group" >
+								  		<label for="aeprotocol" class="col-sm-2 control-label" style="text-align: left;">group</label>
+									    <div class="col-sm-6" style="padding-right: 0px;">
+									      <select id="ehdept" class="selectpicker"  data-live-search="true" data-max-options="1">
+											<c:forEach var="item" items="${deptmap}">   
+												<option value="${item.value}">${item.key}</option>
+											</c:forEach>
+											</select> 
+									    </div>
+								  </div>
+								   
+								  <div class="form-group" >
 								  		<label for="aeset" class="col-sm-2 control-label" style="text-align: left;">set</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
 									      	<div id="setList"></div>
@@ -332,6 +350,15 @@ $("#addExistSubmit").click(function(){
 	}
 	$("#addExistSubmit").attr("disabled","disabled");
 	var sdata = "labname="+aeservername+"&ip="+aeip+"&enwtpps="+aerelease+"&ss7="+aeprotocol+"&setname="+aeset;
+	var ehdept = $("#ehdept").val();
+	//alert(ehdept);
+	if(ehdept==null){
+		alert("group is required");
+		return false;
+	}else {
+		sdata=sdata+"&ehdept="+ehdept
+	}
+	alert(sdata);
 	$.ajax({
 		url:"genClient.do",
 		data:sdata,
@@ -424,11 +451,18 @@ $("#addSubmit").click(function(){
 	var aprotocol = $("#aprotocol").val().replace(" ","");
 	/* var aservertype = $("#aservertype").val().replace(" ","");
 	var amatetype = $("#amatetype").val().replace(" ",""); */
-	var hdept = $("#hdept").val().replace(" ","");
+	var hdept = $("#hdept").val();
+	if(hdept==null){
+		alert("group is required");
+		return false;
+	}else {
+		sdata=sdata+"&hdept="+hdept
+	}
+	
 	var ainsflag = $("input[name='optionsRadios']:checked").val().replace(" ","");
 	//alert(ainsflag);
 	//"&aservertype="+aservertype+"&amatetype="+amatetype+
-	sdata=sdata+"&aprotocol="+aprotocol+"&hdept="+hdept+"&ainsflag="+ainsflag
+	sdata=sdata+"&aprotocol="+aprotocol+"&ainsflag="+ainsflag
 	var sspa = $("#sspa").val();
 	if(sspa==null){
 		alert("spa is required");
