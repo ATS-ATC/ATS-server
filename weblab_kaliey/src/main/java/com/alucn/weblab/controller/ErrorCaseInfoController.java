@@ -87,6 +87,29 @@ public class ErrorCaseInfoController {
 		
 		return "errorCaseInfoDetails";
 	}
+	@RequestMapping(path = "/getErrorCaseInfoDetails4")
+	public String getServerInfoDetails4(HttpSession session, String featureName, Model model) throws Exception{
+		
+		String userName = session.getAttribute("login").toString();
+		Subject subject = SecurityUtils.getSubject();  
+		boolean hasARole = subject.hasRole("admin");
+		boolean hasSRole = subject.hasRole("super");
+		boolean checkAllCase = false;
+		if (hasARole || hasSRole) {
+			//if (hasARole) {
+			checkAllCase = true;
+		}
+		
+		//ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, session.getAttribute("login").toString(), session.getAttribute("auth").toString());
+		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo4(featureName, userName, checkAllCase);
+		ArrayList<HashMap<String, Object>> errorReasonList = errorCaseInfoService.getErrorCaseReason();
+		ArrayList<HashMap<String, Object>> errorCaseListHis = errorCaseInfoService.getErrorCaseReasonHis();
+		model.addAttribute("featureName",featureName);
+		model.addAttribute("errorCaseList",errorCaseList);
+		model.addAttribute("errorReasonList",errorReasonList);
+		
+		return "errorCaseInfoDetails4";
+	}
 	
 	@RequestMapping(path = "/setMarkCase", method = RequestMethod.POST)
 	public void setMarkCase(HttpSession session, String featureName, String errorcases, String failedreasons, PrintWriter out) throws Exception{

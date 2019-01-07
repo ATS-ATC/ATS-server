@@ -100,20 +100,42 @@ var TableInit = function () {
             showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
             cardView: false,                    //是否显示详细视图
             detailView: false,                   //是否显示父子表
+            rowStyle: function (row, index) {
+                //这里有5个取值代表5中颜色['active', 'success', 'info', 'warning', 'danger'];
+                var strclass = "";
+                if (row.ucount ==0 ) {
+                    strclass = 'active';//还有一个active
+                }
+                else if (row.ucount >0) {
+                    strclass = 'info';//还有一个active
+                }
+                else {
+                    return {};
+                }
+                return { classes: strclass }
+            },
             columns: [{
                 checkbox: true
             }, {
                 field: 'feature',
                 title: 'Feature',
                 formatter:function(value,row,index){
-                	var a = '<a href="./getErrorCaseInfoDetails.do?featureName='+value+'" ><strong>'+value+'</strong></a>';
+                	var a = '<a href="./getErrorCaseInfoDetails4.do?featureName='+value+'" ><strong>'+value+'</strong></a>';
                 	return a;
                 }
             }, {
                 field: 'fcount',
                 title: 'Error Cases',
 				formatter : 'countFormatter'
+            } , {
+                field: 'ccount',
+                title: 'Checked Cases',
+                formatter : 'countFormatter'
             }, {
+                field: 'ucount',
+                title: 'Unchecked Cases',
+                formatter : 'countFormatter'
+            } , {
                 field: 'owner',
                 title: 'Owner'
             }, {
