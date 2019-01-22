@@ -11,6 +11,7 @@
 <script src="./highcharts/highcharts.js"></script>
 <script src="./highcharts/modules/exporting.js"></script>
 <link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/csshake.min.css">
 <!-- <script src="./js/echarts.js"></script>
 <script src="./js/echarts-gl.js"></script> -->
 <!-- <meta http-equiv="refresh" content="5*60"> -->
@@ -122,8 +123,22 @@
 			$('#home_right').css('padding-left','0');
 			$('#main-info').attr('src', $('#main-info').attr('src'));
 		});
+		$("#chat").click(function(){
+			$("#bcount").text("0");
+     		$("#bcount").removeAttr("style");
+     		$("#bell").removeAttr("style");
+     		$("#chat").removeAttr("class");
+			$('#full').modal('show');
+		});
+		$("#full").on("hidden.bs.modal",function(e){
+			$("#bcount").text("0");
+	 		$("#bcount").removeAttr("style");
+	 		$("#bell").removeAttr("style");
+	 		$("#chat").removeAttr("class");
+ 		});
 	});
 </script>
+
 <style type="text/css">
 	.btn-default:hover,
 	.btn-default:active,
@@ -170,8 +185,12 @@
 							</a>
 				        </div> 
 				        <ul class="nav navbar-nav navbar-right">
-				        	<li>
-				        		<a href="#"><span class="glyphicon glyphicon-bell"></span>&nbsp;<span class="badge">0</span></a>
+				        	<%-- <li onclick="menuClick('${pageContext.request.contextPath}/chat.do')"> --%>
+				        	<li id="chat">
+				        		<a href="#" >
+					        		<span id="bell" class="glyphicon glyphicon-bell "></span>&nbsp;<span id="bcount" class="badge">0</span>
+				        		</a>
+				        		
 					        	<!-- <form class="navbar-form navbar-left" role="search" action="">
 						            <div class="form-group">
 						                <input type="text" class="form-control" placeholder="Search">
@@ -253,7 +272,7 @@
 									</button>
 								</a>
 								<ul id="config-info" class="nav nav-list collapse menu-second" style="background-color: #42515F">
-							        <li id="spa-and-rtdb" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/config.do')">
+							        <li role="presentation" onclick="menuClick('${pageContext.request.contextPath}/config.do')">
 									  	<a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 									  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="icon-caret-right"></i>&nbsp;&nbsp; Certification Server
@@ -376,5 +395,33 @@
 			</div>
 		</div>
 	</div>
+	
+	
+	
+    <%-- <div class="modal fade" id="full" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="SelectUser" src="${pageContext.request.contextPath}/chat.do" style="width:870px;height:460px;">
+                    </iframe>
+                </div>
+            </div>
+ 
+        </div>
+    </div> --%>
+	<div class="modal fade" id="full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+				<iframe id="SelectUser" src="${pageContext.request.contextPath}/chat.do" style="width: 850px;height: 570px;display: inline;">
+                </iframe>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			</div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 </body>
 </html>

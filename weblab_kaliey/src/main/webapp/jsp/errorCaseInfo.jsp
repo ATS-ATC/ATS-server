@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <html>
@@ -48,7 +47,7 @@
                 </form>
             </div>
         </div> 
-        <table id="tb_departments" class="text-nowrap"></table>
+        <table id="tb_departments" class="text-nowrap" style="background-color: #FBFCFC"></table>
     </div>
 </body>
 <script type="text/javascript">
@@ -82,7 +81,7 @@ var TableInit = function () {
             toolbarAlign:"right",
             cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
             pagination: true,                   //是否显示分页（*）
-            sortable: false,                     //是否启用排序
+            sortable: true,                     //是否启用排序
             sortOrder: "asc",                   //排序方式
             queryParams: oTableInit.queryParams,//传递参数（*）
             sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
@@ -126,21 +125,24 @@ var TableInit = function () {
             }, {
                 field: 'fcount',
                 title: 'Error Cases',
+                sortable: true,
 				formatter : 'countFormatter'
             } , {
                 field: 'ccount',
                 title: 'Checked Cases',
+                sortable: true,
                 formatter : 'countFormatter'
             }, {
                 field: 'ucount',
                 title: 'Unchecked Cases',
+                sortable: true,
                 formatter : 'countFormatter'
             } , {
                 field: 'owner',
                 title: 'Owner'
             }, {
                 field: 'servername',
-                title: 'Servername'
+                title: 'Server Name'
             }]
         });
     };
@@ -150,7 +152,9 @@ var TableInit = function () {
         var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
             limit: params.limit,   //页面大小
             offset: params.offset,  //页码
-            feature: $("#txt_search_feature").val()
+            feature: $("#txt_search_feature").val(),
+            sort: params.sort,      //排序列名  
+            sortOrder: params.order //排位命令（desc，asc）
         };
         return temp;
     };

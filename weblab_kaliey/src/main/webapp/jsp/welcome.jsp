@@ -73,6 +73,12 @@ $(document).ready(function(){
 .state-overview .panel{border:1px solid #dddddd; margin-bottom:15px;}
 </style>
 </head>
+<style type="text/css">
+.jumbotron{
+	color: #222; 
+	text-shadow: 0px 2px 3px #555;
+}
+</style>
 <body style="background-color:#ECEFF3;">
 	<!-- <canvas id="canvas-basic"></canvas> -->
 	<div class="container-fluid" >
@@ -80,6 +86,7 @@ $(document).ready(function(){
 			
 			<div class="col-md-10"  >
 				<%-- <img alt="" src="${pageContext.request.contextPath}/images/Snipaste_2018-06-08_15-56-26.png" class="img-responsive" alt="Responsive image"> --%>
+				<%-- &nbsp;&nbsp;&nbsp;<font size="5" style="font-weight:800;"><span class="jumbotron" style="padding-left: 0px; padding-right: 0px;">${login },</span></font></br> --%>
 				&nbsp;&nbsp;&nbsp;<font size="5" style="font-weight:800;">${login },</font></br>
 				&nbsp;&nbsp;&nbsp;Welcome to SurePay Automation Case Management System !
 			</div>

@@ -12,18 +12,20 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc.xsd">
         
-	<mvc:annotation-driven>
+    <mvc:annotation-driven/>
+	<!-- <mvc:annotation-driven>
 	     <mvc:message-converters>
 	            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
 	            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
 	   </mvc:message-converters>
-	</mvc:annotation-driven>
+	</mvc:annotation-driven> -->
     
     
     
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="controller/*.class" />
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="service/*.class" />
     <context:component-scan base-package="com.alucn.weblab" resource-pattern="dao/impl/*.class" />
+    <context:component-scan base-package="com.alucn.weblab" resource-pattern="websocket/*.class" />
     
     <!-- <context:component-scan base-package="com.alucn.weblab.utils" />
 	<import resource="ActiveMQ.xml" /> -->
@@ -68,6 +70,7 @@
                          <value>/userLoginCheckOut.do</value>
                          <value>/releasesLogin.do</value>
                          <value>/releasesLoginCheckOut.do</value>
+                         <value>/myHandler.do</value>
                     </list>
                 </property>
 			</bean>

@@ -85,6 +85,8 @@ public class LoginController {
 			
 			Subject subject = SecurityUtils.getSubject();
 			UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), MD5Util.md5(nuser.getPassword()));
+			//UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), nuser.getPassword());
+			//System.out.println(nuser.getUsername()+" : "+nuser.getPassword());
 			try {
 				subject.login(token);
 				System.out.println("login success!");
@@ -123,6 +125,8 @@ public class LoginController {
 				//取出内部的权限放入session
 				Subject subject = SecurityUtils.getSubject();
 				UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), MD5Util.md5(nuser.getPassword()));
+				//UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), nuser.getPassword());
+				//System.out.println(nuser.getUsername()+" : "+nuser.getPassword());
 				try {
 					subject.login(token);
 					System.out.println("login success!");

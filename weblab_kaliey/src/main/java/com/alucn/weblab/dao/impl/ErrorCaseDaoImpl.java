@@ -9,7 +9,7 @@ import com.alucn.weblab.dao.DataAccessInterface;
 
 /**
  * @author haiqiw
- * 2017Äê6ÔÂ6ÈÕ ÏÂÎç5:17:55
+ * 2017ï¿½ï¿½6ï¿½ï¿½6ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½5:17:55
  * desc:ErrorCaseDaoImpl
  */
 @Repository("errorCaseDaoImpl")
@@ -23,13 +23,13 @@ public class ErrorCaseDaoImpl implements DataAccessInterface{
 	@Override
 	public void update(JdbcUtil jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		
+		jdbc.executeSql(sql);
 	}
 
 	@Override
 	public void delete(JdbcUtil jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		
+		jdbc.executeSql(sql);
 	}
 
 	@Override

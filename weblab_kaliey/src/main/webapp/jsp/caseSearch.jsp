@@ -313,14 +313,14 @@ $(function() {
 	            pageSize: 10,                       //每页的记录行数（*）
 	            pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
 	            //search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
-	            strictSearch: true,
-	            showColumns: true,                  //是否显示所有的列
-	            showRefresh: true,                  //是否显示刷新按钮
+	            //strictSearch: true,
+	            //showColumns: true,                  //是否显示所有的列
+	            //showRefresh: true,                  //是否显示刷新按钮
 	            minimumCountColumns: 2,             //最少允许的列数
 	            clickToSelect: true,                //是否启用点击选中行
 	            //height: 500,                       //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
 	            uniqueId: "case_name",               //每一行的唯一标识，一般为主键列
-	            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+	            //showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
 	            cardView: false,                    //是否显示详细视图
 	            detailView: false,                   //是否显示父子表
 	            columns: [{
@@ -689,7 +689,7 @@ function selectApar(){
             	<div class="row" style="padding-bottom: 5px;padding-top:5px;background-color: #E0E0EB">
             	</div>
             	<div class="row" style="margin-left: 10px;margin-right: 13px;margin-top: 10px;">
-					<table id="runLog"  class="text-nowrap"></table>
+					<table id="runLog"  class="text-nowrap" style="background-color: #FBFCFC"></table>
 				</div>
             	<div id="myModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog">
 				    <div class="modal-dialog modal-lg" role="document">
@@ -715,14 +715,14 @@ function selectApar(){
 				                </form> -->
 				                <div class="row">
 				                	<div class="col-md-12 table-responsive" style="height:398px;overflow:scroll">
-					                	 <div id="toolbar" class="btn-group">
-								         	<div class="checkbox form-group">
+					                	 <div id="toolbar" class="btn-group" >
+								         	<div class="checkbox form-group" style="margin-bottom: 0px;">
 											    <label>
 											      <input id="select_all" type="checkbox" style="margin-top: 10px;">Select All Case
 											    </label>
 											</div>
 								        </div>
-					                	<table id="tb_departments" class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;"></table>
+					                	<table id="tb_departments" class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;background-color: #FBFCFC"></table>
 				                	</div>
 				                </div>
 				                <div class="row">

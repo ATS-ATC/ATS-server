@@ -1,5 +1,6 @@
 package test.nokia.request;
 
+import org.junit.Test;
 
 public class StringTest {
 	public static void main(String[] args) {
@@ -8,8 +9,18 @@ public class StringTest {
 		String upperCase = BB.trim().replaceAll("\\d+\\w?$", "").replace(".*", "").replace("RTDB ", "").toUpperCase();
 		System.out.println(upperCase);*/
 		
-		String status = "Succeed";
+		/*String status = "Succeed";
 		status = status.equals("Succeed")?"Idle":status;
-		System.err.println(status);
+		System.err.println(status);*/
+		
+		String failType="code bug ";
+		boolean contains = failType.contains("code bug");
+		System.out.println(contains);
+	}
+	@Test
+	public void test() {
+		String failType="1";
+		boolean contains = failType.contains("code bug");
+		System.out.println(contains);
 	}
 }

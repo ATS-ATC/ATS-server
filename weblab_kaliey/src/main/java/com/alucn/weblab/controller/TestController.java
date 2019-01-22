@@ -17,5 +17,9 @@ public class TestController {
 		System.out.println(jsonArray);
 		return jsonArray;
 	}
+	@RequestMapping(path = "/demo")
+	public String test(Model model) throws Exception{
+		return "demo";
+	}
 	
 }

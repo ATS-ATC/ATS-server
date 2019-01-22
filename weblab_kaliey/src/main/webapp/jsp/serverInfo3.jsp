@@ -24,13 +24,60 @@
 <script src="./js/bootstrap-select.min.js"></script>
 <link href="./css/bootstrap-select.min.css" rel="stylesheet">
 
-<style type="text/css">
+<style type='text/css'>
 .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn){
-width: 100%;
+	width: 100%;
 }
 
-</style>
+/* @media all and (-webkit-min-device-pixel-ratio:0) and (min-resolution: .001dpcm) { 
+    .masked{
+        background-image: -webkit-linear-gradient(left, #147B96, #E6D205 25%, #147B96 50%, #E6D205 75%, #147B96);
+        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text;
+        -webkit-background-size: 200% 100%;
+        -webkit-animation: masked-animation 4s infinite linear;
+    }
+}
+@-webkit-keyframes masked-animation {
+    0%  { background-position: 0 0;}
+    100% { background-position: -100% 0;}
+} */
 
+
+/* @keyframes typing { 
+    from { width: 0; }
+} 
+@keyframes caret { 
+    50% { border-color: transparent; } 
+} 
+.masked { 
+    overflow: hidden; 
+    white-space: nowrap; 
+    border-right: 0.1em solid; 
+    animation: typing 13s steps(7), caret 0.7s steps(1) infinite;
+} */
+
+.dotting {
+    display: inline-block; width: 10px; min-height: 2px;
+    padding-right: 2px;
+    border-left: 2px solid currentColor; border-right: 2px solid currentColor;   
+    background-color: currentColor; background-clip: content-box;
+    box-sizing: border-box;
+    animation: dot 4s infinite step-start both;
+    *zoom: expression(this.innerHTML = '...'); /* IE7 */
+}
+.dotting:before { content: '...'; } /* IE8 */
+.dotting::before { content: ''; }
+:root .dotting { margin-left: 2px; padding-left: 2px; } /* IE9+ */
+
+@keyframes dot {
+    25% { border-color: transparent; background-color: transparent; }          /* 0个点 */
+    50% { border-right-color: transparent; background-color: transparent; }    /* 1个点 */
+    75% { border-right-color: transparent; }                                   /* 2个点 */
+}
+
+
+</style>
 <title>Server Info</title>
 </head>
 <body style="background-color:#ECEFF3;">
@@ -54,7 +101,7 @@ width: 100%;
 		 	</a>
 		 	
     	</div>
-       	<table id="table"></table>
+       	<table id="table" style="background-color: #FBFCFC"></table>
     </div>
 </div>
 <!--新增server -->
@@ -538,6 +585,9 @@ $("#add").click(function(){
 
 
 $(function() {
+	
+	
+	
 	var $table = $('#table');
   	$table.bootstrapTable({
 	    url: 'getServerInfoJson.do',
@@ -634,6 +684,14 @@ $(function() {
 	  });
 
   	setInterval('myrefresh()',1000*10*2); //指定20秒刷新一次
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
 });
 function myrefresh() {
 	//alert(1)
@@ -663,7 +721,9 @@ function statusFormatter(value, row, index) {
 	  	} else if(value == 'Dead'){
 		    return '<span class="label label-danger">Dead</span>';
 	  	} else if(value == 'Running'){
-		    return '<span class="label label-warning">Running</span>';
+		    //return '<span class="label label-warning" style="text-shadow:0 0 2px #CCCCCC, 0 0 4px #CCCCCC, 0 0 6px #CCCCCC, 0 0 8px #095816, 0 0 10px #095816, 0 0 20px #095816, 0 0 30px #095816">Running</span>';//Running  is-animate style2
+		    //return '<span class="label label-warning">Running<span class="dotting"></span></span>';//Running  is-animate style2
+		    return '<span class="label label-warning">Running<span class="dotting"></span></span>';//Running  is-animate style2
 	  	} else if(value == 'Ready'){
 		    return '<span class="label label-info">Ready</span>';
 	  	} else if(value == 'Finished'){
@@ -686,6 +746,6 @@ function statusFormatter(value, row, index) {
   }
 } */
 
-</script>
 
+</script>
 </html>

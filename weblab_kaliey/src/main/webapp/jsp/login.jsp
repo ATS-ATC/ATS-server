@@ -11,7 +11,17 @@
 <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
 <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
 <link rel="bookmark" href="images/favicon.ico" type="image/x-icon" />
+
+<%-- <script src="${pageContext.request.contextPath}/js/md5.js"></script> --%>
 <script type="text/javascript">
+/* $(function(){
+	$("#submit").click(function(){
+		var passwordfield =  $("#password-field").val();
+	 	var str3 = hex_md5(passwordfield);
+		//alert(str3);
+		$("#password-field").val(str3);
+	});
+}); */
 $(document).keyup(function(event){
     if(event.keyCode ==13){
       $("#submit").trigger("click");
@@ -24,13 +34,32 @@ $(document).keyup(function(event){
  		},10000);
     }); */
 })
+function showPass() {
+	var input = $("#password-field");
+	var showPass = $("#showPass");
+	
+	if (input.attr("type") == "password") {
+	  	input.attr("type", "text");
+	  	showPass.attr("class","glyphicon glyphicon-eye-open");
+	} else {
+	  	input.attr("type", "password");
+	  	showPass.attr("class","glyphicon glyphicon-eye-close");
+	}
+}; 
 </script>
+<style type="text/css">
+#showPass,#user{
+    position:absolute;
+    right:10%;
+    top:25%
+}
+</style>
 </head>
 <body>
 	<div class="container-fluid">
 		<div class="row">
 		  	<div class="col-md-9" style="padding-left: 0px; padding-right: 0px;">
-				<img class="img-responsive" alt="Responsive image"  src="images/233.png">
+				<img class="img-responsive" alt="Responsive image"  src="images/233.png" style="width: 100%;height: auto;">
 			</div>
 		  	<div class="col-md-3">
 				<div class="row">
@@ -51,11 +80,13 @@ $(document).keyup(function(event){
 					  <div class="form-group">
 					    <div class="col-sm-12">
 					      <input type="text" class="form-control" id="username" name="username" placeholder="username">
+					      <span id="user" class="glyphicon glyphicon-user"></span>
 					    </div>
 					  </div>
 					  <div class="form-group">
 					    <div class="col-sm-12">
-					      <input type="password" class="form-control" id="password" name="password" placeholder="password">
+					      <input type="password" class="form-control" id="password-field" name="password" placeholder="password">
+					      <span toggle="#password-field" class="glyphicon glyphicon-eye-close" id="showPass" onclick="showPass()"></span>
 					    </div>
 					  </div>
 					  <input type="hidden" value="${token}" name="Reqtoken"/>

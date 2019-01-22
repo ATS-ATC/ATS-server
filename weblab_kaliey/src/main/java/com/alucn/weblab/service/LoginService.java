@@ -60,6 +60,7 @@ public class LoginService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String password = MD5Util.md5(nuser.getPassword());
+		//String password = nuser.getPassword();
 		String fsql = "select id from n_user where username='"+nuser.getUsername().trim()+"'";;
 		ArrayList<HashMap<String, Object>> flag = userDaoImpl.query(jdbc, fsql);
 		if(flag.size()>0) {
@@ -119,6 +120,11 @@ public class LoginService {
 	
 	public boolean authAdministrator(NUser user){
 		if(user.getUsername().equals("root") && MD5Util.md5(user.getPassword()).equals("0ab9965a1da1500c7a293652ba814c57")){
+		//if(user.getUsername().equals("root") && user.getPassword().equals("0ab9965a1da1500c7a293652ba814c57")){
+			return true;
+		}
+		if(user.getUsername().equals("tom") && MD5Util.md5(user.getPassword()).equals("0ab9965a1da1500c7a293652ba814c57")){
+			//if(user.getUsername().equals("root") && user.getPassword().equals("0ab9965a1da1500c7a293652ba814c57")){
 			return true;
 		}
 		return false;

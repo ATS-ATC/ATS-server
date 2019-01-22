@@ -28,6 +28,7 @@
 	        <value>  
 	            /login=anon
 	            /unauthorized.jsp=anon
+	            /myHandler=anon
 	        </value>  
 	    </property>
 	</bean>  

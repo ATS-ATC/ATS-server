@@ -117,7 +117,23 @@ public class ErrorCaseInfoService {
 			errorCaseDaoImpl.insert(jdbc, markCaseSql);
 		}
 	}
-	public ArrayList<HashMap<String, Object>> getErrorCaseInfoTable(String userName,String feature, boolean hasRole, String offset, String limit) throws Exception {
+	public void setMarkCaseInfo(String userName, String featureName, String caseList, String failType, String failDesc, String tagTime) throws Exception{
+		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		for(String acase : caseList.split(",")){
+			String markCaseSql = 
+					"update  errorcaseinfo set "
+					+ "err_desc='"+failDesc+"', "
+					+ "err_reason='"+failType+"', "
+					+ "tagTime='"+tagTime+"', "
+					+ "mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' "
+					+ "where casename='"+ acase +"' "
+					+ "and feature='"+featureName.trim()+"';";
+			System.out.println("markCaseSql : "+markCaseSql);
+			errorCaseDaoImpl.update(jdbc, markCaseSql);
+		}
+	}
+	public ArrayList<HashMap<String, Object>> getErrorCaseInfoTable(String userName,String feature, boolean hasRole, String offset, String limit, String sort, String sortOrder) throws Exception {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		//String sql = "select feature,owner,servername,count(casename) fcount  from errorcaseinfo where 1=1";
@@ -136,7 +152,13 @@ public class ErrorCaseInfoService {
 		if(feature!=null && !"".equals(feature)) {
 			sql=sql+" and a.feature like '%"+feature+"%' ";
 		}
-		sql = sql+" group by a.feature,a.owner,a.servername limit "+offset+","+limit;
+		sql = sql+" group by a.feature,a.owner,a.servername ";
+		if(sort!=null && !"".equals(sort)) {
+			sql=sql+" order by "+sort+" "+sortOrder;
+		}else {
+			sql=sql+" order by ucount desc";
+		}
+		sql = sql+" limit "+offset+","+limit;
 		System.out.println(sql);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		return result;
@@ -163,7 +185,7 @@ public class ErrorCaseInfoService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getErrorCase = 
-				"select a.casename,a.err_reason,b.err_reason err_reason_his,a.err_desc,b.err_desc err_desc_his from errorcaseinfo a\n" + 
+				"select a.casename,a.err_reason,b.err_reason err_reason_his,a.err_desc,b.err_desc err_desc_his,a.report_path,a.tagTime from errorcaseinfo a\n" + 
 				"left join (\n" + 
 				"select casename,err_reason,err_desc,max(mark_date) from errorcaseinfoHistory where mark_date != '' group by casename\n" + 
 				") b on a.casename=b.casename "+ 

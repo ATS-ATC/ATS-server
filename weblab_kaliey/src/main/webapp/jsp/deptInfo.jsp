@@ -62,13 +62,13 @@
 			<shiro:hasPermission name="dept:create">
 			<button id="add" class="btn btn-success">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-				<strong>Add</strong>
+				Add
 			</button>
 			</shiro:hasPermission>
 			<shiro:hasPermission name="dept:edit">
 			<button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-				<strong>Edit</strong>
+				Edit
 			</button>
 			</shiro:hasPermission>
 			<!-- 
@@ -81,7 +81,7 @@
 		<div style="background-color: white;">
 			<div class="row"
 				style="margin-left: 10px; margin-right: 13px; margin-top: 10px;">
-				<table id="tb_departments" class="text-nowrap"></table>
+				<table id="tb_departments" class="text-nowrap" style="background-color: #FBFCFC"></table>
 			</div>
 		</div>
 	</div>

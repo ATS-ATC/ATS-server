@@ -8,11 +8,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script src="${pageContext.request.contextPath}/jquery/jquery-3.2.1.js"></script>
 
-<script
-	src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
-<link
-	href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css"
-	rel="stylesheet">
+<script src="./jquery-ui/jquery-ui.min.js"></script>
+<link href="./jquery-ui/jquery-ui.min.css" rel="stylesheet">
+
+<script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
+<link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
@@ -21,101 +21,125 @@
 <link href="${pageContext.request.contextPath}/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
 
 <script type="text/javascript">
-	$(document).ready(function() {
-						function submitConfirm(info, flag, f, c) {
-							$("#reminder").dialog({
-												modal : true,
-												buttons : {
-													"Confirm" : function() {
-														if (flag == 1) {
-															$.post("./setMarkCase.do",
-																	{
-																	featureName : $("#featureName").val(),
-																	errorcases : c,
-																	failedreasons : f
-																	},
-																	function(data) {
-																		$("#reminder").dialog({
-																								buttons : {
-																										"Confirm" : function() {
-																											$(this).dialog("close");
-																											window.location.reload()
-																										}
-																									},
-																									open : function(event,ui) {
-																										$(this).html("");
-																										$(this).append(data);
-																									}
-																								});
-																			});
-															//document.submiterrors.submit();//submit the  form
-															//$('input:checkbox[name=errorcases]:checked').addClass("disabled");
-														} else if (flag == 2) {
-															$('input:checkbox').removeAttr('disabled');
-															//$('input:checkbox').prop('checked',false);
-														}
-														$(this).dialog("close");
-													},
-													"Cancel" : function() {
-														$(this).dialog("close");
-													}
-												},
-												open : function(event, ui) {
-													$(this).html("");
-													$(this).append("<p>" +info+ "</p>");
+$(document).ready(function() {
+	function submitConfirm(info, flag, f, c) {
+		$("#reminder").dialog({
+			modal : true,
+			buttons : {
+				"Confirm" : function() {
+					if (flag == 1) {
+						$.post("./setMarkCase.do",
+								{
+									featureName : $("#featureName").val(),
+									errorcases : c,
+									failedreasons : f
+								},
+								function(data) {
+									$("#reminder").dialog({
+										buttons : {
+												"Confirm" : function() {
+													$(this).dialog("close");
+													window.location.reload()
 												}
-											});
-						}
-
-						$("#reset").bind("click",function() {
-											submitConfirm("If check green boxs, last command would be overwrited!",2);
+											},
+											open : function(event,ui) {
+												$(this).html("");
+												$(this).append(data);
+											}
 										});
+									});
+					} else if (flag == 2) {
+						$('input:checkbox').removeAttr('disabled');
+					}
+					$(this).dialog("close");
+				},
+				"Cancel" : function() {
+					$(this).dialog("close");
+				}
+			},
+			open : function(event, ui) {
+				$(this).html("");
+				$(this).append("<p>" +info+ "</p>");
+			}
+		});
+	}
 
-						$("#submiterrors").submit(function() {
-											event.preventDefault();
-											var failed = $('input[type="radio"][name="failedreasons"]:checked');
-											var checkedcase = $('input[type="checkbox"][name="errorcases"]:checked');
-											var err_desc = document.getElementById("desc").value;
-											if (checkedcase.length == 0) {
-												submitConfirm("Please check a case?",3);
-												return;
-											}
-											if (failed.length == 0) {
-												submitConfirm("Please check a failed reason?",3);
-												return;
-											}
+	$("#reset").bind("click",function() {
+		submitConfirm("If check green boxs, last command would be overwrited!",2);
+	});
 
-											if (err_desc.trim() == "") {
-												submitConfirm("Please input a failed describe?",3);
-												return;
-											}
+	$("#submiterrors").submit(function() {
+			event.preventDefault();
+			var failed = $('input[type="radio"][name="failedreasons"]:checked');
+			var checkedcase = $('input[type="checkbox"][name="errorcases"]:checked');
+			var err_desc = $("#desc").val();
+			var tagTime = $("#dtp_input1").val();//2019-01-02 10:05:48
+			
+			if (checkedcase.length == 0) {
+				alert("Please check a case?");
+				return;
+			}
+			if (failed.length == 0) {
+				alert("Please check a failed reason?");
+				return;
+			}
+			var flag1 = failed.val().indexOf("code bug") != -1;
+			var flag2 = failed.val().indexOf("case issue") != -1;
+			if(flag1 || flag2){
+				if(tagTime==""){
+					alert("Please input a tag time?");
+					return;
+				}
+			}
+			if (err_desc.trim() == "") {
+				alert("Please input a failed describe?");
+				return;
+			}
 
-											var f = "";
-											var c = "";
-											for (var i = 0; i < failed.length; i++) {
-												f = failed.get(i).value;
-												f += "@";
-												f += err_desc;
-											}
-											for (var i = 0; i < checkedcase.length; i++) {
-												c += checkedcase.get(i).value
-												c += ",";
-											}
-											submitConfirm("Confirm to submit?",1, f, c.substring(0,c.length - 1));
-
-										});
+			var failType=failed.val();
+			var failDesc=err_desc.trim();
+			var caseList = "";
+			for (var i = 0; i < checkedcase.length; i++) {
+				caseList = caseList + checkedcase.get(i).value+",";
+			}
+			$.post(
+				"./setMarkCaseInfo.do",
+				{
+					featureName : $("#featureName").val(),
+					caseList : caseList.substring(0,caseList.length - 1),
+					failType : failType,
+					failDesc : failDesc,
+					tagTime : tagTime
+				},
+				function(data) {
+					$("#reminder").dialog({
+						buttons : {
+								"Confirm" : function() {
+									$(this).dialog("close");
+									window.location.reload()
+								}
+							},
+							open : function(event,ui) {
+								$(this).html("");
+								$(this).append(data);
+							}
+						});
+					}
+			);
+		});
 					
-						 $('.form_datetime').datetimepicker({
-						        //language:  'fr',
-						        weekStart: 1,
-						        todayBtn:  1,
-								autoclose: 1,
-								todayHighlight: 1,
-								startView: 2,
-								forceParse: 0,
-						        showMeridian: 1
-						    });
-					});
+	 $('.form_datetime').datetimepicker({
+	        //language:  'fr',
+	        weekStart: 1,
+	        todayBtn:  1,
+			autoclose: 1,
+			todayHighlight: 1,
+			startView: 2,
+			minView: 2,
+			forceParse: 0,
+	        showMeridian: 1
+	    });
+});
 	function showTime(){
 		var failed = $('input[type="radio"][name="failedreasons"]:checked').val();
 		var flag1 = failed.indexOf("code bug") != -1;
@@ -135,26 +159,68 @@
 </head>
 <body style="background-color: #ECEFF3;">
 	<div class="panel panel-primary" style="margin: 10px;">
-		<div class="panel-heading">
-			<h3 class="panel-title">
-				<strong>Feature: ${featureName}</strong>
-			</h3>
-		</div>
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-md-12 column">
+					<h4 class="col-md-12 column">
+						<section data-role="outer" label="" style="font-size: 16px; font-family: 微软雅黑;">
+							<section data-role="outer" label="" style="font-size: 16px; font-family: 微软雅黑;">
+								<section class="" data-tools="" data-id="93765" style="border: 0px none; box-sizing: border-box;">
+									<section style="width: 100%; text-align: center;" data-width="100%">
+										<section style="font-size: 18px; display: inline-block; padding-right: 10px; letter-spacing: -2px; box-sizing: border-box;">
+											◆◆
+										</section>
+										<section style="display: inline-block;">
+											<section class="" data-brushtype="text" style="padding: 0px 0.8em; font-size: 18px; letter-spacing: 2px; font-weight: bold; box-sizing: border-box;">
+												<!-- <span style="text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,0.1), 0 0 5px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2),0 5px 10px rgba(0,0,0,0.25);">
+												</span> -->
+													Feature: ${featureName}
+											</section>
+											<section style="width: 100%; height: 10px; background: rgb(62, 235, 255); border-radius: 20px; margin-top: -10px; box-sizing: border-box;" data-width="100%"></section>
+										</section>
+										<section style="font-size: 18px; display: inline-block; padding-left: 10px; letter-spacing: -2px; box-sizing: border-box;">
+											◆◆
+										</section>
+									</section>
+								</section>
+							</section>
+						</section>
+					</h4>
 					<form action="./setMarkCase.do" method="post" name="submiterrors" id="submiterrors">
 						<div class="row">
 							<div class="col-md-12 column">
-								<h4 class="col-md-12 column">Failed Cases</h4>
+								<!-- <h4 class="col-md-12 column"><strong>Failed Cases</strong></h4> -->
+								<!-- <h4>
+									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
+									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
+									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
+									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
+									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
+									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
+									                        		Failed Cases
+									                        	</strong>
+									                        </p>
+									                    </section>
+									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                </section>
+									            </section>
+									        </section>
+									    </section>
+									</section>
+								</h4> -->
+								<h4>Failed Cases</h4>
 								<div style="background-color: white;">
-									<div class="row" style="margin-left: 10px; margin-right: 13px; margin-top: 10px;">
-										<table id="tb_departments" class="text-nowrap" data-toggle="table">
+									<div class="row" style="margin-left: 10px; margin-right: 13px;">
+										<table id="tb_departments" class="text-nowrap" data-toggle="table" style="background-color: #FBFCFC">
 											<thead>
 												<tr>
 													<th>CaseName</th>
 													<th>Reason</th>
 													<th>Desc</th>
+													<th>TagTime</th>
 												</tr>
 											</thead>
 											<tbody>
@@ -171,12 +237,14 @@
 																					<c:out value="${errorCaseMap.casename}"></c:out>
 																					<span class="glyphicon glyphicon-link"></span>
 																				</a>
-																			</c:if> <c:if test="${not norPathFlag}">
+																			</c:if> 
+																			<c:if test="${not norPathFlag}">
 																				<c:out value="${errorCaseMap.casename}"></c:out>
 																			</c:if>
 																		</td>
 																		<td><c:out value="${errorCaseMap.err_reason}" /></td>
 																		<td><c:out value="${errorCaseMap.err_desc}" /></td>
+																		<td><c:out value="${errorCaseMap.tagTime}" /></td>
 																	</tr>
 																</c:when>
 																<c:when test="${(errorCaseMap.err_reason==null || errorCaseMap.err_reason==\"\") && errorCaseMap.err_reason_his!=null && errorCaseMap.err_reason_his!=\"\"}">
@@ -195,6 +263,7 @@
 																		</td>
 																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.err_reason_his}" /> ]</font></td>
 																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.err_desc_his}" /> ]</font></td>
+																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.tagTime}" /> ]</font></td>
 																	</tr>
 																</c:when>
 																<c:when test="${(errorCaseMap.err_reason==null || errorCaseMap.err_reason==\"\") && (errorCaseMap.err_reason_his==null || errorCaseMap.err_reason_his==\"\")}">
@@ -206,10 +275,12 @@
 																					<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																					<span class="glyphicon glyphicon-link"></span>
 																				</a>
-																			</c:if> <c:if test="${not norPathFlag}">
+																			</c:if> 
+																			<c:if test="${not norPathFlag}">
 																				<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																			</c:if>
 																		</td>
+																		<td></td>
 																		<td></td>
 																		<td></td>
 																	</tr>
@@ -228,14 +299,48 @@
 						<br>
 						<div class="row ">
 							<div class="col-md-12 column">
-								<h4 class="col-md-12 column">Failed Reason</h4>
+								<h4>Failed Reason</h4>
+								<!-- <h4>
+									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
+									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
+									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
+									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
+									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
+									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
+									                        		Failed Reason
+									                        	</strong>
+									                        </p>
+									                    </section>
+									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                </section>
+									            </section>
+									        </section>
+									    </section>
+									</section>
+								</h4> -->
 								<c:forEach items="${errorReasonList}" var="errorReasonMap">
-									<div class="col-xs-6 col-sm-3 column">
-										<label class="radio-inline"> 
-											<input type="radio" name="failedreasons" value="${errorReasonMap.error_tpye}" onchange="showTime()">
-											<span style="color:${errorReasonMap.err_mark}">${errorReasonMap.error_tpye}</span>
-										</label>
-									</div>
+										<div class="col-sm-2 column">
+											<label class="radio-inline"> 
+											<c:if test="${errorReasonMap.error_tpye.indexOf('code bug') != -1 || errorReasonMap.error_tpye.indexOf('case issue') != -1}" var="typeFlag" scope="session">
+												<span class="label label-danger">
+													<input type="radio" name="failedreasons" value="${errorReasonMap.error_tpye}" onchange="showTime()">
+													${errorReasonMap.error_tpye}
+												</span>
+											</c:if>
+											<c:if test="${not typeFlag }">
+												<span class="label label-info">
+												<input type="radio" name="failedreasons" value="${errorReasonMap.error_tpye}" onchange="showTime()">
+												${errorReasonMap.error_tpye}
+												<c:if test="${errorCaseMap.report_path!=null}">
+											   		<a href="${errorCaseMap.report_path }" target="_blank"><span class="glyphicon glyphicon-link"></span></a>
+												</c:if>
+												</span>
+											</c:if>
+											</label>
+										</div>
 								</c:forEach>
 							</div>
 						</div>
@@ -244,8 +349,9 @@
 						<div class="row" id='showtime' style="display: none;">
 							<div class="col-md-12 column">
 								<div class="form-group">
-					                <label for="dtp_input1" class="col-md-2 control-label">DateTime Picking</label>
-					                <div class="input-group date form_datetime col-md-5" data-date-format="dd MM yyyy - HH:ii p" data-link-field="dtp_input1">
+					                <label for="dtp_input1" class="col-md-2 control-label">Target Fix Date</label>
+					                <!-- <div class="input-group date form_datetime col-md-5" data-date-format="dd MM yyyy - HH:ii p" data-link-field="dtp_input1"> -->
+					                <div class="input-group date form_datetime col-md-5" data-date-format="dd MM yyyy" data-link-field="dtp_input1">
 					                    <input id="dtp_input" class="form-control" size="16" type="text" value="" readonly>
 					                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 										<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
@@ -256,11 +362,30 @@
 			            </div>
 						<div class="row ">
 							<div class="col-md-12 column">
-								<h4 class="col-md-12 column">Failed Describe</h4>
-								<div class="col-xs-6 col-sm-3 column">
-									<label class="radio-inline"> <textarea rows="3"
-											cols="135" id="desc" name="desc"></textarea>
-									</label>
+								<h4>Failed Describe</h4>
+								<!-- <h4>
+									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
+									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
+									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
+									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
+									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
+									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
+									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
+									                        		Failed Describe
+									                        	</strong>
+									                        </p>
+									                    </section>
+									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
+									                </section>
+									            </section>
+									        </section>
+									    </section>
+									</section>
+								</h4> -->
+								<div class="col-md-12 column" style="margin-right: 15px;">
+									<textarea class="form-control" rows="3" cols="135" id="desc" name="desc" style="width: 100%;"></textarea>
 								</div>
 							</div>
 						</div>
@@ -270,7 +395,10 @@
 							<div class="col-md-12 column text-right">
 								<input type="hidden" name="featureName" id="featureName" value=" ${featureName}">
 								<button type="button" class="btn btn-default" id="reset">Reset</button>
-								<input class="btn btn-default" type="submit" name="submiterrrorreason" value="Submit">
+								&nbsp;&nbsp;
+								<button class="btn btn-primary" type="submit" name="submiterrrorreason" style="margin-right: 15px;">
+									&nbsp;&nbsp;&nbsp;&nbsp;Submit&nbsp;&nbsp;&nbsp;&nbsp;
+								</button>
 							</div>
 						</div>
 					</form>

@@ -89,6 +89,7 @@ public class CaseSearchController {
 			for (HashMap<String, Object> hashMap : deptsByUserName) {
 				String deptid = ""+hashMap.get("dept_id");
 				String deptName = ""+hashMap.get("dept_name");
+				
 				if(deptid!=null && !"".equals(deptid)) {
 					deptmap.put(deptName,deptid);
 				}
