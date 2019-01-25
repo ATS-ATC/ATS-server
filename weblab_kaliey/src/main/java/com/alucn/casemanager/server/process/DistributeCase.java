@@ -67,7 +67,7 @@ public class DistributeCase implements Runnable{
 				logger.error("[Distribute case or command exception :]"+e.getMessage());
 				logger.error(ParamUtil.getErrMsgStrOfOriginalException(e.getCause()));
 			}catch (Exception e) {
-				logger.error("[Distribute case or command exception :]"+ e);
+				logger.error("[Distribute case or command exception :]", e);
 			}
 		}
 	}

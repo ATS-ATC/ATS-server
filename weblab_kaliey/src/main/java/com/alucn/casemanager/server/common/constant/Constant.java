@@ -33,6 +33,8 @@ public class Constant {
 	public static final String NAME = "name";
 	public static final String TIME = "time";
 	public static final String FAIL = "fail";
+	public static final String ERROR = "error";
+	public static final String HTML = "html";
 	public static final String CHARACTER_SET_ENCODING_UTF8 = "UTF-8";
 	public static final String EMBEDDED_MESSAGE_REQ = "PREREQUESTHEALTH"; 
 	public static final String EMBEDDED_MESSAGE_RSP = "PRERESPONSEHEALTH";
@@ -59,7 +61,7 @@ public class Constant {
 	public static final String CASELIST = "case_list";
 	public static final String CASELISTUUID = "uuid";
 	public static final String SPAANDRTDB = "spaANDrtdb.txt";
-	public static final JSONObject CASESTATUSPRE = JSONObject.fromObject("{\"head\": {\"reqType\": \"\",\"response\": \"\"},\"body\": {\"lab\": {\"serverIp\": \"\",\"serverName\": \"\",\"serverRelease\": \"\",\"serverProtocol\": \"\",\"serverTpye\": \"\",\"serverMate\": \"\",\"mateServer\": \"\",\"setName\": \"\",\"serverSPA\": [],\"serverRTDB\": []},\"taskStatus\": {\"status\": \"\",\"runningCase\": \"\"},\"taskResult\": {\"success\": [{\"name\": \"\",\"time\": \"\"}],\"fail\": []}}}");
+	public static final JSONObject CASESTATUSPRE = JSONObject.fromObject("{\"head\": {\"reqType\": \"\",\"response\": \"\"},\"body\": {\"lab\": {\"serverIp\": \"\",\"serverName\": \"\",\"serverRelease\": \"\",\"serverProtocol\": \"\",\"serverTpye\": \"\",\"serverMate\": \"\",\"mateServer\": \"\",\"setName\": \"\",\"serverSPA\": [],\"serverRTDB\": []},\"taskStatus\": {\"status\": \"\",\"runningCase\": \"\"},\"taskResult\": {\"success\": [{\"name\": \"\",\"time\": \"\"}],\"fail\": [{\"name\": \"\", \"error\": \"\", \"html\": \"\"}]}}}");
 	public static final String LISTENERPORT="case.socket.listener.port";
 	public static final String READPERIODTIMEOUT="case.socket.read_period_timeout";
 	public static final String READTIMEOUT="case.socket.read_timeout";
