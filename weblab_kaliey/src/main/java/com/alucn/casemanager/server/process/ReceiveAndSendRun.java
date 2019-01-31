@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -125,6 +126,7 @@ public class ReceiveAndSendRun implements Runnable {
 		public void run() {
 			logger.info(serverName+ "socket pipe send message thread is started");
 			JdbcUtil jdbc_cf = null;
+			Map<String, String> uuidCase = new HashMap<String, String>();
 			List<Object> listParams = new ArrayList<Object>();
 			List<Object[]> paramsList = new ArrayList<Object[]>();
 			while(true){
@@ -143,20 +145,43 @@ public class ReceiveAndSendRun implements Runnable {
                         	listParams.add("%"+serverName+"%");
                             List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryDistributedCaseTb, listParams);
                             if(toDistributeCaseList.size()==0){
+                            	String queryAllDistributedCaseTb = "SELECT * FROM DistributedCaseTbl;";
+                            	List<Map<String, Object>> allDistributedCaseTb = jdbc_cf.findModeResult(queryAllDistributedCaseTb, null);
                             	String message = sendMessageBlockingQueue.take();
-            					sendMessage(message);
+                            	JSONObject availableCase = JSONObject.fromObject("{"+message+"}");
+                            	JSONArray case_list = availableCase.getJSONObject(Constant.AVAILABLECASE).getJSONArray(Constant.CASELIST);
+                            	String uuid = availableCase.getJSONObject(Constant.AVAILABLECASE).getString(Constant.CASELISTUUID);
+                            	String case_name = "";
+                            	for(int j=0; j<case_list.size(); j++){
+                            		case_name = case_list.getString(j);
+                            		for(int m=0; m<allDistributedCaseTb.size(); m++){
+                            			if(case_name.equals(allDistributedCaseTb.get(m).get("case_name").toString())){
+                            				case_list.remove(j);
+                            				break;
+                            			}
+                            		}
+                            	}
+                            	if(case_list.size() > 0){
+                            		availableCase.getJSONObject(Constant.AVAILABLECASE).put(Constant.CASELIST, case_list);
+                            		sendMessage(Constant.AVAILABLECASE+":"+availableCase.getJSONObject(Constant.AVAILABLECASE).toString());
+                            	}else{
+                            		logger.info("case_list is emptied...");
+                            	}
             					logger.info(serverNameIn+ " socket pipe send message of queue "+ message);
-            					String replaceDistributedCaseTb = "replace into DistributedCaseTbl(case_name, server_name) values (?, ?);";
-            					JSONObject availableCase = JSONObject.fromObject("{"+message+"}");
+            					String replaceDistributedCaseTb = "REPLACE INTO DistributedCaseTbl(case_name, server_name) VALUES (?, ?);";
             					paramsList.clear();
-            					JSONArray case_list = availableCase.getJSONObject(Constant.AVAILABLECASE).getJSONArray(Constant.CASELIST);
-            					for(int j=0; j<case_list.size(); j++){
-            						Object [] paramsArray = new Object[2];
-            						paramsArray[0] = case_list.get(j);
-            						paramsArray[1] = serverName;
-            						paramsList.add(paramsArray);
+            					if(!uuidCase.containsKey(serverName) || (uuidCase.containsKey(serverName) && !uuidCase.get(serverName).equals(uuid))){
+            						for(int j=0; j<case_list.size(); j++){
+                						Object [] paramsArray = new Object[2];
+                						paramsArray[0] = case_list.get(j);
+                						paramsArray[1] = serverName;
+                						paramsList.add(paramsArray);
+                					}
+                					jdbc_cf.executeBatch(replaceDistributedCaseTb, paramsList);
+                					uuidCase.put(serverName, uuid);
             					}
-            					jdbc_cf.executeBatch(replaceDistributedCaseTb, paramsList);
+                            }else{
+                            	logger.info(serverName + " is Running...");
                             }
                         }
 					}
@@ -282,7 +307,7 @@ public class ReceiveAndSendRun implements Runnable {
 		dos.write(resjson.getBytes(Constant.CHARACTER_SET_ENCODING_UTF8));
 		dos.flush();
 		if(!Constant.EMBEDDED_MESSAGE_RSP.equals(resjson)){
-			logger.info(getCurrentTime4Log()+"Send response message json data"+resjson);
+			logger.info(getCurrentTime4Log()+"Send response message json data "+resjson);
 		}
 		if(null != null){
 			dos.close();

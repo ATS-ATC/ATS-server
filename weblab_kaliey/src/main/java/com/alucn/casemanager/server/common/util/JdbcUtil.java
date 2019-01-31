@@ -19,12 +19,12 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import com.alucn.casemanager.server.listener.MainListener;
 
-
-/**
- * jdbc connect
- * @author wanghaiqi
- *
- */
+/**  
+* <p>Title: JdbcUtil</p>  
+* <p>Description: </p>  
+* @author haiqiw  
+* @date 2019-1-3
+*/ 
 public class JdbcUtil {
 	private static Logger logger = Logger.getLogger(JdbcUtil.class);
 	private static Properties prop = new Properties();
@@ -151,6 +151,38 @@ public class JdbcUtil {
 			}
 		}
 		
+		rtn = pstmt.executeBatch();
+		conn.commit();
+		closeConn(conn, pstmt, null);
+		return rtn;
+	}
+	
+	/**
+	 * executeBatchWithTrigger
+	 * @param sql
+	 * @param paramsList
+	 * @return
+	 * @throws SQLException
+	 * @throws ClassNotFoundException 
+	 */
+	public int[] executeBatchWithTrigger(String sql, List<Object[]> paramsList) throws SQLException, ClassNotFoundException {
+		int[] rtn = null;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		Statement stm = null;
+		conn = getConnection();
+		conn.setAutoCommit(false);
+		stm = conn.createStatement();
+		stm.execute("PRAGMA recursive_triggers='ON'");
+		pstmt = conn.prepareStatement(sql);
+		if(paramsList != null && paramsList.size() > 0) {
+			for(Object[] params : paramsList) {
+				for(int i = 0; i < params.length; i++) {
+					pstmt.setObject(i + 1, params[i]);  
+				}
+				pstmt.addBatch();
+			}
+		}
 		rtn = pstmt.executeBatch();
 		conn.commit();
 		closeConn(conn, pstmt, null);

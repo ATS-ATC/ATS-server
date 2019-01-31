@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +32,7 @@ public class DistriButeCaseToLab {
 	String specialRelease = "28A,28C,28F,28G,28H";
 	int counterUninsRS=0;
 	Map<String, Integer> idleNum = new HashMap<String, Integer>();
+	List<String> idleThreadSign = new ArrayList<String>();
 	private List<Object> listParams = new ArrayList<Object>();
 	private DistriButeCaseToLab(){};
 	static DistriButeCaseToLab instance = null;
@@ -61,7 +61,7 @@ public class DistriButeCaseToLab {
 	private JSONArray genCaseListToLab(String serverName) throws Exception {
 		JSONArray caseList = new JSONArray();
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-		String querySecDataSql = "SELECT D.base_data, T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData, D.base_data ORDER BY num DESC;";
+		String querySecDataSql = "SELECT D.base_data, D.feature_number, T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData, D.base_data, D.feature_number ORDER BY num DESC;";
 		listParams.clear();
 		listParams.add("%"+serverName+"%");
 		List<Map<String, Object>> secDataList = jdbc_cf.findModeResult(querySecDataSql, listParams);
@@ -69,7 +69,8 @@ public class DistriButeCaseToLab {
 		for(int i=0; i<secDataList.size(); i++){
 			listParams.add(secDataList.get(i).get("SecData"));
 			listParams.add(secDataList.get(i).get("base_data"));
-			String queryToDistributeCaseSql = "SELECT D.base_data, T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = ? and D.base_data = ? ;";
+			listParams.add(secDataList.get(i).get("feature_number"));
+			String queryToDistributeCaseSql = "SELECT D.base_data, D.feature_number,T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = ? and D.base_data = ? and D.feature_number = ? ;";
 			List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryToDistributeCaseSql, listParams);
 			for(int j=0; j<toDistributeCaseList.size(); j++){
 				caseList.add(toDistributeCaseList.get(j).get("case_name"));
@@ -81,6 +82,23 @@ public class DistriButeCaseToLab {
 			break;
 		}
 		return caseList;
+	}
+	
+	private void changeLabRunStatus(String serverName, String release, String protocol, JSONArray SPA, JSONArray DB) throws IOException{
+		JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
+		JSONObject installedLabInfo = new JSONObject();
+    	if(installedLab.containsKey(serverName)){
+    		installedLabInfo = installedLab.getJSONObject(serverName);
+    	}
+    	installedLabInfo.put(Constant.SERVERRELEASE, release);
+		installedLabInfo.put(Constant.SERVERPROTOCOL, protocol);
+		installedLabInfo.put(Constant.SERVERNUM, "1");
+		installedLabInfo.put(Constant.SERVERMATE, "N");
+		installedLabInfo.put(Constant.STATUS, "");
+		installedLabInfo.put(Constant.SERVERSPA, SPA);
+		installedLabInfo.put(Constant.SERVERRTDB, DB);
+		installedLab.put(serverName, installedLabInfo);
+    	Fifowriter.writerFile("/home/huanglei/DB", "installLab.json", installedLab.toString());
 	}
 	
 	public JSONObject getDistributeCases() throws Exception {
@@ -144,27 +162,18 @@ public class DistriButeCaseToLab {
 					JSONArray DB = removeRelease(serverMemTwo.getJSONArray(Constant.SERVERRTDB));
 					String protocol = serverMemTwo.getString(Constant.SERVERPROTOCOL);
 					String release = serverMemTwo.getString(Constant.SERVERRELEASE);
-					if (serverNameTwo.equals(serverName) && serverStatus.getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE)) {
-						JSONObject installedLab = JSONObject.fromObject(Fiforeader.readLastLine("/home/huanglei/DB/installLab.json"));
-						JSONObject installedLabInfo = new JSONObject();
-		            	if(installedLab.containsKey(serverName)){
-		            		installedLabInfo = installedLab.getJSONObject(serverName);
-		            	}
-		            	installedLabInfo.put(Constant.SERVERRELEASE, release);
-	            		installedLabInfo.put(Constant.SERVERPROTOCOL, protocol);
-	            		installedLabInfo.put(Constant.SERVERNUM, "1");
-	            		installedLabInfo.put(Constant.SERVERMATE, "N");
-	            		installedLabInfo.put(Constant.STATUS, "");
-	            		installedLabInfo.put(Constant.SERVERSPA, SPA);
-	            		installedLabInfo.put(Constant.SERVERRTDB, DB);
-	            		installedLab.put(serverName, installedLabInfo);
-		            	Fifowriter.writerFile("/home/huanglei/DB", "installLab.json", installedLab.toString());
-					
+					logger.debug("idleThreadSign... " + idleThreadSign.toString());
+					if (serverNameTwo.equals(serverName) && serverStatus.getString(Constant.STATUS).equals(Constant.CASESTATUSIDLE) && !idleThreadSign.contains(serverName)) {
+						logger.debug("idleThreadSign after... " + idleThreadSign.toString());
+						changeLabRunStatus(serverName, release, protocol, SPA, DB);
 						Thread installLabThread = new Thread(new Runnable() {
 							@Override
 							public void run() {
+								idleThreadSign.add(serverName);
 								while(true){
 									try {
+										logger.debug("get lab status... " + serverName);
+										
 										idleNum.put(serverName, 0);
 //										serverStatus.put(Constant.STATUS, Constant.LABSTATUSREADYINSTALL);
 //										CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
@@ -177,6 +186,7 @@ public class DistriButeCaseToLab {
 												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
 												serverStatus.put(Constant.STATUS, Constant.CASESTATUSIDLE);
 												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												idleThreadSign.remove(serverName);
 												break;
 											}else if(Constant.REINSTALLLABFAIL.equals(installedStatus)){
 												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
@@ -187,13 +197,14 @@ public class DistriButeCaseToLab {
 												to_list.add("xiuyun.he@nokia-sbell.com");
 												SendMail.genReport(cc_list, to_list, serverName);
 												serverStatus.put(Constant.STATUS, installedStatus);
-			                                    CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
+												idleThreadSign.remove(serverName);
 												break;
 											}else if(Constant.REINSTALLLABCOMPLETE.equals(installedStatus)){
-												logger.debug("lab reinstall completed... " + serverName+" response result "+installedStatus);
+												logger.debug("cases are completed...");
+												changeLabRunStatus(serverName, release, protocol, SPA, DB);
 												serverStatus.put(Constant.STATUS, installedStatus);
 												CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,serverBody);
-												break;
 											}
 										}
 									} catch (Exception e) {
