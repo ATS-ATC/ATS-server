@@ -52,6 +52,10 @@ img{ max-width:100%;}
   float: left;
   width: 11%;
 }
+.chat_badge {
+  float: right;
+  width: 11%;
+}
 .chat_ib {
   float: left;
   padding: 0 0 0 15px;

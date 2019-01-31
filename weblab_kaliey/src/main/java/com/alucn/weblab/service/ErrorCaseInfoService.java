@@ -74,7 +74,7 @@ public class ErrorCaseInfoService {
 	public ArrayList<HashMap<String, Object>> getErrorCaseInfo(String featureName, String author, boolean checkAllCase) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getErrorCase = "SELECT casename, err_reason, err_desc, report_path FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
+		String getErrorCase = "SELECT casename, err_reason, err_desc, report_path,owner FROM errorcaseinfo WHERE 1=1 and feature='"+featureName+"'";
 		//if(!checkAllCase.equals(Constant.AUTH)){
 		if(!checkAllCase){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
@@ -185,7 +185,7 @@ public class ErrorCaseInfoService {
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		String getErrorCase = 
-				"select a.casename,a.err_reason,b.err_reason err_reason_his,a.err_desc,b.err_desc err_desc_his,a.report_path,a.tagTime from errorcaseinfo a\n" + 
+				"select a.casename,a.err_reason,b.err_reason err_reason_his,a.err_desc,b.err_desc err_desc_his,a.report_path,a.tagTime,a.owner from errorcaseinfo a\n" + 
 				"left join (\n" + 
 				"select casename,err_reason,err_desc,max(mark_date) from errorcaseinfoHistory where mark_date != '' group by casename\n" + 
 				") b on a.casename=b.casename "+ 

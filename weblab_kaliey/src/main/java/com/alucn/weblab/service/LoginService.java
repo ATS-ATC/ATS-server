@@ -144,7 +144,7 @@ public class LoginService {
 		String sql = "select distinct dept_id from n_user_dept "
 				+ "where stateflag=0 "
 				+ "and user_id in (select id from n_user where stateflag=0 and username='"+username+"')";
-		System.err.println(sql);
+		//System.err.println(sql);
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}

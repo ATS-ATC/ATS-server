@@ -172,8 +172,6 @@ $(document).ready(function() {
 										</section>
 										<section style="display: inline-block;">
 											<section class="" data-brushtype="text" style="padding: 0px 0.8em; font-size: 18px; letter-spacing: 2px; font-weight: bold; box-sizing: border-box;">
-												<!-- <span style="text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,0.1), 0 0 5px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2),0 5px 10px rgba(0,0,0,0.25);">
-												</span> -->
 													Feature: ${featureName}
 											</section>
 											<section style="width: 100%; height: 10px; background: rgb(62, 235, 255); border-radius: 20px; margin-top: -10px; box-sizing: border-box;" data-width="100%"></section>
@@ -189,28 +187,6 @@ $(document).ready(function() {
 					<form action="./setMarkCase.do" method="post" name="submiterrors" id="submiterrors">
 						<div class="row">
 							<div class="col-md-12 column">
-								<!-- <h4 class="col-md-12 column"><strong>Failed Cases</strong></h4> -->
-								<!-- <h4>
-									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
-									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
-									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
-									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
-									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
-									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
-									                        		Failed Cases
-									                        	</strong>
-									                        </p>
-									                    </section>
-									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                </section>
-									            </section>
-									        </section>
-									    </section>
-									</section>
-								</h4> -->
 								<h4>Failed Cases</h4>
 								<div style="background-color: white;">
 									<div class="row" style="margin-left: 10px; margin-right: 13px;">
@@ -218,6 +194,7 @@ $(document).ready(function() {
 											<thead>
 												<tr>
 													<th>CaseName</th>
+													<th>Owner</th>
 													<th>Reason</th>
 													<th>Desc</th>
 													<th>TagTime</th>
@@ -242,6 +219,7 @@ $(document).ready(function() {
 																				<c:out value="${errorCaseMap.casename}"></c:out>
 																			</c:if>
 																		</td>
+																		<td><c:out value="${errorCaseMap.owner}" /></td>
 																		<td><c:out value="${errorCaseMap.err_reason}" /></td>
 																		<td><c:out value="${errorCaseMap.err_desc}" /></td>
 																		<td><c:out value="${errorCaseMap.tagTime}" /></td>
@@ -261,6 +239,7 @@ $(document).ready(function() {
 																				<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																			</c:if>
 																		</td>
+																		<td><c:out value="${errorCaseMap.owner}" /></td>
 																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.err_reason_his}" /> ]</font></td>
 																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.err_desc_his}" /> ]</font></td>
 																		<td><font color=gray>[ his : <c:out value="${errorCaseMap.tagTime}" /> ]</font></td>
@@ -280,6 +259,7 @@ $(document).ready(function() {
 																				<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																			</c:if>
 																		</td>
+																		<td><c:out value="${errorCaseMap.owner}" /></td>
 																		<td></td>
 																		<td></td>
 																		<td></td>
@@ -300,27 +280,6 @@ $(document).ready(function() {
 						<div class="row ">
 							<div class="col-md-12 column">
 								<h4>Failed Reason</h4>
-								<!-- <h4>
-									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
-									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
-									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
-									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
-									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
-									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
-									                        		Failed Reason
-									                        	</strong>
-									                        </p>
-									                    </section>
-									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                </section>
-									            </section>
-									        </section>
-									    </section>
-									</section>
-								</h4> -->
 								<c:forEach items="${errorReasonList}" var="errorReasonMap">
 										<div class="col-sm-2 column">
 											<label class="radio-inline"> 
@@ -363,27 +322,6 @@ $(document).ready(function() {
 						<div class="row ">
 							<div class="col-md-12 column">
 								<h4>Failed Describe</h4>
-								<!-- <h4>
-									<section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									    <section data-role="outer" label="" style="font-size:16px;font-family:微软雅黑;">
-									        <section class="" data-tools="" data-id="92788" style="border: 0px none; box-sizing: border-box;">
-									            <section style="margin: 15px 0%; text-align: left; box-sizing: border-box;">
-									                <section style="display: inline-block;vertical-align: top;box-sizing: border-box;">
-									                    <section style="width: 45px; height: 5px; margin-left: auto; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                    <section style="margin-top: -3px;margin-bottom: -3px;border-width: 1px;border-style: solid;border-color: #000000;padding-left: 8px;padding-right: 8px;color: #3e3e3e;letter-spacing: 0px;line-height: 1.75;box-sizing: border-box;transform: rotate(0deg);-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-o-transform: rotate(0deg);">
-									                        <p style="box-sizing: border-box; text-align: left;margin-bottom: 0px;">
-									                        	<strong style="box-sizing: border-box;" class="" data-brushtype="text">
-									                        		Failed Describe
-									                        	</strong>
-									                        </p>
-									                    </section>
-									                    <section style="width: 45px; height: 5px; line-height: 5px; background-color: #b6e4fd; box-sizing: border-box; color: #0573af;"></section>
-									                </section>
-									            </section>
-									        </section>
-									    </section>
-									</section>
-								</h4> -->
 								<div class="col-md-12 column" style="margin-right: 15px;">
 									<textarea class="form-control" rows="3" cols="135" id="desc" name="desc" style="width: 100%;"></textarea>
 								</div>
