@@ -458,7 +458,8 @@ public class SendMail {
             String totalFailedNum = "-1";
             String totalSubmitNum = "-1";
             String ftcDate = "-1";
-            String email = "-1";
+            String emails = "-1";
+            String email = "";
             
             JSONArray report = new JSONArray();
             JSONArray to_list = new JSONArray();
@@ -562,6 +563,7 @@ public class SendMail {
             //not exist user
             JSONArray newUser = new JSONArray();
             boolean isExist = false;
+            boolean isFound = false;
             String userName, showName;
             for(int i = 0; i < author_list.size(); i++)
             {
@@ -581,7 +583,29 @@ public class SendMail {
                         JSONObject userObj = getUserInfo(userName);
                         if(!"{}".equals(userObj.toString())){
                             showName=userObj.getString("lastname") + " " + userObj.getString("firstname");
-                            email = userObj.getString("mail");
+                            emails = userObj.getString("othermails");
+                            String[] email_list = emails.split(",");
+                            if (email_list.length == 1)
+                            {
+                                email = email_list[0];
+                            }
+                            else
+                            {
+                                isFound = false;
+                                for(int k = 0; k < email_list.length; k++)
+                                {
+                                    if(email_list[k].endsWith("nokia-sbell.com"))
+                                    {
+                                        email = email_list[k];
+                                        isFound = true;
+                                        break;
+                                    }
+                                }
+                                if(!isFound)
+                                {
+                                    email = userObj.getString("mail");
+                                }
+                            }
                             JSONObject userInfo = new JSONObject();
                             userInfo.put("UserName", userName);
                             userInfo.put("Email", email);
