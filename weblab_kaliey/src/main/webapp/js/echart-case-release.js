@@ -153,7 +153,7 @@ myReleaseChart.setOption({
           if (result) {
               for (var i = 0; i < result.length; i++) {
                   //alert(result[i].name);
-                  names.push(result[i].release);    //挨个取出类别并填入类别数组
+                  names.push(result[i].base_release);    //挨个取出类别并填入类别数组
                   nums.push(result[i].cc);    //挨个取出销量并填入销量数组
                   fnums.push(result[i].ff);
                   inums.push(result[i].ii);

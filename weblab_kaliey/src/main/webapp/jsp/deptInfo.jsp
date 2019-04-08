@@ -286,7 +286,7 @@
 			alert("At least checked one line.");
 			return false;
 		}else{
-			if(a[0].id=="1"||a[0].id=="2"){
+			if(a[0].id=="0"||a[0].id=="1"||a[0].id=="2"){
 				alert("The "+a[0].dept_name+" grouping is not allowed to be modified.");
 				return false;
 			}

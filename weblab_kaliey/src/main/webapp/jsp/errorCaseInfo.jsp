@@ -28,16 +28,16 @@
 </script>
 <title>Features</title>
 </head>
-<body ><!-- style="background-color:#ECEFF3;" -->
+<body style="background-color:#ECEFF3;"><!-- style="background-color:#ECEFF3;" -->
     <div class="panel-body" style="padding-bottom:0px;">
         <div class="panel panel-default">
             <div class="panel-heading"><strong>Feature</strong></div>
             <div class="panel-body" style="padding-bottom: 0px;">
                 <form id="formSearch" class="form-horizontal">
-                    <div class="form-group" style="margin-top:15px">
-                        <label class="control-label col-sm-2" for="txt_search_feature">Feature</label>
+                    <div class="form-group" style="margin-top:15px;">
+                       	<label class="control-label col-sm-2" for="txt_search_feature">Feature</label>
                         <div class="col-sm-3">
-                            <input type="text" class="form-control" id="txt_search_feature">
+                            <input type="text" class="form-control" id="txt_search_feature" style="display: inline;">
                         </div>
                         <div class="col-sm-3"></div>
                         <div class="col-sm-4" style="text-align:right;">
@@ -47,7 +47,11 @@
                 </form>
             </div>
         </div> 
-        <table id="tb_departments" class="text-nowrap" style="background-color: #FBFCFC"></table>
+        <div class="row" style="padding-left: 15px;padding-right: 15px;">
+	        <div class="table-responsive"  style="background-color: #FFFFFF;padding-left: 20px;padding-right: 20px;" >
+	        	<table id="tb_departments" class="text-nowrap" style="background-color: #FBFCFC"></table>
+	        </div>
+        </div>
     </div>
 </body>
 <script type="text/javascript">

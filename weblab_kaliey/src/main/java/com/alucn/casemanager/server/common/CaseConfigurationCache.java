@@ -20,6 +20,7 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.TelnetCla;
 import com.alucn.casemanager.server.process.GetTimeCase;
+import com.alucn.weblab.utils.KalieyMysqlUtil;
 
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
@@ -33,6 +34,7 @@ public class CaseConfigurationCache {
 	public static JSONObject singletonCaseCommand ;
 	public static List<Object[]> paramsList = new ArrayList<Object[]>();
 	public static List<Object> listParams = new ArrayList<Object>();
+	private static KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	static {
 		try {
@@ -79,12 +81,12 @@ public class CaseConfigurationCache {
 				boolean isExist = false;
 				String serverName = body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
-				JdbcUtil jdbc_cf = null;
+				/*JdbcUtil jdbc_cf = null;
 				try {
 					jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 				}catch (Exception e) {
 					e.printStackTrace();
-				}
+				}*/
 				if(singletonCaseProperties.size()==0){
 					//------------------------------20181115--------------------------------------------------
 					String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
@@ -94,11 +96,7 @@ public class CaseConfigurationCache {
 					//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
 					String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
 					String updateServerList = "replace into serverList values('"+serverName+"','','','','"+laststatus+"','"+deptid+"')";
-					try {
-						jdbc_cf.executeSql(updateServerList);
-					} catch (ClassNotFoundException e1) {
-						e1.printStackTrace();
-					}
+					// jdbc_cf.executeSql(updateServerList);
 					//-----------------------------------------------------------------------------------------------
 					logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 					//System.out.println("0==[add host "+serverName+" status : "+taskStatus+"]");
@@ -132,11 +130,11 @@ public class CaseConfigurationCache {
 								tmpJsonObject.getJSONObject(Constant.LAB).put("laststatus", status);
 								tmpJsonObject.getJSONObject(Constant.LAB).put("lasttime", new Date().getTime());
 								String updateServerList = "replace into serverList values('"+serverName+"','','','','"+status+"','"+deptid+"')";
-								try {
-									jdbc_cf.executeSql(updateServerList);
+								/*try {
+									jdbc.executeSql(updateServerList);
 								} catch (ClassNotFoundException e1) {
 									e1.printStackTrace();
-								}
+								}*/
 							}
 							long nowtime = new Date().getTime();
 							long hodingtime = nowtime-ulasttime;
@@ -146,13 +144,13 @@ public class CaseConfigurationCache {
 								logger.info(ulaststatus+">>"+status);
 								//id,labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime,stateflag
 								try {
-									String insertLog = "insert into n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
+									String insertLog = "insert into kaliey.n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
 											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
 									logger.info(insertLog);
-									jdbc_cf.executeSql(insertLog);
+									jdbc.executeSql(insertLog);
 									
 									String updateServerList = "update serverList set status='"+status+"',deptid='"+deptid+"' where serverName='"+serverName+"'";
-									jdbc_cf.executeSql(updateServerList);
+									// jdbc.executeSql(updateServerList);
 									
 								} catch (Exception e) {
 									e.printStackTrace();
@@ -163,11 +161,11 @@ public class CaseConfigurationCache {
 								body.getJSONObject(Constant.LAB).put("laststatus", ulaststatus);
 								body.getJSONObject(Constant.LAB).put("lasttime", ulasttime);
 								String updateServerList = "replace into serverList values('"+serverName+"','','','','"+ulaststatus+"','"+deptid+"')";
-								try {
+								/*try {
 									jdbc_cf.executeSql(updateServerList);
 								} catch (ClassNotFoundException e1) {
 									e1.printStackTrace();
-								}
+								}*/
 							}
 							singletonCaseProperties.set(i,body);
 							isExist = true;
@@ -183,11 +181,11 @@ public class CaseConfigurationCache {
 							//body.getJSONObject(Constant.LAB).put("hodingtime", "0");
 							String deptid = body.getJSONObject(Constant.LAB).getString("deptid");
 							String updateServerList = "replace into serverList values('"+serverName+"','','','','"+laststatus+"','"+deptid+"')";
-							try {
+							/*try {
 								jdbc_cf.executeSql(updateServerList);
 							} catch (ClassNotFoundException e1) {
 								e1.printStackTrace();
-							}
+							}*/
 							//-----------------------------------------------------------------------------------------------
 							logger.info("[add host "+serverName+" status : "+taskStatus+"]");
 							//System.out.println("!0==[add host "+serverName+" status : "+taskStatus+"]");
@@ -200,11 +198,11 @@ public class CaseConfigurationCache {
 						JSONObject tmpJsonObject = (JSONObject) singletonCaseProperties.get(i);
 						if(removeListServer.contains(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
 							String updateServerList = "delete from serverList where serverName ='"+tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME)+"'";
-							try {
+							/*try {
 								jdbc_cf.executeSql(updateServerList);
 							} catch (Exception e) {
 								e.printStackTrace();
-							}
+							}*/
 							singletonCaseProperties.remove(i);
 						}
 					}
@@ -277,7 +275,7 @@ public class CaseConfigurationCache {
 						String result = telnetCla.doJob(Constant.TMSUSER,caseName);
 						String[] split = result.split(",");
 						for(int j=0; j<split.length-1; j++){
-							String sql = "UPDATE DftTag SET case_level='"+split[j]+"' WHERE case_name='"+caseName+"' ;";
+							String sql = "UPDATE case_tag SET case_level='"+split[j]+"' WHERE case_name='"+caseName+"' ;";
 							jdbc_df.executeSql(sql);
 							logger.info("[update "+caseName+" case_level to : "+split[j]+"]");
 						}
@@ -287,8 +285,8 @@ public class CaseConfigurationCache {
 				}
 				logger.info("multiParamsList++++++++++++++++++"+multiParamsList.toString());
 				logger.info("paramsList++++++++++++++++++"+paramsList.toString());
-				jdbc_df.executeBatch("UPDATE DftTag SET case_status='S', status_owner='ATS', case_cost=? WHERE case_name=? ;", multiParamsList);
-				jdbc_cf.executeBatch("DELETE FROM DailyCase WHERE case_name=? ;", paramsList);
+				jdbc_df.executeBatch("UPDATE case_tag SET case_status='S', status_owner='ATS', case_cost=? WHERE case_name=? ;", multiParamsList);
+				jdbc_cf.executeBatch("DELETE FROM daily_case WHERE case_name=? ;", paramsList);
 			}
 			
 			List<Object[]> failParamsList = new ArrayList<Object[]>();
@@ -300,7 +298,7 @@ public class CaseConfigurationCache {
 					paramsArray[0] = caseName;
 					paramsList.add(paramsArray);
 					failParamsList.add(paramsArray);
-					String dfttagdaily_sql2 = "SELECT * FROM DailyCase WHERE case_name='"+caseName+"' ;";
+					String dfttagdaily_sql2 = "SELECT * FROM daily_case WHERE case_name='"+caseName+"' ;";
 					List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(dfttagdaily_sql2, null);
 					if(list_dc.size()>0) {
 						Object [] errorCaseParamsArray = new Object[7];
@@ -315,9 +313,9 @@ public class CaseConfigurationCache {
 					}
 				}
 				logger.info("failParamsList++++++++++++++++++"+failParamsList.toString());
-				jdbc_df.executeBatch("UPDATE DftTag SET case_status='F',status_owner='ATS' WHERE case_name=? ;", failParamsList);
-				jdbc_cf.executeBatch("UPDATE DailyCase SET case_status='F',status_owner='ATS' WHERE case_name=? ;", failParamsList);
-				jdbc_cf.executeBatchWithTrigger("REPLACE INTO errorcaseinfo (casename, feature, err_reason, err_desc, owner, insert_date, mark_date, email_date, servername, report_path, sunit_report_reason) VALUES(?, ?, '', '', ?, ?, '', '', ?, ?, ?) ;", multiParamsList);
+				jdbc_df.executeBatch("UPDATE case_tag SET case_status='F',status_owner='ATS' WHERE case_name=? ;", failParamsList);
+				jdbc_cf.executeBatch("UPDATE daily_case SET case_status='F',status_owner='ATS' WHERE case_name=? ;", failParamsList);
+				jdbc_cf.executeBatchWithTrigger("REPLACE INTO error_case_info (case_name, feature_number, err_reason, err_desc, owner, insert_date, mark_date, email_date, servername, report_path, sunit_report_reason) VALUES(?, ?, '', '', ?, ?, '', '', ?, ?, ?) ;", multiParamsList);
 			}
 			
 			logger.info("paramsList++++++++++++++++++"+paramsList.toString());

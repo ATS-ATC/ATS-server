@@ -95,7 +95,7 @@
 
 <title>Home</title>
 </head>
-<body style="background-color:#ECEFF3;padding-top:27px;">
+<body style="background-color:#ECEFF3;padding-top:10px;">
 	<div class="container-fluid">
 		<div class="row clearfix" >
 			<div class="col-md-6 column" style="padding-right:0px;">

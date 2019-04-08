@@ -1,13 +1,42 @@
 package com.alucn.weblab.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
+import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alucn.casemanager.server.common.util.Fiforeader;
+import com.alucn.weblab.service.CaseSearchService;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class StringUtil {
 	
-	public static void main(String[] args) {
-		String string = "CTRTDB,XBRTDB,GNRTDB,SGLDB,SGLRTDB,SIMDB";
+	public static void main(String[] args) throws NumberFormatException, InterruptedException, IOException {
+		String server ="[\"BJRMS21B\",\"BJRMS21D\",\"CHSP05B\"]";
+		
+		String login ="root";
+		String caseLogId ="1";
+		/*String string = "CTRTDB,XBRTDB,GNRTDB,SGLDB,SGLRTDB,SIMDB";
 		String jsonString = formatJsonString(string);
-		System.out.println(jsonString);
+		System.out.println(jsonString);*/
+		/*String splitCondition = splitCondition("DailyCase;;;;;;;;;;;ANSI;;BJRMS21B,BJRMS21D,CHSP05B;","","case_name,'Y','"+server +"','"+login +"',now(),"+caseLogId );
+		System.out.println(splitCondition);*/
 	}
 	/**
 	 * 
@@ -77,4 +106,7 @@ public class StringUtil {
 		
 		return null;
 	}
+	
+	
+	
 }

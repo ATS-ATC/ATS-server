@@ -1,0 +1,7 @@
+{
+    "single":[
+        {"name":"case_status","value":["Initial","Re-sub","Failed","Successful"]},
+        {"name":"data_source","value":["DailyCase","DftTag"]}
+    ],
+    "SourceServer": "ftp://135.251.249.250"
+}

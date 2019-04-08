@@ -88,7 +88,7 @@ $(document).ready(function(){
 				<%-- <img alt="" src="${pageContext.request.contextPath}/images/Snipaste_2018-06-08_15-56-26.png" class="img-responsive" alt="Responsive image"> --%>
 				<%-- &nbsp;&nbsp;&nbsp;<font size="5" style="font-weight:800;"><span class="jumbotron" style="padding-left: 0px; padding-right: 0px;">${login },</span></font></br> --%>
 				&nbsp;&nbsp;&nbsp;<font size="5" style="font-weight:800;">${login },</font></br>
-				&nbsp;&nbsp;&nbsp;Welcome to SurePay Automation Case Management System !
+				&nbsp;&nbsp;&nbsp;<span >Welcome to SurePay Automation Case Management System !</span>
 			</div>
 			<div class="col-md-2"  >
 				<img align="right" style="height: 50px;width: 115px;display: inline;" src="${pageContext.request.contextPath}/images/sunit.gif" class="img-responsive" alt="Responsive image"/>
@@ -125,9 +125,9 @@ $(document).ready(function(){
                           <div class="symbol terques">
                              <i class="icon-globe"></i>
                           </div>
-                          <div class="value">
+                          <div class="value" >
                               <h1 id="all_case">${caseCount[0].allCase }</h1>
-                              <p><strong>My Case</strong></p>
+                              <p><strong >My Case</strong></p>
                           </div>
                           </a>
                       </section>
@@ -137,9 +137,9 @@ $(document).ready(function(){
                           <div class="symbol green">
                               <i class="icon-check"></i>
                           </div>
-                          <div class="value">
+                          <div class="value" >
                               <h1 id="s_case">${caseCount[0].sCase }</h1>
-                              <p><strong>My Success Case</strong></p>
+                              <p><strong >My Success Case</strong></p>
                           </div>
                       </section>
                   </div>
@@ -148,7 +148,7 @@ $(document).ready(function(){
                           <div class="symbol red">
                               <i class="icon-exclamation-sign"></i>
                           </div>
-                          <div class="value">
+                          <div class="value" >
                               <h1 id="f_case">${caseCount[0].fCase }</h1>
                               <p><strong>My Fail Case</strong></p>
                           </div>
@@ -159,7 +159,7 @@ $(document).ready(function(){
                           <div class="symbol darkblue">
                               <i class="icon-bar-chart"></i>
                           </div>
-                          <div class="value">
+                          <div class="value" >
                               	<h1 id="s_rate">
                               		<c:if test="${caseCount[0].allCase !=0}">
 										<fmt:formatNumber type="number" value="${(caseCount[0].sCase/caseCount[0].allCase*100) }" pattern="0.00" maxFractionDigits="2"/>%

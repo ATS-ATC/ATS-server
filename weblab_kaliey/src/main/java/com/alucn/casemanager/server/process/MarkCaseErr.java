@@ -53,10 +53,10 @@ public class MarkCaseErr {
 			Map<String, String> to_list_map = new HashMap<String, String>();
 			for (int i = 0; i < list_dc.size(); i++) {
 				StringBuffer errCaseString = new StringBuffer();
-				feature = list_dc.get(i).get("feature").toString();
-				serverName = list_dc.get(i).get("servername").toString();
-				String errCaseListSql = "select e.casename, e.feature, e.owner, e.servername, u.UserName, u.Email, u.ShowName from errorcaseinfo e left join UserInfo u on u.UserName = e.owner where e.feature='"
-						+ feature + "' and e.owner='" + list_dc.get(i).get("owner").toString() + "' and e.servername='"
+				feature = list_dc.get(i).get("feature_number").toString();
+				serverName = list_dc.get(i).get("server_name").toString();
+				String errCaseListSql = "select e.case_name casename, e.feature_number feature, e.owner, e.server_name servername, u.UserName, u.Email, u.ShowName from error_case_info e left join UserInfo u on u.UserName = e.owner where e.feature_number='"
+						 + feature + "' and e.owner='" + list_dc.get(i).get("owner").toString() + "' and e.server_name='"
 						+ serverName + "'";
 				List<Map<String, Object>> errCaseList = jdbc_cf.findModeResult(errCaseListSql, null);
 				JSONObject errCaseInfo = new JSONObject();
@@ -76,7 +76,7 @@ public class MarkCaseErr {
 				errCaseInfo.put("author",showName);
 				to_list_map.put(eMail, "");
 				for (int j = 0; j < errCaseList.size(); j++) {
-					errCaseString.append(errCaseList.get(j).get("casename"));
+					errCaseString.append(errCaseList.get(j).get("case_name"));
 					if (j != errCaseList.size() - 1) {
 						errCaseString.append(",");
 					}
@@ -101,10 +101,10 @@ public class MarkCaseErr {
 				buildInfo.put("webSite", "http://" + ConfigProperites.getInstance().getCaseServerWebIp() + ":8080/weblab");
 				SendMail.genReport(cc_list, to_list, report, buildInfo);
 				for (int i = 0; i < list_dc.size(); i++) {
-					String updateMail = "update errorcaseinfo set email_date='"
-							+ DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss") + "' where feature='"
-							+ list_dc.get(i).get("feature").toString() + "' and owner='"
-							+ list_dc.get(i).get("owner").toString() + "' and servername='" + serverName + "'";
+					String updateMail = "update error_case_info set email_date='"
+							+ DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss") + "' where feature_number='"
+							+ list_dc.get(i).get("feature_number").toString() + "' and owner='"
+							+ list_dc.get(i).get("owner").toString() + "' and server_name='" + serverName + "'";
 					jdbc_cf.executeSql(updateMail);
 				}
 				return true;
@@ -148,7 +148,7 @@ public class MarkCaseErr {
 		public void run() {
 			logger.info("[MarkCaseErr Time''s Up!]");
 			try {
-				String errorCaseSql = "select feature,owner,servername from errorcaseinfo where email_date='' and mark_date='' group by feature,owner";
+				String errorCaseSql = "select feature_number,owner,server_name from error_case_info where email_date='' and mark_date='' group by feature_number,owner";
 				if (getSendMail(errorCaseSql)) {
 					logger.info("[MarkCaseErr send email success!]");
 				}
@@ -165,14 +165,14 @@ public class MarkCaseErr {
 		public void run() {
 			try {
 				logger.info("[MarkCaseErrAgain Time''s Up!]");
-				String errorCaseSql = "select feature,owner,servername from errorcaseinfo where email_date<'"
+				 String errorCaseSql = "select feature_number,owner,server_name from error_case_info where email_date<'"
 						+ DateUtil.convert2String(
 								DateUtil.addDays(
 										DateUtil.convert2Date(DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss"),
 												"yyyy-MM-dd HH:mm:ss"),
 										-Integer.parseInt(ConfigProperites.getInstance().getCaseCheckMailPeriod())),
 								"yyyy-MM-dd HH:mm:ss")
-						+ "' and mark_date='' group by feature,owner";
+						+ "' and mark_date='' group by feature_number,owner";
 				if (getSendMail(errorCaseSql)) {
 					logger.info("[MarkCaseErrAgain send email success!]");
 				}

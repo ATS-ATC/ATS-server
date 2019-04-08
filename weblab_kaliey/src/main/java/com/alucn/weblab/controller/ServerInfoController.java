@@ -35,6 +35,8 @@ import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.service.LoginService;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
+import com.alucn.weblab.socket.TcpClient;
+import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 import com.alucn.weblab.utils.TimeUtil;
 
@@ -113,7 +115,8 @@ public class ServerInfoController {
 		ArrayList<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
-		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
+		// Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
+        Map<String,Set<ServerSort>> infos = serverInfoService.getNewServerInfo();
 		//logger.info("infos:==============="+infos);
 		int id =1;
 		for(String info :infos.keySet()) {
@@ -162,9 +165,9 @@ public class ServerInfoController {
 					String mateServer = lab.getString("mateServer");
 					String sdeptid = lab.getString("deptid");
 					
-					long lasttime = lab.getLong("lasttime");
+					/*long lasttime = lab.getLong("lasttime");
 					long nowtime = new Date().getTime();
-					String timeDifference = TimeUtil.getTimeDifference(nowtime, lasttime);
+					String timeDifference = TimeUtil.getTimeDifference(nowtime, lasttime);*/
 					//long hodingtime = nowtime-lasttime;
 					
 					ArrayList<HashMap<String, Object>> deptById = loginService.getDeptById(sdeptid);
@@ -209,7 +212,8 @@ public class ServerInfoController {
 					childMap.put("serverMate", serverMate);
 					childMap.put("mateServer", mateServer);
 					childMap.put("deptname", deptname);
-					childMap.put("hodingtime", timeDifference);
+					//childMap.put("hodingtime", timeDifference);
+					childMap.put("hodingtime", 0);
 					String username = (String) session.getAttribute("login");
 					ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
 					List<String> deptids= new ArrayList<>();
@@ -328,13 +332,14 @@ public class ServerInfoController {
 		//model.addAttribute("deptname", deptname);
 		//model.addAttribute("deptid", deptid);
 		model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		JSONArray Servers = SocketClientConn.getLabStatus();
 		//result.put("Servers", Servers);
 		//List setList = new ArrayList<>();
 		Set sets = new HashSet<>();
 		if(Servers.size()>0) {
 			for (int i =0 ;i<Servers.size();i++) {
-				JSONObject lab = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+				JSONObject lab = Servers.getJSONObject(i).getJSONObject("body").getJSONObject(Constant.LAB);
 				String sdeptid ="";
 				try {
 					sdeptid = lab.getString("deptid");
@@ -362,7 +367,7 @@ public class ServerInfoController {
 	}*/
 	@RequestMapping(path = "/getServerDetails")
 	public String getServerDetails(String serverName, Model model){
-		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfoNosort();
+		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getNewServerInfoNosort();
 		for(String key : infos.keySet()){
 			Set<Map<String,JSONObject>> set = infos.get(key);
 			Iterator<Map<String, JSONObject>> iterator = set.iterator();
@@ -404,8 +409,10 @@ public class ServerInfoController {
 				}
 			}
 		}
+		Subject subject = SecurityUtils.getSubject();
+		boolean hasRole = subject.hasRole("admin");
 		//System.out.println(deptids);
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit,offset,labname,deptids);
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit,offset,labname,deptids,hasRole);
 		if(labLogJson.size()>0) {
 			for (HashMap<String, Object> hashMap : labLogJson) {
 				String createtime = (String) hashMap.get("createtime");
@@ -478,34 +485,46 @@ public class ServerInfoController {
 		}
 		
 		String username = session.getAttribute("login").toString();
+		System.err.println("=======>"+username);
 		NUser user = new NUser();
 		user.setUsername(username);
 		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
+		ArrayList<HashMap<String, Object>> deptIdsByUserName = new ArrayList<HashMap<String, Object>>();
 		try {
 			queryNUser = loginService.queryNUser(user);
+			deptIdsByUserName = loginService.getDeptIdsByUserName(username);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		List<String> deptids= new ArrayList<String>();
+		if(deptIdsByUserName.size()>0) {
+			for (HashMap<String, Object> hashMap : deptIdsByUserName) {
+				String deptid = ""+hashMap.get("dept_id");
+				if(deptid!=null && !"".equals(deptid)) {
+					deptids.add(deptid);
+				}
+			}
+			//deptid = (String) deptByUserName.get(0).get("dept_id");
+		}
 		String createid ="";
-		String deptid ="";
 		if(queryNUser.size()>0) {
 			createid = (String) queryNUser.get(0).get("id");
-			deptid = (String) queryNUser.get(0).get("deptid");
 		}
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		//JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
+		JSONArray Servers = SocketClientConn.getLabStatus();
 		//result.put("Servers", Servers);
 		//List setList = new ArrayList<>();
 		Set sets = new HashSet<>();
 		if(Servers.size()>0) {
 			for (int i =0 ;i<Servers.size();i++) {
-				JSONObject lab = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
+				JSONObject lab = Servers.getJSONObject(i).getJSONObject("body").getJSONObject(Constant.LAB);
 				String sdeptid ="";
 				try {
 					sdeptid = lab.getString("deptid");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				if(deptid.equals(sdeptid)) {
+				if(deptids.contains(sdeptid)) {
 					String setName = lab.getString("setName");
 					sets.add(setName);
 				}
@@ -791,9 +810,8 @@ public class ServerInfoController {
 								}else if ("Succeed".equals(status)) {
 									try {
 										serverInfoService.editLabStatus(status,log,labname,new Date().getTime()+"",createtime+"");
-										logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
-										logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
-										Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
+										//logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
+										//Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
 										break;
 									} catch (Exception e) {
 										e.printStackTrace();
@@ -852,7 +870,7 @@ public class ServerInfoController {
 	public void addServerDetails(HttpSession session,NServer server) throws Exception{
 		
 		//检测角色 >>  /addServerInfo   roles[spuer,admin]
-		//insert into n_permission_url(permission_name,url,type,remark) values('authc,roles["admin","super"]','/addServerInfo.do','menu','新增lab超级用户以上权限');		
+		//insert into kaliey.n_permission_url(permission_name,url,type,remark) values('authc,roles["admin","super"]','/addServerInfo.do','menu','新增lab超级用户以上权限');		
 		
 		String useName = session.getAttribute("login").toString();
 		NUser nuser = new NUser();

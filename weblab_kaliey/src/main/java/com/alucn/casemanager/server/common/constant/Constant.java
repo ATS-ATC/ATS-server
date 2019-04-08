@@ -90,8 +90,8 @@ public class Constant {
 	public static final String  MATEN = "N";
 	public static final String  MATEY = "Y";
 	public static final String  AUTH = "all";
-	public static final String  DAILYCASE = "DailyCase";
-	public static final String  DFTTAG = "DftTag";
+	public static final String  DAILYCASE = "daily_case";
+	public static final String  DFTTAG = "case_tag";
 	public static final String TMSHOSTNAME = "135.3.27.70";
 	public static final int TMSHOSTPORT = 23;
 	public static final String TMSUSERAD4 = "svc_surepay";

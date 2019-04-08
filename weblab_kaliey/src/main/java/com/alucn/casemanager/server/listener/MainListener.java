@@ -52,7 +52,7 @@ public class MainListener implements ServletContextListener{
 				String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 				JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 				Map<String, String> mapConfigs = new HashMap<String, String>();
-				String queryConfigs = "select * from config";
+				String queryConfigs = "select * from certify_server_config";
 				ArrayList<HashMap<String,Object>> configs = jdbc.query(queryConfigs);
 				for(int i=0; i<configs.size(); i++){
 					mapConfigs.put(configs.get(i).get("con_key").toString(), configs.get(i).get("con_value").toString());

@@ -468,7 +468,8 @@ public class SendMail {
             JSONObject ftcInfo = new JSONObject();
      
             for (int i = 0; i < list_dc.size(); i++) {
-                feature = list_dc.get(i).get("feature").toString();
+                //feature = list_dc.get(i).get("feature").toString();
+				feature = list_dc.get(i).get("feature_number").toString();
                 author = list_dc.get(i).get("owner").toString();
                 uncheckedCaseNum = list_dc.get(i).get("case_num").toString();
                 
@@ -487,13 +488,16 @@ public class SendMail {
                 uncheckInfo.put("FailedCaseOwner", author);
                 unchecked.put(feature + ":" + author, uncheckInfo);
             }
-            String errCaseListSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where feature in ("
-            + featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature,owner;";
+            //String errCaseListSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where feature in ("
+            //+ featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature,owner;";
+			String errCaseListSql = "select feature_number,owner,count(case_name) as case_num from error_case_info where feature_number in ("
+			+ featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature_number,owner;";
             
             List<Map<String, Object>> list_dc_errs = jdbc_cf.findModeResult(errCaseListSql, null);
             for (int i = 0; i < list_dc_errs.size(); i++) {
                 
-                feature = list_dc_errs.get(i).get("feature").toString();
+                //feature = list_dc_errs.get(i).get("feature").toString();
+				feature = list_dc_errs.get(i).get("feature_number").toString();
                 author = list_dc_errs.get(i).get("owner").toString();
                 totalFailedNum = list_dc_errs.get(i).get("case_num").toString();
                 
@@ -505,7 +509,8 @@ public class SendMail {
                     unchecked.put(uncheck_key, uncheckInfo);
                 }
             }
-            String dftSql = "select feature_number,author,count(case_name) as case_num from DftTag where feature_number in ("
+            //String dftSql = "select feature_number,author,count(case_name) as case_num from DftTag where feature_number in ("
+			String dftSql = "select feature_number,author,count(case_name) as case_num from case_tag where feature_number in ("
                     + featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature_number,author;";
             JdbcUtil jdbc_dft = new JdbcUtil(Constant.DATASOURCE,
                     ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
@@ -635,8 +640,9 @@ public class SendMail {
 	private static void GenerateMailReport() throws Exception
 	{
 	    //generate new error cases
-	    String errorCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where email_date='' and mark_date='' group by feature,owner;";
-	    JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,
+	    //String errorCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where email_date='' and mark_date='' group by feature,owner;";
+	    String errorCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info where email_date='' and mark_date='' group by feature_number,owner;";
+		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,
                 ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
         List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(errorCaseSql, null);
         if(list_dc.size() > 0)
@@ -651,17 +657,20 @@ public class SendMail {
                     cc_list.add(ccs[i]);
                 }
                 genCertifyReport(re1.getJSONArray("to_list"), cc_list, re1.getJSONArray("report"), false, false);
-                String caselistSql = "select casename from errorcaseinfo where email_date='' and mark_date=''";
+                //String caselistSql = "select casename from errorcaseinfo where email_date='' and mark_date=''";
+				String caselistSql = "select case_name from error_case_info where email_date='' and mark_date=''";
                 List<Map<String, Object>> list_cases = jdbc_cf.findModeResult(caselistSql, null);
                 String casename;
                 JSONArray newCaseList = new JSONArray();
                 for(int j=0; j<list_cases.size(); j++){
-                    newCaseList.add(list_cases.get(j).get("casename").toString());
+                    //newCaseList.add(list_cases.get(j).get("casename").toString());
+					newCaseList.add(list_cases.get(j).get("case_name").toString());
                 }
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                 String dateTime = df.format(new Date());
                 String emailDate = dateTime + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
-                String updateEmailDate = "update errorcaseinfo set email_date ='" + emailDate + "' where casename in ("
+                //String updateEmailDate = "update errorcaseinfo set email_date ='" + emailDate + "' where casename in ("
+				String updateEmailDate = "update error_case_info set email_date ='" + emailDate + "' where case_name in ("
                     + newCaseList.toString().replace("[", "").replace("]", "").replace("\"", "'") +");";
                 jdbc_cf.executeSql(updateEmailDate);
                 
@@ -700,7 +709,8 @@ public class SendMail {
         String emailDate2 = newDate2 + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
         String RemindConditions = " where mark_date='' and email_date < '" 
                     + emailDate + "' and email_date >= '" + emailDate2 + "' group by feature,owner;";
-        String ReminderCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  RemindConditions;
+        //String ReminderCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  RemindConditions;
+		String ReminderCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info" +  RemindConditions;
       
         List<Map<String, Object>> list_remind1 = jdbc_cf.findModeResult(ReminderCaseSql, null);
         
@@ -724,8 +734,10 @@ public class SendMail {
         
         //generate expired 
         String ExpiredConditions = " where mark_date='' and email_date < '" 
-                 + emailDate2 + "' group by feature,owner;";
-        String ExpiredCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  ExpiredConditions;
+                 //+ emailDate2 + "' group by feature,owner;";
+				 + emailDate2 + "' group by feature_number,owner;";
+        //String ExpiredCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  ExpiredConditions;
+		String ExpiredCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info" +  ExpiredConditions;
       
         List<Map<String, Object>> list_expired = jdbc_cf.findModeResult(ExpiredCaseSql, null);
         if(list_expired.size() > 0)

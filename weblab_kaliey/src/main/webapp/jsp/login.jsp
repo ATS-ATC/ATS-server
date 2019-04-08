@@ -13,6 +13,8 @@
 <link rel="bookmark" href="images/favicon.ico" type="image/x-icon" />
 
 <%-- <script src="${pageContext.request.contextPath}/js/md5.js"></script> --%>
+<%-- <script src="${pageContext.request.contextPath}/js/sha256.js"></script> --%>
+<script src="${pageContext.request.contextPath}/js/aes.js"></script>
 <script type="text/javascript">
 /* $(function(){
 	$("#submit").click(function(){
@@ -22,6 +24,62 @@
 		$("#password-field").val(str3);
 	});
 }); */
+/* $(function(){
+	$("#submit").click(function(){
+		var passwordfield =  $("#password-field").val();
+	 	var str3 = sha256_digest(passwordfield);
+		alert(str3);
+		$("#password-field").val(str3);
+	});
+}); */
+/* $(function(){
+	$("#submit").click(function(){
+		var passwordfield =  $("#password-field").val(); */
+	 	/* var str3 = sha256_digest(passwordfield);
+		alert(str3); */
+		
+		
+		
+		/* var key = CryptoJS.enc.Utf8.parse("8NONwyJtHesysWpM");
+	    //var plaintText = 'ABCDEFGH'; // 明文
+	    var plaintText = passwordfield; // 明文
+	    var encryptedData = CryptoJS.AES.encrypt(plaintText, key, {
+	        mode: CryptoJS.mode.ECB,
+	        padding: CryptoJS.pad.Pkcs7
+	    });
+	 
+	    console.log("加密前："+plaintText);
+	    console.log("加密后："+encryptedData);
+	    alert("加密后："+encryptedData); */
+	 
+	    /* encryptedData = encryptedData.ciphertext.toString();
+	 
+	    var encryptedHexStr = CryptoJS.enc.Hex.parse(encryptedData);
+	    var encryptedBase64Str = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+	 
+	    var decryptedData = CryptoJS.AES.decrypt(encryptedBase64Str, key, {
+	        mode: CryptoJS.mode.ECB,
+	        padding: CryptoJS.pad.Pkcs7
+	    });
+	 
+	    var decryptedStr = decryptedData.toString(CryptoJS.enc.Utf8);
+	 
+	    console.log("解密后:"+decryptedStr); */
+	 
+		 /* var pwd = "PCsUFtgog9/qpqmqXsuCRQ==";
+	    //加密服务端返回的数据
+	    var decryptedData = CryptoJS.AES.decrypt(pwd, key, {
+	        mode: CryptoJS.mode.ECB,
+	        padding: CryptoJS.pad.Pkcs7
+	    });
+		
+		console.log("解密服务端返回的数据:"+decryptedStr); */
+		
+		
+		
+		/* $("#password-field").val(str3);
+	});
+});  */
 $(document).keyup(function(event){
     if(event.keyCode ==13){
       $("#submit").trigger("click");
@@ -53,13 +111,19 @@ function showPass() {
     right:10%;
     top:25%
 }
+body{ 
+	background: #FFFFFF url(images/237.png) no-repeat fixed left;
+	/* background:url(images/245.jpg);
+	background-size:100%;
+	background-repeat:no-repeat; */
+}
 </style>
 </head>
 <body>
 	<div class="container-fluid">
 		<div class="row">
 		  	<div class="col-md-9" style="padding-left: 0px; padding-right: 0px;">
-				<img class="img-responsive" alt="Responsive image"  src="images/233.png" style="width: 100%;height: auto;">
+				<!-- <img class="img-responsive" alt="Responsive image"  src="images/233.png" style="width: 100%;height: auto;"> -->
 			</div>
 		  	<div class="col-md-3">
 				<div class="row">
@@ -92,7 +156,7 @@ function showPass() {
 					  <input type="hidden" value="${token}" name="Reqtoken"/>
 					  <c:if test="${loginResult != 'success' && loginResult != 'login'}">
 							<div class="alert alert-dismissable alert-danger text-center" id="warning">
-								<strong>User Name or Password is incorrect!</strong>
+								<strong >User Name or Password is incorrect!</strong>
 							</div>
 					  </c:if>
 					  <div class="form-group">

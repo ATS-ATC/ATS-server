@@ -62,7 +62,7 @@ public class DbOperation {
 			// connection=DriverManager.getConnection("jdbc:sqlite:"+Dbpath);
 			connection_dc = DriverManager.getConnection("jdbc:sqlite:" + CaseInfoDB);
 			stat_dc = connection_dc.createStatement();
-			String Query_dc = "select case_name from DailyCase";
+			String Query_dc = "select case_name from daily_case";
 			ResultSet result_dc = stat_dc.executeQuery(Query_dc);
 			JSONArray caseList_dc = new JSONArray();
 			while (result_dc.next()) {
@@ -71,14 +71,14 @@ public class DbOperation {
 
 			connection_df = DriverManager.getConnection("jdbc:sqlite:" + DftTagDB);
 			stat_df = connection_df.createStatement();
-			String Query_df = "select case_name from DftTag where case_name in "
+			String Query_df = "select case_name from case_tag where case_name in "
 					+ caseList_dc.toString().replace("[", "(").replace("]", ")").replace("\"", "'");
 			ResultSet result_df = stat_df.executeQuery(Query_df);
 			JSONArray caseList_df = new JSONArray();
 			while (result_df.next()) {
 				caseList_df.add(result_df.getString("case_name"));
 			}
-			String Delete_dc = "delete from DailyCase where case_name not in "
+			String Delete_dc = "delete from daily_case where case_name not in "
 					+ caseList_df.toString().replace("[", "(").replace("]", ")").replace("\"", "'");
 			stat_dc.executeUpdate(Delete_dc);
 

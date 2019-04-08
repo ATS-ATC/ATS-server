@@ -18,12 +18,20 @@ $(document).keyup(function(event){
     }
 })
 </script>
+<style type="text/css">
+body{ 
+	background: #FFFFFF url(images/237.png) no-repeat fixed left;
+	/* background:url(images/245.jpg);
+	background-size:100%;
+	background-repeat:no-repeat; */
+}
+</style>
 </head>
 <body>
 	<div class="container-fluid">
 		<div class="row">
 		  	<div class="col-md-9" style="padding-left: 0px; padding-right: 0px;">
-				<img class="img-responsive" alt="Responsive image"  src="images/233.png">
+				<!-- <img class="img-responsive" alt="Responsive image"  src="images/233.png"> -->
 			</div>
 		  	<div class="col-md-3">
 				<div class="row">

@@ -15,8 +15,12 @@
 <script src="./jquery-ui/jquery-ui.min.js"></script>
 <script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
 <script src="${pageContext.request.contextPath}/js/loading.js"></script>
+<script src="${pageContext.request.contextPath}/js/xlsx.full.min.js"></script>
+<script src="${pageContext.request.contextPath}/js/jszip.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
 <link href="${pageContext.request.contextPath}/css/loading.css" rel="stylesheet" />
+<script src="${pageContext.request.contextPath}/js/fileinput.min.js" type="text/javascript"></script>
+<link href="${pageContext.request.contextPath}/css/fileinput.min.css" rel="stylesheet">
 <!-- <link href="./css/adminstyle.css" rel="stylesheet"> -->
 <title>SPA and RTDB</title>
 <style type="text/css">
@@ -59,7 +63,7 @@ $(function() {
         sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
         pageNumber:1,                       //初始化加载第一页，默认第一页
         pageSize: 10,                       //每页的记录行数（*）
-        pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+        pageList: [10,25,50,100],        //可供选择的每页的行数（*）
         //search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
         strictSearch: true,
         showColumns: true,                  //是否显示所有的列
@@ -71,19 +75,15 @@ $(function() {
         showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
         cardView: false,                    //是否显示详细视图
         detailView: false,                   //是否显示父子表
-        /* rowStyle: function (row, index) {
+       /*  rowStyle: function (row, index) {
             //这里有5个取值代表5中颜色['active', 'success', 'info', 'warning', 'danger'];
             var strclass = "";
-            if (row.s_case == '1') {
-            	if(row.f_case == '1'){
-	                strclass = 'warning';//还有一个active
-            	}else if (row.f_case == "0"){
-            		strclass = 'success';//还有一个active
-            	}
-            } else if (row.s_case == "0") {
+            if (row.batch_status == 'Complete') {
+	                strclass = 'info';//还有一个active
+            } else if (row.batch_status == "Running") {
+            	strclass = '';//还有一个active
+            } else if (row.batch_status == "Error") {
             	strclass = 'danger';//还有一个active
-            } else{
-            	return {}
             }
             return { classes: strclass }
         }, */
@@ -97,14 +97,26 @@ $(function() {
             	var a = '<a href="./searchCaseRunLogInfo.do?int_id='+row.int_id+'" >'+value+'</a>';
             	return a;
             }
-        }, {
+        }
+         , {
+        	 field: 'running_count',
+             title: 'Batch Status',
+             formatter: function statusFormatter(value, row, index) {
+         		if (value == 0) {
+        		    return '<span class="label label-success">Complete</span>';
+        	  	} else if(value > 0){
+        		    return '<span class="label label-warning">Running</span>';
+        	  	}
+        	}
+        } 
+        , {
             field: 'server_info',
             title: 'Server Info'
         }, {
             field: 'author',
             title: 'Author'
         }, {
-            field: 'datetime',
+            field: 'create_time',
             title: 'Date Time'
         }/* ,{
         	field: 'deptid',
@@ -121,6 +133,7 @@ $(function() {
 		var condition = "";
 		var ds = $('option[name="ds"]:checked');
 		var r = $('option[name="r"]:checked');
+		var wr = $('option[name="wr"]:checked');
 		var c = $('option[name="c"]:checked');
 		var bd = $('option[name="bd"]:checked');
 		var m = $('option[name="m"]:checked');
@@ -128,6 +141,7 @@ $(function() {
 		var sd = $('option[name="sd"]:checked');
 		var pr = $('option[name="pr"]:checked');
 		var cs = $('option[name="cs"]:checked'); 
+		var proq = $('option[name="proq"]:checked'); 
 		var fi = document.getElementById("featureid").value;
 		var author = document.getElementById("author").value;
 		//var server = document.getElementById("server").options[document.getElementById("server").selectedIndex].value;
@@ -268,14 +282,38 @@ $(function() {
 				}
 			}
 		}	
+		
 			
 		condition += fi;
 		condition += ";";
 		condition += author;
 		condition += ";";
+		if(proq.length == 0){
+			condition += ";";
+		}else{	
+			for (var i = 0; i < proq.length; i++) {
+				condition += proq.get(i).value;
+				if(i == proq.length-1){
+					condition += ";";
+				}else{
+					condition += ",";
+				}
+			}
+		}	
+		if(wr.length == 0){
+			condition += ";";
+		}else{	
+			for (var i = 0; i < wr.length; i++) {
+				condition += wr.get(i).value;
+				if(i == wr.length-1){
+					condition += ";";
+				}else{
+					condition += ",";
+				}
+			}
+		}	
 		condition += server;
-		condition += "";
-		
+		condition += ";";
 		return condition;
 	}
 	
@@ -329,7 +367,7 @@ $(function() {
 	                field: 'case_name',
 	                title: 'case_name'
 	            }, {
-	                field: 'release',
+	                field: 'base_release',
 	                title: 'release'
 	            }, {
 	                field: 'customer',
@@ -394,7 +432,10 @@ $(function() {
 		}
 		var oTable = new TableInit(outCondition);
 		oTable.Init();
-	     
+		$("#inCaseType").val("select");
+		$("#selectCase").removeAttr("style");
+		$("#Rerunning").removeAttr("style");
+		$("#importCase").attr("style","display:none");
 	    /* var ser = $('#server').val();
 	    $("#ser").html(""+ser); */
 	    $('#myModal').modal('show');
@@ -407,6 +448,11 @@ $(function() {
 	var ids="";
 	$("#Rerunning").click(function(){
 		var server =$('#server').val();
+		var formtitle =$('#formtitle').val();
+		if(""==formtitle){
+			alert("Please input title !");
+			return false;
+		}
 		if(server==null){
 			alert("Please select a server to run case !");
 			return false;
@@ -442,6 +488,11 @@ $(function() {
 		$('#delcfmModel').modal('hide');
 		var server = $('#server').val(); 
 		var flag = $("#select_all").is(":checked");
+		var formtitle =$('#formtitle').val();
+		if(""==formtitle){
+			alert("Please input title !");
+			return false;
+		}
 		if(!flag){
 			alert(ids)
 		}
@@ -454,7 +505,8 @@ $(function() {
 		$.get("rerunning.do", {
 			ids : ids,
 			condition: condition,
-			flag:flag
+			flag:flag,
+			formtitle:formtitle
 		}, function(data) {
 			if(data.msg != null){
 				alert(data.msg);
@@ -484,10 +536,169 @@ $(function() {
 		}
 	})
 	
+	$("#import").click(function(){
+		$("#selectCase").attr("style","display:none");
+		$("#Rerunning").attr("style","display:none");
+		$("#importCase").removeAttr("style");
+		$("#inCaseType").val("import");
+	 	$('#myModal').modal('show');
+	})
+	function readFile(file) {
+	    var name = file.name;
+	    var reader = new FileReader();
+	    reader.onload = function (e) {
+	        var data = e.target.result;
+	        var wb = XLSX.read(data, { type: "binary" });
+	        // console.log(wb.Strings.length);
+	        // alert(wb.Strings.length);
+	        if(wb.Strings.length>0) {
+		        $("#inputbox").attr("style","display:none");
+		        $("#inputDiv").removeAttr("hidden");
+		        var inhtml = "<tbody>";
+		        for(var i=0;i<wb.Strings.length;i++){
+		        	inhtml =inhtml +"<tr><td>"+wb.Strings[i].t+"</td></tr>";
+		        }
+		        inhtml = inhtml + "</tbody>"
+		        $("#inpuntTable").html(inhtml)
+	        }
+	        // alert(1)
+	    };
+	    reader.readAsBinaryString(file);
+	}
+	function addLis() {
+	    var xlf = document.getElementById('kv-explorer');
+	    var drop = document.getElementById('drop');
+	    drop.addEventListener("dragenter", handleDragover, false);
+	    drop.addEventListener("dragover", handleDragover, false);
+	    drop.addEventListener("drop", onDropDown, false); 
+	    if(xlf.addEventListener) {
+	    	xlf.addEventListener('change', handleFile, false);
+    	}
+	}
 	
+	//$("#kv-explorer").fileinput();
 	
+	addLis();
+	
+	function handleDragover(e) {
+	    e.stopPropagation();
+	    e.preventDefault();
+	    e.dataTransfer.dropEffect = 'copy';
+	}
+	
+	function onDropDown(e) {
+	    e.stopPropagation();
+	    e.preventDefault();
+	    var files = e.dataTransfer.files;
+	    var f = files[0];
+	    readFile(f);
+	} 
+	
+	function handleFile(e) {
+	    var files = e.target.files;
+	    var f = files[0];
+	    readFile(f);
+	}
 	
 	$(".fixed-table-container").css("padding-bottom","41px");
+	
+	
+	$("#RunOnly").click(function(){
+		var inCaseType = $("#inCaseType").val();
+		var server = $('#server').val(); 
+		if(server.length==0){
+			alert("Please select a server to run case !");
+			return false;
+		}
+		var formtitle =$('#formtitle').val();
+		if(""==formtitle){
+			alert("Please input title !");
+			return false;
+		}
+		if("import" == inCaseType){
+			//alert("import")
+			//alert($("#inpuntTable").get())
+			var set = [];
+			$('#inpuntTable').each(function(index) {
+			    // console.log(index)
+			    var table = [];
+			    $(this).find('tr').each(function() {
+			        var row = [];
+			        $(this).find('th,td').each(function() {
+			            row.push($(this).text().trim());
+			        });
+			        table.push(row);
+			    });
+			 
+			    set.push(table);
+			})
+			//alert(set)
+			if(set.length==0){
+				alert("Please import case to run !");
+				return false;
+			}
+			$.get("onlyrun.do", {
+				set : set.join(","),
+				server: server.join(","),
+				flag:"",
+				condition:"",
+				formtitle:formtitle
+			}, function(data) {
+				if(data.msg != null){
+					alert(data.msg);
+				}
+				//alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
+				if(data.s_case != null){
+					alert("submit case count:  "+data.s_case+" \nnonsupport case count:  "+data.f_case)
+				}
+				$('#loaddingModel').modal('hide');
+				$('#myModal').modal('hide');
+			});
+			set = [];
+			$('#loaddingModel').modal('show');
+			
+		} else if ("select" == inCaseType) {
+			//alert("select")
+			var sets = "";
+			var a  = $('#tb_departments').bootstrapTable('getSelections');
+			var flag = $("#select_all").is(":checked");
+			if(a.length==0 && !flag){
+				alert("At least checked one line");
+				return false;
+			}else{
+				for(var i=0;i<a.length;i++){
+					if(i==0 || i=="0"){
+						sets+=a[i].case_name;
+					}else{
+						sets+=","+a[i].case_name;
+					}
+				}
+			}
+			var condition = getCondition(server);
+			//alert(ids);
+			$.get("onlyrun.do", {
+				set : sets,
+				server: server.join(","),
+				flag:flag,
+				condition:condition,
+				formtitle:formtitle
+			}, function(data) {
+				if(data.msg != null){
+					alert(data.msg);
+				}
+				//alert("success case count:"+data.s_case+" fail case count:"+data.f_case)
+				if(data.s_case != null){
+					alert("submit case count:  "+data.s_case+" \nnonsupport case count:  "+data.f_case)
+				}
+				$('#loaddingModel').modal('hide');
+				$('#myModal').modal('hide');
+			});
+			ids="";
+			$('#loaddingModel').modal('show');
+		}
+	})
+	
+	
 });
 
 
@@ -497,8 +708,24 @@ function selectApar(){
 		$("#dserver").html("");
 		return;
 	}
-	//alert(dept);
+	/* var protocol = $("#protocol").val();
+	if(protocol==""){
+		$("#dserver").html("");
+		return;
+	}  */
+	/* var ideptid = $("#idept").val();ebang 
+	if(ideptid==""){
+		$("#idserver").html("");
+		return;
+	}
+	var iprotocol = $("#iprotocol").val();
+	if(iprotocol==""){
+		$("#idserver").html("");
+		return;
+	}  */
+	// alert(idept);
 	$("#dserver").removeAttr("style");
+	// $("#idserver").removeAttr("style");
 	//$("#server").find("option:not(:first)").remove();
 	
 	$.ajax({
@@ -510,12 +737,19 @@ function selectApar(){
 				$("#server").append(new Option(temp,temp));
 			} */
 			var dept="<select class='selectpicker' title='--Please Select--' id='server' multiple data-live-search='true'>"
+			// var idept="<select class='selectpicker' title='--Please Select--' id='iserver' multiple data-live-search='true'>"
 				//var dept="";
 				for(i=0;i<data.length;i++){
-					dept=dept+"<option value='"+data[i]+"'>"+data[i]+"</option>";
+					/* if(data[i].serverProtocol == protocol || protocol == 'ALL'){
+						dept=dept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
+						// idept=idept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
+					} */
+					dept=dept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
 				}
 			dept=dept+"</select>";
+			// idept=idept+"</select>";
 			$("#dserver").html(dept);
+			// $("#idserver").html(idept);
 			$('#server').selectpicker('refresh');
 		}
 	})
@@ -525,6 +759,35 @@ function selectApar(){
 
 
 </script>
+<style type="text/css">
+ .file {
+    position: relative;/*绝对定位!*/
+    display: inline-block;/*设置为行内元素*/
+    background: #D0EEFF;
+    border: 1px solid #99D3F5;
+    border-radius: 4px;
+    padding: 4px 12px;
+    overflow: hidden;
+    color: #1E88C7;
+    text-decoration: none;
+    text-indent: 0;
+    line-height: 20px;
+}
+.file input {
+    position: absolute;/*相对定位*/
+    right: 0;
+    top: 0;
+    opacity: 0;/*将上传组件设置为透明的*/
+    font-size: 100px;
+}
+.file:hover {
+    background: #AADDFF;
+    border-color: #78C3F3;
+    color: #004974;
+    text-decoration: none;
+}
+
+</style>
 </head>
 <body>
 <%
@@ -532,7 +795,7 @@ function selectApar(){
 %>
 			<div class="panel panel-default" style="margin-top: 10px;margin-left: 10px;margin-right: 10px;">
 			<font color="while"></font>
-				<div class="panel-body" style="padding-top: 0px;">
+				<div class="panel-body" style="padding-top: 0px;background-color: #FFFFFF">
             	<div id="reminder"></div>
             	<div class="row">
             		<form action="com.alucn.web.server/SRMangerServlet" method="post" name="submitspartdb" id="submitspartdb">
@@ -608,7 +871,18 @@ function selectApar(){
 												</select>
 											</div>
 										</div>
-										
+										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
+											<div class="col-md-4">
+												<h5 style="display: inline;"><strong>Release</strong></h5>
+												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+												    <c:if test="${release!=null && fn:length(release) > 0}">
+														<c:forEach items="${release}" var="r">
+															<option name="r" value="${r}">${r}</option>
+														</c:forEach>
+													</c:if>
+												</select>
+											</div>
+										</div>
 			                    </div>
 			                </div>              
 			            </div>
@@ -618,11 +892,11 @@ function selectApar(){
             			<div class="row" style="margin-bottom: 10px;">
 							<div class="col-md-4">
 								<div style="margin-right: 13px;">
-									<h5 style="display: inline;"><strong>Release</strong></h5>
-									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
+									<h5 style="display: inline;"><strong>WorkableRelease</strong></h5>
+									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true"  data-max-options="1">
 									    <c:if test="${release!=null && fn:length(release) > 0}">
-											<c:forEach items="${release}" var="r">
-												<option name="r" value="${r}">${r}</option>
+											<c:forEach items="${release}" var="wr">
+												<option name="wr" value="${wr}">${wr}</option>
 											</c:forEach>
 										</c:if>
 									</select>
@@ -656,7 +930,7 @@ function selectApar(){
             			<div class="row" style="margin-bottom: 10px">
             				<div class="col-md-4">
 	            				<div style="margin-right: 13px;">
-									<h5 style="display: inline;color: red;"><strong>Data Source</strong></h5>
+									<h5 style="display: inline;"><strong>Data Source</strong></h5>
 									<select class="selectpicker nav navbar-nav navbar-right"  data-live-search="true" data-max-options="1" >
 									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
 											<c:forEach items="${data_source}" var="ds">
@@ -673,13 +947,22 @@ function selectApar(){
 										style="padding-bottom: 2px; padding-top: 2px;width: 219px;margin-right: 0.1px;border-radius:4px;">
 								</div>
 							</div>
+							<div class="col-md-4">
+								<div style="margin-right: 28px;">
+									<h5 style="display: inline;"><strong>Protocol</strong></h5>
+									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
+										<option name='proq' value="ANSI">ANSI</option>
+										<option name='proq' value="ITU">ITU</option>
+									</select>
+								</div>
+							</div>
             			</div>
             		</div>
             		<br/><br/>
 					
 					<div class="row">
 						<div class="col-md-12 column text-right">
-							<!-- <button type="button" class="btn btn-danger" id="add" style="margin-right: 10px;">update DB</button> -->
+							<button type="button" class="btn btn-default " id="import" >&nbsp;&nbsp;&nbsp;Import&nbsp;&nbsp;&nbsp;</button>
 							<button type="button" class="btn btn-primary " id="search" style="margin-right: 30px;">&nbsp;&nbsp;&nbsp;Search&nbsp;&nbsp;&nbsp;</button>
 						</div>
 					</div>
@@ -698,7 +981,6 @@ function selectApar(){
 				                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span>
 				                </button>
 				                 <h4 class="modal-title">Select Case</h4>
-				 
 				            </div>
 				            <div class="modal-body">
 				            	<!-- <form id="formSearch" class="form-horizontal">
@@ -713,7 +995,14 @@ function selectApar(){
 				                        </div>
 				                    </div>
 				                </form> -->
-				                <div class="row">
+				                <input id="inCaseType" hidden />
+				                <div class="row form-horizontal form-group" style="margin-top: 10px;">
+				                	 <label for="formtitle" class="col-sm-1 control-label">Title</label>
+				                	 <div class="col-sm-11">
+				                	 	<input class="form-control" type="text" name="formtitle" id="formtitle" value="" />
+				                	 </div>
+				                </div>
+				                <div id="selectCase" class="row">
 				                	<div class="col-md-12 table-responsive" style="height:398px;overflow:scroll">
 					                	 <div id="toolbar" class="btn-group" >
 								         	<div class="checkbox form-group" style="margin-bottom: 0px;">
@@ -725,9 +1014,25 @@ function selectApar(){
 					                	<table id="tb_departments" class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;background-color: #FBFCFC"></table>
 				                	</div>
 				                </div>
+				                <div id="importCase" class="row" style="display: none;">
+				                	<div id="inputbox"  class="file-loading">
+				                		<div id="drop">
+					    					<p><input id="kv-explorer" type="file" class="file"  multiple data-min-file-count="1"/></p>
+					    				</div>
+					    			</div>
+					    			<div id="inputDiv" class="table-responsive" hidden style="max-height:298px;overflow:scroll">
+					                	<table id="inpuntTable" class="table table-bordered table-condensed table-hover table-striped text-nowrap" style="width:100%;height: 100%;background-color: #FBFCFC">
+					                	</table>
+						            </div>
+				                </div>
 				                <div class="row">
 					                <div class="col-md-12">
 					                	<h4 style="display: inline;">Please select case to be run in <strong style="color: red;"><span id="ser"></span></strong></h4>
+										<!-- <select id="protocol" name="protocol">
+											<option name='pro' value="ALL">ALL</option>
+											<option name='pro' value="ITU">ITU</option>
+											<option name='pro' value="ANSI">ANSI</option>
+										</select> -->
 										<select id="dept" name="dept" onchange="selectApar()" title="--Please Select Group--" class="selectpicker" multiple data-live-search="true" data-max-options="1"><!-- data-max-options="1" -->
 											<c:if test="${deptmap!=null && fn:length(deptmap) > 0}">
 												<%-- <% if(auth.equals("errorCases")){ %> --%>
@@ -749,13 +1054,15 @@ function selectApar(){
 										</select>--%>
 									</div>
 								</div>
+								
 				            </div>
 				            <div class="modal-footer">
 				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 				                <button type="button" class="btn btn-default" id="RunOnly">&nbsp;&nbsp;&nbsp;&nbsp;Only Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
-				                <shiro:hasPermission name="case:update">
+				                <!-- 暂时关闭该功能 -->
+				                <%-- <shiro:hasPermission name="case:update">
 				                	<button type="button" class="btn btn-primary" id="Rerunning">&nbsp;&nbsp;&nbsp;&nbsp;Update Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
-				                </shiro:hasPermission>
+				                </shiro:hasPermission> --%>
 				            </div>
 				        </div>
 				        <!-- /.modal-content -->

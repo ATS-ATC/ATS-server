@@ -198,9 +198,9 @@
 						            <button type="submit" class="btn btn-default">Search</button>
 						        </form> -->
 					        </li>
-							<li><a href="#"><span class="glyphicon glyphicon-user"></span> ${login }</a></li>
-					        <li><a href="${pageContext.request.contextPath}/SACMS.chm"><span class="glyphicon glyphicon-book"></span> readme</a></li>
-				            <li><a href="./userLogout.do"><span class="glyphicon glyphicon-log-in"></span> login out</a></li> 
+							<li><a href="#" ><span class="glyphicon glyphicon-user"></span> ${login }</a></li>
+					        <li><a href="${pageContext.request.contextPath}/SACMS.chm" ><span class="glyphicon glyphicon-book"></span> readme</a></li>
+				            <li><a href="./userLogout.do" ><span class="glyphicon glyphicon-log-in"></span> login out</a></li> 
 				        </ul> 
 				    </div> 
 				</nav>
@@ -222,7 +222,7 @@
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
 										<!-- <i class="icon-home"></i> -->
-										&nbsp;&nbsp;&nbsp;&nbsp;Home
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Home</span>
 									</button>
 								</a>
 							</li>
@@ -231,16 +231,17 @@
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:103px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;Dashboard
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Dashboard</span>
 									</button>
 								</a>
 							</li>
 						  	<li id="case-search" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/searchInfo.do')">
+						  	<%-- <li id="case-search" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/runcase.do')"> --%>
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:108px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;Run Case
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Run Case</span>
 									</button>
 								</a>
 							</li>
@@ -249,7 +250,7 @@
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-object-align-bottom" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;Lab Management
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Lab Management</span>
 									</button>
 								</a>
 							</li>
@@ -258,7 +259,7 @@
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;Bad Case Management
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Bad Case Management</span>
 									</button>
 								</a>
 							</li>
@@ -268,7 +269,7 @@
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;Configuration
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >Configuration</span>
 									</button>
 								</a>
 								<ul id="config-info" class="nav nav-list collapse menu-second" style="background-color: #42515F">
@@ -315,7 +316,7 @@
 							  		<button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:109px; -->
 										&nbsp;&nbsp;
 										<span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
-										&nbsp;&nbsp;&nbsp;&nbsp;SUnit Releases
+										&nbsp;&nbsp;&nbsp;&nbsp;<span >SUnit Releases</span>
 									</button>
 								</a>
 							</li>
@@ -389,7 +390,7 @@
 						</ul>
 				</div>
 				<div id="home_right">
-					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" name="showList" style="width:100%;background-color:#ECEFF3;" scrolling="yes" allowtransparency="yes" >
+					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" name="showList" style="width:100%;background-color:#ECEFF3;height: 100%" scrolling="yes" allowtransparency="yes" >
 					</iframe>
 				</div>
 			</div>

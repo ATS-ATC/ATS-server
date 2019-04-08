@@ -10,12 +10,9 @@ import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.SpaAndRtdbDaoImpl;
+import com.alucn.weblab.utils.KalieyMysqlUtil;
 
-/**
- * @author haiqiw
- * 2017��6��6�� ����7:19:07
- * desc:SpaAndRtdbManService
- */
+
 @Service("spaAndRtdbManService")
 public class SpaAndRtdbManService {
 	
@@ -24,14 +21,15 @@ public class SpaAndRtdbManService {
 	private List<String> SPA = new ArrayList<>();
 	private List<String> RTDB = new ArrayList<>();
 	private Map<String, List<String>> spaAndRt = new HashMap<String, List<String>>();
+	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 
 	public Map<String, List<String>> getSpaAndRtdbInfo() throws Exception{
 		SPA.clear();
 		RTDB.clear();
 		spaAndRt.clear();
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String getSpa = "SELECT spa_name FROM spainfo order by spa_name";
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		String getSpa = "SELECT spa_name FROM kaliey.spainfo order by spa_name";
 		ArrayList<HashMap<String, Object>> result = spaAndRtdbDaoImpl.query(jdbc, getSpa);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
@@ -40,7 +38,7 @@ public class SpaAndRtdbManService {
 			}
 		}
 		
-		String getTrdb = "SELECT rtdb_name FROM rtdbinfo order by rtdb_name";
+		String getTrdb = "SELECT rtdb_name FROM kaliey.rtdbinfo order by rtdb_name";
 		result = spaAndRtdbDaoImpl.query(jdbc, getTrdb);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
@@ -55,17 +53,17 @@ public class SpaAndRtdbManService {
 	
 	public String addSpaAndRtdbInfo(String spa, String rtdb){
 		try {
-			String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 			String [] spaName = spa.split(",");
 			String [] rtdbName = rtdb.split(",");
 			for(int i=0; i<spaName.length; i++){
-				String insertSpa = "INSERT INTO spainfo (spa_name) VALUES ('"+ spaName[i] +"');";
+				String insertSpa = "INSERT INTO kaliey.spainfo (spa_name) VALUES ('"+ spaName[i] +"');";
 				spaAndRtdbDaoImpl.insert(jdbc, insertSpa);
 			}
 			for(int i=0; i<rtdbName.length; i++)
 			{
-				String insertRtdb = "INSERT INTO rtdbinfo (rtdb_name) VALUES ('"+ rtdbName[i] +"');";
+				String insertRtdb = "INSERT INTO kaliey.rtdbinfo (rtdb_name) VALUES ('"+ rtdbName[i] +"');";
 				spaAndRtdbDaoImpl.insert(jdbc, insertRtdb);
 			}
 		} catch (Exception e) {
@@ -76,16 +74,16 @@ public class SpaAndRtdbManService {
 	
 	public String removeSpaAndRtdbInfo(String spa, String rtdb){
 		try {
-			String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 			String [] spaName = spa.split(",");
 			String [] rtdbName = rtdb.split(",");
 			for(int i=0; i<spaName.length; i++){
-				String removeSpa = "DELETE FROM spainfo WHERE  spa_name='"+ spaName[i] +"';";
+				String removeSpa = "DELETE FROM kaliey.spainfo WHERE  spa_name='"+ spaName[i] +"';";
 				spaAndRtdbDaoImpl.delete(jdbc, removeSpa);
 			}
 			for(int i=0; i<rtdbName.length; i++){
-				String remoceRtdb = "DELETE FROM rtdbinfo WHERE rtdb_name='"+ rtdbName[i] +"';";
+				String remoceRtdb = "DELETE FROM kaliey.rtdbinfo WHERE rtdb_name='"+ rtdbName[i] +"';";
 				spaAndRtdbDaoImpl.delete(jdbc, remoceRtdb);
 			}
 		} catch (Exception e) {

@@ -61,16 +61,16 @@ public class DistriButeCaseToLab {
 	private JSONArray genCaseListToLab(String serverName) throws Exception {
 		JSONArray caseList = new JSONArray();
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-		String querySecDataSql = "SELECT D.base_data, D.feature_number, T.server, C.SecData, COUNT(C.SecData) as num From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.SecData, D.base_data, D.feature_number ORDER BY num DESC;";
+		String querySecDataSql = "SELECT D.base_data, D.feature_number, T.server, C.sec_data, COUNT(C.sec_ata) as num From toDistributeCases T LEFT JOIN case_depends C ON T.case_name = C.case_name LEFT JOIN daily_case D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) GROUP BY C.sec_data, D.base_data, D.feature_number ORDER BY num DESC;";
 		listParams.clear();
 		listParams.add("%"+serverName+"%");
 		List<Map<String, Object>> secDataList = jdbc_cf.findModeResult(querySecDataSql, listParams);
 		int readyDistributeCaseNum = 0;
 		for(int i=0; i<secDataList.size(); i++){
-			listParams.add(secDataList.get(i).get("SecData"));
+			listParams.add(secDataList.get(i).get("sec_data"));
 			listParams.add(secDataList.get(i).get("base_data"));
 			listParams.add(secDataList.get(i).get("feature_number"));
-			String queryToDistributeCaseSql = "SELECT D.base_data, D.feature_number,T.case_name, T.server, C.SecData From toDistributeCases T LEFT JOIN CaseDepends C ON T.case_name = C.case_name LEFT JOIN DailyCase D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.SecData = ? and D.base_data = ? and D.feature_number = ? ;";
+			String queryToDistributeCaseSql = "SELECT D.base_data, D.feature_number,T.case_name, T.server, C.sec_data From toDistributeCases T LEFT JOIN case_depends C ON T.case_name = C.case_name LEFT JOIN daily_case D ON C.case_name = D.case_name WHERE T.server LIKE ? AND T.case_name NOT IN (SELECT case_name FROM DistributedCaseTbl) AND C.sec_data = ? and D.base_data = ? and D.feature_number = ? ;";
 			List<Map<String, Object>> toDistributeCaseList = jdbc_cf.findModeResult(queryToDistributeCaseSql, listParams);
 			for(int j=0; j<toDistributeCaseList.size(); j++){
 				caseList.add(toDistributeCaseList.get(j).get("case_name"));

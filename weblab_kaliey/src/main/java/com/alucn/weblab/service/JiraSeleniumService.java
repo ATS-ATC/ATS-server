@@ -85,7 +85,7 @@ public class JiraSeleniumService {
 			}
 			conn.commit();
 			//merge into 
-			String msql="select a.case_name,a.case_status,a.jira_id,a.release,b.* from DftTag a\r\n" + 
+			String msql="select a.case_name,a.case_status,a.jira_id,a.base_release,b.* from case_tag a\r\n" +
 					"left join (\r\n" + 
 					"select case casestatus\r\n" + 
 					"when 'Pre-Pending' then 'PP' \r\n" + 
@@ -124,10 +124,10 @@ public class JiraSeleniumService {
 			String sql ="insert into jira_status_tbl (casename,feature,case_name_foregin,jira_id_old,jira_id_mid,jira_id_new,case_status_old,case_status_new,datatime) "
 					+ "values(?,?,?,?,?,?,?,?,datetime('now', 'localtime'))";
 			ps = conn.prepareStatement(sql);
-			String usql="update DftTag set case_status=?,jira_id=? where case_name=?";
+			String usql="update case_tag set case_status=?,jira_id=? where case_name=?";
 			ups = conn.prepareStatement(usql);
 			
-			String rsql="update DftTag set porting_release=?,jira_id=? where case_name=?";
+			String rsql="update case_tag set porting_release=?,jira_id=? where case_name=?";
 			rps = conn.prepareStatement(rsql);
 			
 			for (HashMap<String, Object> hashMap : query) {

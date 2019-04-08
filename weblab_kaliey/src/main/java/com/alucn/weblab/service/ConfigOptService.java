@@ -12,6 +12,7 @@ import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ConfigOptDaoImpl;
+import com.alucn.weblab.utils.KalieyMysqlUtil;
 
 /**
  * @author haiqiw
@@ -24,23 +25,25 @@ public class ConfigOptService {
 	@Autowired(required=true)
 	private ConfigOptDaoImpl configOptDaoImpl;
 	
+	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
+	
 	public ArrayList<HashMap<String, Object>> getConfig() throws Exception{
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "SELECT * FROM config;";
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		String sql = "SELECT * FROM cases_info_db.certify_server_config;";
 		ArrayList<HashMap<String, Object>> result = configOptDaoImpl.query(jdbc, sql);
 		return result;
 	}
 	
 	public String updateConfig(String userName, String configKey, String configValue) throws Exception{
 		try {
-			String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 			Map<String, String> mapConfigs = new HashMap<String, String>();
 			String [] configKeys = configKey.split(",");
 			String [] configValues = configValue.split(",");
 			for(int i=0; i<configKeys.length; i++){
-				String updateCon = "update config set con_value='"+configValues[i]+"' where con_key='"+configKeys[i]+"'";
+				String updateCon = "update cases_info_db.certify_server_config set con_value='"+configValues[i]+"' where con_key='"+configKeys[i]+"'";
 				configOptDaoImpl.update(jdbc, updateCon);
 				mapConfigs.put(configKeys[i], configValues[i]);
 			}

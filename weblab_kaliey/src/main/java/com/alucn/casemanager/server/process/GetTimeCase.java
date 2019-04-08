@@ -70,7 +70,7 @@ public class GetTimeCase {
 							
 						if(taskName.equals("DateTimeTask")) {
 							JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-							String sql = "update DftTag set time_sensitive = 'Y' where case_name = '"+ featureId + "/" + caseName+"'";
+							String sql = "update case_tag set time_sensitive = 'Y' where case_name = '"+ featureId + "/" + caseName+"'";
 							//System.out.println("++++++++++"+sql+"++"+caseDir+"++"+casePath);
 							jdbc_cf.executeSql(sql);
 							++time_sensitive;
@@ -236,7 +236,7 @@ public class GetTimeCase {
 		String[] argss = { configPath };
 		MainListener.init(argss);
 		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-		String sql = "select case_name from DftTag;";
+		String sql = "select case_name from case_tag;";
 		GetTimeCase getTimeCase = new GetTimeCase();
 		ArrayList<HashMap<String, Object>> query = jdbc_cf.query(sql);
 		for(int i=0; i<query.size(); i++){

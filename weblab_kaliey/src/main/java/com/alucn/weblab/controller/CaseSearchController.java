@@ -28,6 +28,8 @@ import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.service.CaseSearchService;
 import com.alucn.weblab.service.LoginService;
+import com.alucn.weblab.utils.StringUtil;
+import com.mysql.fabric.xmlrpc.base.Array;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -60,6 +62,14 @@ public class CaseSearchController {
 			CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,infos.getJSONObject(i).getJSONObject(Constant.BODY));
 		}
 		return "success";
+	}
+	@RequestMapping(path = "/runcase")
+	public String runcase(HttpSession session,Model model) throws Exception{
+		return "runCase";
+	}
+	@RequestMapping(path = "/runcaseinfo1")
+	public String runcaseinfo1(HttpSession session,Model model) throws Exception{
+		return "runCaseInfo";
 	}
 	@RequestMapping(path = "/searchInfo")
 	public String searchInfo(HttpSession session,Model model) throws Exception{
@@ -104,7 +114,7 @@ public class CaseSearchController {
 	
 	@RequestMapping(path = "/searchDeptServer")
 	@ResponseBody
-	public List<String> searchDeptServer(HttpSession session,HttpServletRequest request ) throws Exception{
+	public JSONArray searchDeptServer(HttpSession session,HttpServletRequest request ) throws Exception{
 		String deptid = request.getParameter("deptid")==null?"":request.getParameter("deptid").toString().trim();
 		
 		System.out.println("searchDeptServer deptid : "+deptid);
@@ -112,10 +122,10 @@ public class CaseSearchController {
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
 		
-		Map<String, List<String>> caseSearch = caseSearchService.getCaseServer(deptid,hasRole);
-		List<String> list = caseSearch.get("servers");
+        JSONArray caseSearch = caseSearchService.getCaseServer(deptid,hasRole);
+		// List<String> list = caseSearch.get("servers");
 		
-		return list;
+		return caseSearch;
 	}
 	@RequestMapping(path = "/searchCaseInfo")
 	@ResponseBody
@@ -173,9 +183,20 @@ public class CaseSearchController {
 		}
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
-		
+        
+        ArrayList<HashMap<String, Object>> searchCaseRunLogInfos = (ArrayList<HashMap<String, Object>>) caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptids,hasRole);
+        
+        /*for (HashMap<String, Object> runLogInfo : searchCaseRunLogInfos) {
+        	runLogInfo.put("batch_status", caseSearchService.getBattchStatus(String.valueOf(runLogInfo.get("int_id"))));
+		}*/
+		/*ArrayList<String> mid = new ArrayList<>();
+        for (HashMap<String, Object> runLogInfo : searchCaseRunLogInfos) {
+        	mid.add(String.valueOf(runLogInfo.get("int_id")));
+		}
+        caseSearchService.getBattchStatusByIds(mid);*/
+        
 		returnMap.put("total",(String)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"total",deptids,hasRole));
-		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptids,hasRole));
+		returnMap.put("rows", searchCaseRunLogInfos);
 		return returnMap;
 	}
 	@RequestMapping(path = "/searchCaseRunLogInfo")
@@ -191,27 +212,35 @@ public class CaseSearchController {
 		HashMap<String,Object> cMap = new LinkedHashMap();
 		
 		for (HashMap<String, Object> hashMap : searchCaseRunLogInfoById) {
-			String condition = (String) hashMap.get("condition");
-			String[] split = condition.split(";");
-			cMap.put("dataSource", split[0]);
-			cMap.put("release", split[1]);
-			cMap.put("customer", split[2]);
-			cMap.put("base_data", split[3]);
-			cMap.put("mate", split[4]);
-			cMap.put("lab_number", split[5]);
-			cMap.put("special_data", split[6]);
-			cMap.put("porting_release", split[7]);
-			cMap.put("case_status", split[8]);
-			cMap.put("feature_number", split[9]);
-			cMap.put("author", split[10]);
-			cMap.put("server", split[11]);
+			String condition = (String) hashMap.get("query_condition");
+			if(!"".equals(condition.trim())) {
+				String[] split = condition.trim().split(";");
+				cMap.put("dataSource", split[0]);
+				cMap.put("release", split[1]);
+				cMap.put("customer", split[2]);
+				cMap.put("base_data", split[3]);
+				cMap.put("mate", split[4]);
+				cMap.put("lab_number", split[5]);
+				cMap.put("special_data", split[6]);
+				cMap.put("porting_release", split[7]);
+				cMap.put("case_status", split[8]);
+				cMap.put("feature_number", split[9]);
+				cMap.put("author", split[10]);
+				cMap.put("protocol", split[11]);
+				cMap.put("workable_release", split[12]);
+				cMap.put("server", split[13]);
+			}
+			//System.out.println("12-->" + split[12]);
 			//ccMap.put("condition_info", cMap);
 			hashMap.put("condition", cMap);
 			
 			paramMap.put("case_status", true);
 			ArrayList<HashMap<String, Object>> case_bak = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
-			model.addAttribute("scase", case_bak);
-			model.addAttribute("scase_count", case_bak.size());
+			ArrayList<HashMap<String, Object>> tempRunCaseResultByBatchId = caseSearchService.getTempRunCaseResultByBatchId(int_id);
+			/*model.addAttribute("scase", case_bak);
+			model.addAttribute("scase_count", case_bak.size());*/
+			model.addAttribute("scase", tempRunCaseResultByBatchId);
+			model.addAttribute("scase_count", tempRunCaseResultByBatchId.size());
 			
 			paramMap.put("case_status", false);
 			ArrayList<HashMap<String, Object>> case_bak_f = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
@@ -262,7 +291,8 @@ public class CaseSearchController {
 		    
 		}
 		
-		
+		Map<String, Object> battchStatusCount = caseSearchService.getBattchStatusCount(int_id);
+		model.addAttribute("battchStatusCount",battchStatusCount);
 		//searchCaseRunLogInfoById.add(ccMap);
 		System.err.println("searchCaseRunLogInfoById:============"+searchCaseRunLogInfoById);
 		model.addAttribute("searchCaseRunLogInfoById",searchCaseRunLogInfoById);
@@ -276,6 +306,7 @@ public class CaseSearchController {
 		String ids = request.getParameter("ids")==null?"":request.getParameter("ids").toString().trim();
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
 		String selectAllflag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
+		String formtitle = request.getParameter("formtitle")==null?"":request.getParameter("formtitle").toString().trim();
 		System.out.println("ids============="+ids);
 		System.out.println("condition============="+condition);
 		System.out.println("selectAllflag============="+selectAllflag);
@@ -299,6 +330,7 @@ public class CaseSearchController {
 		paramMap.put("limit", "");
 		paramMap.put("offset", "");
 		paramMap.put("caseName", "");
+		paramMap.put("formtitle", formtitle);
 		try {
 			if("true".endsWith(selectAllflag)) {
 				Map<String,Object> queryMap = new HashMap<String,Object>();
@@ -316,24 +348,6 @@ public class CaseSearchController {
 				}
 				paramMap.put("ids", ids);
 			}
-			/*ExecutorService executor = Executors.newCachedThreadPool();
-			Callable task = new Callable<Map<String, Object>>() {
-				@Override
-				public Map<String, Object> call() throws Exception {
-					return caseSearchService.insertToDistributeCasesTbl(paramMap);
-				}
-			};
-			Map<String, Object> casesTbl = new HashMap<String, Object>();
-			try {
-				Future<Map<String, Object>> future = executor.submit(task);
-				if(future.get().size()>0) {
-					casesTbl=future.get();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally {
-				executor.shutdown();
-			}*/
 			Map<String, Object> casesTbl = caseSearchService.insertToDistributeCasesTbl(paramMap);
 			if((boolean) casesTbl.get("result")) {
 				returnMap.put("s_case", casesTbl.get("s_case"));
@@ -346,4 +360,28 @@ public class CaseSearchController {
 		}
 		return returnMap;
 	}
+	
+	@RequestMapping(path = "/onlyrun")
+	@ResponseBody
+	public Map<String,Object> onlyrun(HttpSession session,HttpServletRequest request ) throws Exception{
+		Map<String,Object> returnMap = new HashMap<String,Object>();
+		String set = request.getParameter("set")==null?"":request.getParameter("set").toString().trim();
+		String server = request.getParameter("server")==null?"":request.getParameter("server").toString().trim();
+		String formtitle = request.getParameter("formtitle")==null?"":request.getParameter("formtitle").toString().trim();
+		String flag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
+		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
+		String login = (String) session.getAttribute("login");
+		
+		if("".equals(set) && "".equals(flag)) {
+			returnMap.put("msg", "please import some case");
+			return returnMap;
+		}
+		if("".equals(server)) {
+			returnMap.put("msg", "please checked some server to run case");
+			return returnMap;
+		}
+		caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition);
+		return returnMap;
+	}
+	
 }

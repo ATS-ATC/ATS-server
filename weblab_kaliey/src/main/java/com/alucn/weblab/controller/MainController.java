@@ -51,7 +51,7 @@ public class MainController {
 		ArrayList<HashMap<String, Object>> temp_fixation = new ArrayList<HashMap<String, Object>>();
 		ArrayList<HashMap<String, Object>> temp_active = new ArrayList<HashMap<String, Object>>();
 		for (HashMap<String, Object> release : releases) {
-			String releaseName = (String) release.get("release");
+			String releaseName = (String) release.get("base_release");
 			String[] arr = {"SP29.12","SP29.15","SP29.16","SP29.17","SP29.18","SP29.19","SP31.1","SP31.2"};
 			List<String> list=Arrays.asList(arr);
 			if(list.contains(releaseName)) {

@@ -30,6 +30,9 @@ import com.alucn.weblab.dao.impl.ServerInfoDaoImpl;
 import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NServer;
 import com.alucn.weblab.model.Server;
+import com.alucn.weblab.socket.TcpClient;
+import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 
 import net.sf.json.JSONArray;
@@ -41,6 +44,8 @@ public class ServerInfoService {
 	
 	@Autowired(required=true)
 	private ServerInfoDaoImpl serverInfoDaoImpl;
+	
+	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	public Map<String,Set<Map<String,JSONObject>>> getServerInfoNosort(){
 		/*JSONArray infos = new JSONArray();
@@ -57,6 +62,64 @@ public class ServerInfoService {
 		Map<String,Set<Map<String,JSONObject>>> setMap = new HashMap<String,Set<Map<String,JSONObject>>>();
 		for(int i=0; i<infos.size(); i++){
 			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String setName = lib.getString(Constant.SETNAME);
+			String serverName = lib.getString(Constant.SERVERNAME);
+			String mateServer = lib.getString(Constant.MATESERVER);
+			if(setMap.get(setName)==null){
+				Set<Map<String,JSONObject>> serverSet = new HashSet<Map<String,JSONObject>>();
+				if(mateServer.equals("N")){
+					Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
+					serverMap.put(serverName, info);
+					serverSet.add(serverMap);
+					setMap.put(setName, serverSet);
+				}else{
+					Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
+					mateMap.put(mateServer, info);
+					serverSet.add(mateMap);
+					setMap.put(setName, serverSet);
+				}
+			}else{
+				Set<Map<String,JSONObject>> serverSet = setMap.get(setName);
+				Iterator<Map<String, JSONObject>> iterator = serverSet.iterator();
+				boolean isMate = false;
+				while(iterator.hasNext()){
+					Map<String,JSONObject> mateOrServerMap = iterator.next();
+					if(mateOrServerMap.get(serverName)!=null){
+						JSONObject mateinfo = mateOrServerMap.get(serverName);
+						mateOrServerMap.put(mateServer, mateinfo);
+						mateOrServerMap.put(serverName, info);
+						isMate = true;
+					}
+				}
+				if(!isMate){
+					if(mateServer.equals("N")){
+						Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
+						serverMap.put(serverName, info);
+						serverSet.add(serverMap);
+						setMap.put(setName, serverSet);
+					}else{
+						Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
+						mateMap.put(mateServer, info);
+						serverSet.add(mateMap);
+						setMap.put(setName, serverSet);
+					}
+				}
+			}
+		}
+		
+		return setMap;
+	}
+	public Map<String,Set<Map<String,JSONObject>>> getNewServerInfoNosort(){
+		JSONArray infos = null;
+		try {
+			infos = SocketClientConn.getLabStatus();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Map<String,Set<Map<String,JSONObject>>> setMap = new HashMap<String,Set<Map<String,JSONObject>>>();
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i).getJSONObject("body");;
 			JSONObject lib = info.getJSONObject(Constant.LAB);
 			String setName = lib.getString(Constant.SETNAME);
 			String serverName = lib.getString(Constant.SERVERNAME);
@@ -148,6 +211,108 @@ public class ServerInfoService {
 		}*/
 		for(int i=0; i<infos.size(); i++){
 			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String setName = lib.getString(Constant.SETNAME);
+			String serverName = lib.getString(Constant.SERVERNAME);
+			String mateServer = lib.getString(Constant.MATESERVER);
+			if(setMap.get(setName)==null){
+				Set<ServerSort> serverSet = new TreeSet<ServerSort>();
+				if(mateServer.equals("N")){
+					Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
+					ServerSort s = new ServerSort();
+					serverMap.put(serverName, info);
+					s.setMap(serverMap);
+					serverSet.add(s);
+					setMap.put(setName, serverSet);
+				}else{
+					Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
+					ServerSort s = new ServerSort();
+					mateMap.put(mateServer, info);
+					s.setMap(mateMap);
+					serverSet.add(s);
+					setMap.put(setName, serverSet);
+				}
+			}else{
+				Set<ServerSort> serverSet = setMap.get(setName);
+				Iterator<ServerSort> iterator = serverSet.iterator();
+				boolean isMate = false;
+				while(iterator.hasNext()){
+					Map<String,JSONObject> mateOrServerMap = iterator.next().getMap();
+					if(mateOrServerMap.get(serverName)!=null){
+						JSONObject mateinfo = mateOrServerMap.get(serverName);
+						mateOrServerMap.put(mateServer, mateinfo);
+						mateOrServerMap.put(serverName, info);
+						isMate = true;
+					}
+				}
+				if(!isMate){
+					if(mateServer.equals("N")){
+						Map<String,JSONObject> serverMap = new TreeMap<String,JSONObject>();
+						ServerSort s = new ServerSort();
+						serverMap.put(serverName, info);
+						s.setMap(serverMap);
+						serverSet.add(s);
+						setMap.put(setName, serverSet);
+					}else{
+						Map<String,JSONObject> mateMap = new TreeMap<String,JSONObject>();
+						ServerSort s = new ServerSort();
+						mateMap.put(mateServer, info);
+						s.setMap(mateMap);
+						serverSet.add(s);
+						setMap.put(setName, serverSet);
+					}
+				}
+			}
+		}
+		return setMap;
+	}
+	public Map<String,Set<ServerSort>> getNewServerInfo(){
+		/*JSONArray infos = new JSONArray();
+//		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21H\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"P\",\"mateServer\": \"BJRMS21I\",\"setName\": \"set2\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+//		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21I\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21H\",\"setName\": \"set2\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+//		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21G\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"N\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21A\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"N\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21B\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"N\",\"mateServer\": \"N\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21C\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"P\",\"mateServer\": \"BJRMS21D\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21D\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"L\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21C\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21E\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"P\",\"mateServer\": \"BJRMS21F\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
+		infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21F\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21E\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");*/
+		
+		JSONArray infos = null;
+		try {
+			infos = SocketClientConn.getLabStatus();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//remove server
+		/*for(int i=0; i<infos.size();i++){
+			JSONObject tmpJsonObject = (JSONObject) infos.get(i);
+			if(CaseConfigurationCache.removeListServer.contains(tmpJsonObject.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME))){
+				infos.remove(i);
+			}
+		}*/
+		Map<String,Set<ServerSort>> setMap = new HashMap<String,Set<ServerSort>>();
+		/*JSONObject taskStatus = new JSONObject();
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String serverType = lib.getString(Constant.SERVERTYPE);
+			String serverMate = lib.getString(Constant.SERVERMATE);
+			if(serverType.equals(ServerType.LINE.getName()) && (serverMate.equals(ServerMate.PRIMARY.getName()) || serverMate.equals(ServerMate.N.getName()))){
+				taskStatus = info.getJSONObject(Constant.TASKSTATUS);
+			}
+		}
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i);
+			JSONObject lib = info.getJSONObject(Constant.LAB);
+			String serverType = lib.getString(Constant.SERVERTYPE);
+			if(!serverType.equals(ServerType.STANDALONE.getName())){
+				info.put(Constant.TASKSTATUS, taskStatus);
+			}
+			
+		}*/
+		for(int i=0; i<infos.size(); i++){
+			JSONObject info = infos.getJSONObject(i).getJSONObject("body");
 			JSONObject lib = info.getJSONObject(Constant.LAB);
 			String setName = lib.getString(Constant.SETNAME);
 			String serverName = lib.getString(Constant.SERVERNAME);
@@ -317,17 +482,17 @@ public class ServerInfoService {
 
 	public String addLabStatus(String status,String type, String log, String enwtpps, String ss7, String labname, String db, String free, String ips, String ptversion, String spa, String deptid, String createid, String createtime, String ainsflag) {
 		String result ="success";
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = null;
 		try {
 			jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
 		} catch (Exception e1) {
 			result ="fail";
 			e1.printStackTrace();
-		}
+		}*/
 		//String fdb = db.replace("\"", "").replace("[", "").replace("]", "");
 		//String fspa = spa.replace("\"", "").replace("[", "").replace("]", "");
-		String sql = "insert into n_add_lab_status(status,type,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime,modifytime,insflag) "
+		String sql = "insert into kaliey.n_add_lab_status(status,type,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime,modifytime,insflag) "
 				+ "values('"+status+"','"+type+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"','"+createtime+"','','"+ainsflag+"')";
 		try {
 			System.err.println("addLabStatus >> "+sql);
@@ -340,27 +505,29 @@ public class ServerInfoService {
 	}
 
 	public void editLabStatus(String status, String log,String labname,String stateflag,String createtime) throws Exception {
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql="";
 		if(stateflag!=null&&!"".equals(stateflag)) {
-			sql = "update n_add_lab_status set status='"+status+"',log='"+log+"',stateflag='"+stateflag+"',modifytime=datetime('now', 'localtime') where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
+			sql = "update kaliey.n_add_lab_status set status='"+status+"',log='"+log+"',stateflag='"+stateflag+"',modifytime=now() where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
 		}else {
-			sql = "update n_add_lab_status set status='"+status+"',log='"+log+"',modifytime=datetime('now', 'localtime') where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
+			sql = "update kaliey.n_add_lab_status set status='"+status+"',log='"+log+"',modifytime=now() where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
 		}
 		System.err.println("editLabStatus >> "+sql);
 		serverInfoDaoImpl.insert(jdbc, sql);
 		
 	}
 
-	public ArrayList<HashMap<String, Object>> getLabLogJson(String limit, String offset, String labname, List<String> deptids) throws Exception {
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+	public ArrayList<HashMap<String, Object>> getLabLogJson(String limit, String offset, String labname, List<String> deptids,boolean hasRole) throws Exception {
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String dept_ids = StringUtil.formatSplitList(deptids);
 		
-		String sql = "select * from n_add_lab_status "
-				+ "where 1=1 "
-				+ "and deptid in ("+dept_ids+") ";
+		String sql = "select * from kaliey.n_add_lab_status "
+				+ "where 1=1 ";
+				if(!hasRole) {
+					sql = sql + "and deptid in ("+dept_ids+") ";
+				}
 		if(labname!=null && !"".equals(labname)) {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
@@ -370,10 +537,10 @@ public class ServerInfoService {
 		return query;
 	}
 	public int getLabLogJsonCount(String labname, List<String> deptids) throws Exception {
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String dept_ids = StringUtil.formatSplitList(deptids);
-		String sql = "select count(1) ccount from n_add_lab_status "
+		String sql = "select count(1) ccount from kaliey.n_add_lab_status "
 				+ "where 1=1 "
 				+ "and deptid in ("+dept_ids+") ";
 		if(labname!=null && !"".equals(labname)) {
@@ -389,9 +556,9 @@ public class ServerInfoService {
 	}
 
 	public ArrayList<HashMap<String, Object>> getServerStatusLogJson(String limit, String offset, String serverName, List<String> deptids, boolean hasRole) throws Exception {
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select * from n_lab_status_time "
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		String sql = "select * from kaliey.n_lab_status_time "
 				+ "where 1=1 ";
 		if(!hasRole) {
 			String dept_ids = StringUtil.formatSplitList(deptids);
@@ -406,9 +573,9 @@ public class ServerInfoService {
 		return query;
 	}
 	public int getServerStatusLogJsonCount(String serverName, List<String> deptids, boolean hasRole) throws Exception {
-		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
-		String sql = "select count(*) ccount from n_lab_status_time "
+		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
+		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		String sql = "select count(*) ccount from kaliey.n_lab_status_time "
 				+ "where 1=1 ";
 		if(!hasRole) {
 			String dept_ids = StringUtil.formatSplitList(deptids);

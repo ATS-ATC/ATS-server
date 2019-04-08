@@ -222,7 +222,7 @@ var TableInit = function () {
                 title: 'Author',
                 sortable: true
             }, {
-                field: 'release',
+                field: 'base_release',
                 title: 'Release',
                 sortable: true
             }, {
