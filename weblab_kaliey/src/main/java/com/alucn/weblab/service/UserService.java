@@ -53,7 +53,7 @@ public class UserService {
 				"where a.stateflag=0 " + 
 				"group by a.user_id " + 
 				") c on a.id=c.user_id " + 
-				"where 1=1 ";
+				"where 1=1 and a.id!=1 ";
 		if(username!=null && !"".equals(username)) {
 			sql=sql+"and a.username like '%"+username+"%' ";
 		}
@@ -63,14 +63,13 @@ public class UserService {
 			sql=sql+" order by deptid desc";
 		}
 		sql=sql+" limit "+offset+","+limit;
-		System.err.println("UserService >> getAllUserInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
 	public int getAllUserInfoJsonCount(String username) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
-		String sql = "select count(*) co from kaliey.n_user where 1=1 ";
+		String sql = "select count(*) co from kaliey.n_user where 1=1 and id!=1 ";
 		if(username!=null && !"".equals(username)) {
 			sql=sql+"and username like '%"+username+"%' ";
 		}
@@ -151,10 +150,12 @@ public class UserService {
 	}
 	public String editUserInfo(String id, String erole, String edept, String estateflag) {
 		
-		System.out.println("editUserInfo >> id >> "+id);
-		System.out.println("editUserInfo >> erole >> "+erole);
-		System.out.println("editUserInfo >> edept >> "+edept);
-		System.out.println("editUserInfo >> estateflag >> "+estateflag);
+		/*
+		 * System.out.println("editUserInfo >> id >> "+id);
+		 * System.out.println("editUserInfo >> erole >> "+erole);
+		 * System.out.println("editUserInfo >> edept >> "+edept);
+		 * System.out.println("editUserInfo >> estateflag >> "+estateflag);
+		 */
 		
 		
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
@@ -187,7 +188,6 @@ public class UserService {
 				}
 				sql="update kaliey.n_user set stateflag="+stateflag+" where id="+id;
 				try {
-					System.err.println("editUserInfo >> stateflag >> "+sql);
 					userDaoImpl.update(jdbc, sql);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -213,9 +213,7 @@ public class UserService {
 				
 				
 				//需要删除的部门（）
-				System.out.println("editUserInfo >> removeAll before >> edeptsList "+edeptsList);
 				edeptsList.removeAll(edeptList);
-				System.out.println("editUserInfo >> removeAll after >> edeptsList "+edeptsList);
 				
 				if(edeptsList.size()>0) {
 					String inString ="";
@@ -229,7 +227,6 @@ public class UserService {
 					//delete from kaliey.n_user_role where user_id='1' and role_id in(select id from kaliey.n_role where role_name in("super","user"));
 					sql="delete from kaliey.n_user_dept where user_id='"+id+"' and dept_id in(select id from kaliey.n_dept where id in("+inString+"))";
 					try {
-						System.err.println("editUserInfo >> delete >> "+sql);
 						userDaoImpl.delete(jdbc, sql);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -238,9 +235,7 @@ public class UserService {
 				}
 				
 				//需要新加的部门
-				System.out.println("editUserInfo >> removeAll before >> edeptList "+edeptList);
 				edeptList.removeAll(midList);
-				System.out.println("editUserInfo >> removeAll after >> edeptList "+edeptList);
 				
 				if(edeptList.size()>0) {
 					String inString ="";
@@ -258,7 +253,6 @@ public class UserService {
 							"select dept_id from kaliey.n_user_dept where user_id="+id+" and stateflag=0 " + 
 							")";
 					try {
-						System.err.println("editUserInfo >> insert >> "+sql);
 						userDaoImpl.insert(jdbc, sql);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -283,9 +277,7 @@ public class UserService {
 				List<String> midList = arrayToList(rolesList);
 				
 				//需要删除的角色（）
-				System.out.println("editUserInfo >> removeAll before >> rolesList "+rolesList);
 				rolesList.removeAll(eroleList);
-				System.out.println("editUserInfo >> removeAll after >>  rolesList "+rolesList);
 				if(rolesList.size()>0) {
 					String inString ="";
 					for (int i =0 ;i<rolesList.size();i++) {
@@ -298,7 +290,6 @@ public class UserService {
 					//delete from kaliey.n_user_role where user_id='1' and role_id in(select id from kaliey.n_role where role_name in("super","user"));
 					sql="delete from kaliey.n_user_role where user_id='"+id+"' and role_id in(select id from kaliey.n_role where role_name in("+inString+"))";
 					try {
-						System.err.println("editUserInfo >> delete >> "+sql);
 						userDaoImpl.delete(jdbc, sql);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -307,9 +298,7 @@ public class UserService {
 				}
 				
 				//需要新加的角色
-				System.out.println("editUserInfo >> removeAll before >> eroleList "+eroleList);
 				eroleList.removeAll(midList);
-				System.out.println("editUserInfo >> removeAll after >> eroleList "+eroleList);
 				
 				if(eroleList.size()>0) {
 					String inString ="";
@@ -327,7 +316,6 @@ public class UserService {
 							"select role_id from kaliey.n_user_role where user_id="+id+" and stateflag=0 " + 
 							")";
 					try {
-						System.err.println("editUserInfo >> insert >> "+sql);
 						userDaoImpl.insert(jdbc, sql);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -364,7 +352,6 @@ public class UserService {
 			sql=sql+"and a.dept_name like '%"+deptname+"%' ";
 		}
 		sql=sql+"limit "+offset+","+limit;
-		System.err.println("UserService >> getAllDeptInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -376,7 +363,6 @@ public class UserService {
 		if(deptname!=null && !"".equals(deptname)) {
 			sql=sql+"and dept_name like '%"+deptname+"%' ";
 		}
-		System.err.println("UserService >> getAllDeptInfoJsonCount >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -388,14 +374,12 @@ public class UserService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql ="insert into kaliey.n_dept(dept_name,remark) values('"+adeptname+"','"+aremark+"')";
-		System.err.println("UserService >> insertDeptInfo >> sql "+sql);
 		userDaoImpl.insert(jdbc, sql);
 	}
 	public void deleteDeptInfo(String id) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql ="delete from kaliey.n_dept where id="+id;
-		System.err.println("UserService >> deleteDeptInfo >> sql "+sql);
 		userDaoImpl.delete(jdbc, sql);
 	}
 	public ArrayList<HashMap<String, Object>> checkOnlineUser(String id) throws Exception {
@@ -407,7 +391,6 @@ public class UserService {
 		if(id!=null && !"".equals(id)) {
 			sql=sql+"and a.id="+id+" ";
 		}
-		System.err.println("UserService >> checkOnlineUser >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -451,7 +434,6 @@ public class UserService {
 			}
 			sql="update kaliey.n_dept set stateflag='"+stateflag+"' where id="+id;
 			try {
-				System.err.println("editUserInfo >> stateflag >> "+sql);
 				userDaoImpl.update(jdbc, sql);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -471,7 +453,6 @@ public class UserService {
 			}
 			sql="update kaliey.n_dept set dept_name='"+edeptname+"' where id="+id;
 			try {
-				System.err.println("editUserInfo >> edeptname >> "+sql);
 				userDaoImpl.update(jdbc, sql);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -483,7 +464,6 @@ public class UserService {
 		if(eremark!=null&&!"".equals(eremark)) {
 			sql="update kaliey.n_dept set remark='"+eremark+"' where id="+id;
 			try {
-				System.err.println("editUserInfo >> eremark >> "+sql);
 				userDaoImpl.update(jdbc, sql);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -505,7 +485,6 @@ public class UserService {
 			sql=sql+"and a.role_name like '%"+rolename+"%' ";
 		}
 		sql=sql+"limit "+offset+","+limit;
-		System.err.println("UserService >> getAllRoleInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -517,7 +496,6 @@ public class UserService {
 		if(rolename!=null && !"".equals(rolename)) {
 			sql=sql+"and role_name like '%"+rolename+"%' ";
 		}
-		System.err.println("UserService >> getAllRoleInfoJsonCount >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -534,7 +512,6 @@ public class UserService {
 			e1.printStackTrace();
 		}*/
 		String sql = "delete from kaliey.n_user where id="+id;
-		System.err.println("UserService >> getAllRoleInfoJsonCount >> sql "+sql);
 		try {
 			userDaoImpl.delete(jdbc, sql);
 			return "success";

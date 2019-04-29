@@ -11,8 +11,8 @@
 
 <title>Features</title>
 </head>
-<body >
-	<div class="container-fluid">
+<body style="background-color:#ECEFF3;">
+	<div class="container-fluid" style="background-color:white;margin-top: 15px;margin-left: 15px;">
 		<!-- <div class="row" style="padding-top: 33px;">
 			<div class="col-md-2" align="right" style="padding-top: 25px;">
 				<span class="glyphicon glyphicon-tag" aria-hidden="true"></span>1.0.1

@@ -26,9 +26,9 @@
 </script>
 </head>
 <body
-	style="background-color: #F4F7FC; height: 100%; left: 0px; bottom: 0px; top: 0px;">
+	style="background-color: #FFFFFF; height: 100%; left: 0px; bottom: 0px; top: 0px;">
 	<div class="container-fluid"
-		style="background-color: #F4F7FC; height: 100%; left: 0px; bottom: 0px; top: 0px;">
+		style="background-color: #FFFFFF; height: 100%; left: 0px; bottom: 0px; top: 0px;">
 		<div class="row" style="margin-top: 2%; margin-left: 2%">
 			<div class="col-md-12">
 				<h4>Release regression</h4>

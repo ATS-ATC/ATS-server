@@ -12,13 +12,14 @@
 <link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
 <title>Run Case</title>
 <style type="text/css">
-/* .rr:hover , .cc:hover{
-	background-color: #C3CCD7
+/* .rr:hover , .cc:hover {
+ 	background-color: #FFFFEF
 } */
 </style>
 </head>
-<body style="background-color:#F4F7FC;height: 100%;left:0px;bottom: 0px;top: 0px;">
-<div class="container-fluid" style="background-color: #ECECEC;height: 100%;left:0px;bottom: 0px;top: 0px;">
+<body style="background-color:#FFFFFF;height: 100%;left:0px;bottom: 0px;top: 0px;">
+<!-- <body style="background-color:#F4F7FC;height: 100%;left:0px;bottom: 0px;top: 0px;"> -->
+<div class="container-fluid" style="background-color: #FFFFFF;height: 100%;left:0px;bottom: 0px;top: 0px;">
 	<div class="row">
 	  	<div class="col-md-4">
 	  		<div class="row" style="padding-top: 20%;padding-left: 10%">
@@ -45,7 +46,7 @@
 		  				<h6 style="color: #83AE9B">uyyy yyy yy yy  yyyyyyy</h6>
 		  				<h6 style="color: #83AE9B">uyyy yyy yy yy  yyyyyyy</h6>
 	  				</p>
-	  				<button type="button"  style="margin-top: 7%;background-color: white;border-color:#945659;border-radius:50px ;padding-left: 32px;padding-right: 32px;color: #945659;background-color: #ECECEC">
+	  				<button type="button"  style="margin-top: 7%;border-color:#945659;border-radius:50px ;padding-left: 32px;padding-right: 32px;color: #945659;background-color: #FFFFFF;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04)">
 	  					check log
 	  				</button>
 	  			</div>
@@ -61,14 +62,14 @@
 	  			<div class="col-md-12">
 	  				<div style="font-weight: 740;font-size: 40px;color: #676563;font-family:Aharoni,Georgia,Serif;">Run Case</div>
 	  				<div style="padding-top: 20%;z-index: 222">
-	  					<div class="row" style="background-color: #FFFDF5;height: 35px;width: 68%;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+	  					<div class="row" style="background-color: #FFFFFF;height: 35px;width: 68%;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
     border-radius: 4px">
     					12
     					</div>
     					<div class="row" style="width: 70%;margin-top: 3%;">
-	    					<div class="col-md-7" style="height: 190px;background-color: #FFFDF5;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+	    					<div class="col-md-7" style="height: 190px;background-color: #FFFFFF;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
 	    					border-radius: 4px;">11</div>
-	    					<div class="col-md-4" style="height: 190px;background-color: #FFFDF5;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+	    					<div class="col-md-4" style="height: 190px;background-color: #FFFFFF;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
 	    					border-radius: 4px;margin-left: 5%;">
 	    					22
 	    					</div>

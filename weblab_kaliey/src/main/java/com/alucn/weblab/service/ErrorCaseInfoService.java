@@ -82,7 +82,6 @@ public class ErrorCaseInfoService {
 		if(!checkAllCase){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
-		System.out.println(getErrorCase);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}
@@ -132,7 +131,6 @@ public class ErrorCaseInfoService {
 					+ "mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' "
 					+ "where case_name='"+ acase +"' "
 					+ "and feature_number='"+featureName.trim()+"';";
-			System.out.println("markCaseSql : "+markCaseSql);
 			errorCaseDaoImpl.update(jdbc, markCaseSql);
 		}
 	}
@@ -184,7 +182,6 @@ public class ErrorCaseInfoService {
 			sql=sql+" order by ucount desc";
 		}
 		sql = sql+" limit "+offset+","+limit;
-		System.out.println(sql);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -199,7 +196,6 @@ public class ErrorCaseInfoService {
 		if(feature!=null && !"".equals(feature)) {
 			sql=sql+" and a.feature_number like '%"+feature+"%' ";
 		}
-		System.out.println(sql);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		if(result.size()>0) {
 			return Integer.parseInt((String)result.get(0).get("ccount"));
@@ -221,7 +217,6 @@ public class ErrorCaseInfoService {
 			getErrorCase = getErrorCase+" and a.owner='"+userName+"'";
 		}
 		//getErrorCase = getErrorCase+" group by a.casename";
-		System.out.println(getErrorCase);
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}

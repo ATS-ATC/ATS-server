@@ -107,81 +107,69 @@
 		//初始化Table
 		oTableInit.Init = function() {
 			$('#tb_departments').bootstrapTable({
-				url : 'addlablogJson.do', //请求后台的URL（*）
-				method : 'get', //请求方式（*）
-				toolbar : '#toolbar', //工具按钮用哪个容器
+				url : 'addlablogJson.do',  
+				method : 'get', 
+				toolbar : '#toolbar', 
 				toolbarAlign : "left",
-				striped : false, //是否显示行间隔色
-				cache : false, //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
-				pagination : true, //是否显示分页（*）
-				sortable : false, //是否启用排序
-				sortOrder : "asc", //排序方式
-				queryParams : oTableInit.queryParams,//传递参数（*）
-				sidePagination : "server", //分页方式：client客户端分页，server服务端分页（*）
-				pageNumber : 1, //初始化加载第一页，默认第一页
-				pageSize : 10, //每页的记录行数（*）
-				pageList : [ 10, 25, 50, 100 ], //可供选择的每页的行数（*）
-				//search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+				striped : false, 
+				cache : false,  
+				pagination : true,  
+				sortable : false, 
+				sortOrder : "asc",  
+				queryParams : oTableInit.queryParams,
+				sidePagination : "server",  
+				pageNumber : 1,  
+				pageSize : 10,  
+				pageList : [ 10, 25, 50, 100 ],  
 				strictSearch : true,
-				showColumns : true, //是否显示所有的列
-				showRefresh : true, //是否显示刷新按钮
-				minimumCountColumns : 2, //最少允许的列数
-				clickToSelect : true, //是否启用点击选中行
-				//height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-				uniqueId : "id", //每一行的唯一标识，一般为主键列
-				showToggle : true, //是否显示详细视图和列表视图的切换按钮
-				cardView : false, //是否显示详细视图
-				detailView : false, //是否显示父子表
+				showColumns : true,  
+				showRefresh : true,  
+				minimumCountColumns : 2,  
+				clickToSelect : true,  
+				uniqueId : "id",  
+				showToggle : true,  
+				cardView : false,  
+				detailView : false,  
 				singleSelect : true,
-				/* rowStyle: function (row, index) {
-				    var style = "";  
-				    if(row.roles.){
-				    	style='danger';             
-				    }
-				return { classes: style }
-				} , */
 				 columns : [ 
-				/*{
-					checkbox : true
-				}, */{
+				{
 					field : 'id',
-					title : 'id'
+					title : 'ID'
 				},  {
 					field : 'status',
-					title : 'status',
+					title : 'Status',
 					formatter : 'resultFormatter'
 				}, {
 					field : 'type',
-					title : 'type',
+					title : 'Type',
 					formatter : 'typeFormatter'
 				}, {
 					field : 'labname',
-					title : 'labname'
+					title : 'LabName'
 				}, {
 					field : 'enwtpps',
-					title : 'enwtpps'
+					title : 'Release'
 				}, {
 					field : 'ss7',
-					title : 'ss7'
+					title : 'Protocol'
 				}, {
 					field : 'createtime',
-					title : 'createtime'
+					title : 'CreateTime'
 				}, {
 					field : 'modifytime',
-					title : 'modifytime'
+					title : 'ModifyTime'
 				}, {
 					field : 'stateflag',
-					title : 'stateflag',
+					title : 'Stateflag',
 					formatter : 'statusFormatter'
 				} ]
 			});
 		};
 
-		//得到查询的参数
 		oTableInit.queryParams = function(params) {
-			var temp = { //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
-				limit : params.limit, //页面大小
-				offset : params.offset, //页码
+			var temp = {  
+				limit : params.limit,  
+				offset : params.offset,  
 				labname : $("#txt_search_lab").val()
 			};
 			return temp;
@@ -194,14 +182,12 @@
 		var postdata = {};
 
 		oInit.Init = function() {
-			//初始化页面上面的按钮事件
 		};
 
 		return oInit;
 	};
 	function statusFormatter(value, row, index) {
 		if (row.stateflag == '0') {
-			//圆角
 			/*<span class='badge bg-orange'  style='padding:5px 10px;'> </span> */
 			return '<span class="label label-success">normal</span>';
 		} else {

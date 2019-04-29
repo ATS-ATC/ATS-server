@@ -42,12 +42,19 @@
 }
 </style>
 <script>
+/* function myrefresh() {
+	//alert(1)
+	//$('#table').bootstrapTable('destroy'); 
+	$('#runLog').bootstrapTable('refresh',{
+		url: 'searchCaseRunLog.do'
+	});
+	//alert(2)
+} */
 $(function() {
-	//得到查询的参数
 	queryParams = function (params) {
-	    var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
-	        limit: params.limit,   //页面大小
-	        offset: params.offset  //页码
+	    var temp = {    
+	        limit: params.limit,    
+	        offset: params.offset   
 	    };
 	    return temp;
 	};
@@ -59,11 +66,11 @@ $(function() {
         pagination: true,                   //是否显示分页（*）
         sortable: false,                     //是否启用排序
         sortOrder: "asc",                   //排序方式
-        queryParams: queryParams,//传递参数（*）
+        queryParams: queryParams,			//传递参数（*）
         sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
         pageNumber:1,                       //初始化加载第一页，默认第一页
         pageSize: 10,                       //每页的记录行数（*）
-        pageList: [10,25,50,100],        //可供选择的每页的行数（*）
+        pageList: [10,25,50,100],        	//可供选择的每页的行数（*）
         //search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
         strictSearch: true,
         showColumns: true,                  //是否显示所有的列
@@ -125,7 +132,7 @@ $(function() {
         ]
     });
 	//var u = Math.random(1000)
-	
+	//setInterval('myrefresh()',1000*10*6); //指定20秒刷新一次
 	
 	var conform = false;
 	
@@ -410,7 +417,7 @@ $(function() {
 	    };
 	    return oTableInit;
 	};
-
+	
 
 	/* var ButtonInit = function () {
 	    var oInit = new Object();
@@ -560,6 +567,7 @@ $(function() {
 		        }
 		        inhtml = inhtml + "</tbody>"
 		        $("#inpuntTable").html(inhtml)
+		        $("#importCount").text(wb.Strings.length)
 	        }
 	        // alert(1)
 	    };
@@ -615,6 +623,7 @@ $(function() {
 			alert("Please input title !");
 			return false;
 		}
+		var hotslide =$('#hotslide').val();
 		if("import" == inCaseType){
 			//alert("import")
 			//alert($("#inpuntTable").get())
@@ -642,7 +651,8 @@ $(function() {
 				server: server.join(","),
 				flag:"",
 				condition:"",
-				formtitle:formtitle
+				formtitle:formtitle,
+				hotslide:hotslide
 			}, function(data) {
 				if(data.msg != null){
 					alert(data.msg);
@@ -681,7 +691,8 @@ $(function() {
 				server: server.join(","),
 				flag:flag,
 				condition:condition,
-				formtitle:formtitle
+				formtitle:formtitle,
+				hotslide:hotslide
 			}, function(data) {
 				if(data.msg != null){
 					alert(data.msg);
@@ -814,7 +825,12 @@ function selectApar(){
 			                    <div class="panel-body">
 										<div class="row" style="margin-bottom: 10px;margin-right: 10px;">
 											<div class="col-md-4">
-												<h5 style="display: inline;"><strong>Author</strong></h5>
+												<c:if test="${Math.ceil(Math.random()*10) > 9}" var="flag" scope="session">
+													<h5 style="display: inline;" data-toggle="tooltip" data-placement="bottom" title="You make millions of decisions that mean nothing and then one day your order takes out and it changes your life."><strong>Author</strong></h5>
+												</c:if>
+												 <c:if test="${not flag}">
+													<h5 style="display: inline;"><strong>Author</strong></h5>
+												</c:if>
 												<input class="nav navbar-nav navbar-right" type="text" name="author" id="author" value=""
 												style="padding-bottom: 2px; padding-top: 2px;width: 219px;border-radius:4px;">
 											</div>
@@ -980,7 +996,7 @@ function selectApar(){
 				            <div class="modal-header">
 				                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span>
 				                </button>
-				                 <h4 class="modal-title">Select Case</h4>
+				                 <h4 class="modal-title" style="display: inline;">Select Case   </h4><code id="importCount"></code>
 				            </div>
 				            <div class="modal-body">
 				            	<!-- <form id="formSearch" class="form-horizontal">
@@ -998,12 +1014,17 @@ function selectApar(){
 				                <input id="inCaseType" hidden />
 				                <div class="row form-horizontal form-group" style="margin-top: 10px;">
 				                	 <label for="formtitle" class="col-sm-1 control-label">Title</label>
-				                	 <div class="col-sm-11">
+				                	 <div class="col-sm-5">
 				                	 	<input class="form-control" type="text" name="formtitle" id="formtitle" value="" />
+				                	 </div>
+				                	 <br><br>
+				                	 <label for="hotslide" class="col-sm-1 control-label">Hotslide</label>
+				                	 <div class="col-sm-8">
+				                	 	<input class="form-control" type="text" name="hotslide" id="hotslide" value="" />
 				                	 </div>
 				                </div>
 				                <div id="selectCase" class="row">
-				                	<div class="col-md-12 table-responsive" style="height:398px;overflow:scroll">
+				                	<div class="col-md-12 table-responsive" style="max-height:398px;overflow:scroll">
 					                	 <div id="toolbar" class="btn-group" >
 								         	<div class="checkbox form-group" style="margin-bottom: 0px;">
 											    <label>
@@ -1016,11 +1037,11 @@ function selectApar(){
 				                </div>
 				                <div id="importCase" class="row" style="display: none;">
 				                	<div id="inputbox"  class="file-loading">
-				                		<div id="drop">
-					    					<p><input id="kv-explorer" type="file" class="file"  multiple data-min-file-count="1"/></p>
+				                		<div id="drop" style="margin-left: 20px;margin-right: 20px;">
+					    					<p><input id="kv-explorer" type="file" class="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" multiple data-min-file-count="1"/></p>
 					    				</div>
 					    			</div>
-					    			<div id="inputDiv" class="table-responsive" hidden style="max-height:298px;overflow:scroll">
+					    			<div id="inputDiv" class="table-responsive" hidden style="margin-left: 20px;margin-right: 20px;max-height:298px;overflow:scroll">
 					                	<table id="inpuntTable" class="table table-bordered table-condensed table-hover table-striped text-nowrap" style="width:100%;height: 100%;background-color: #FBFCFC">
 					                	</table>
 						            </div>

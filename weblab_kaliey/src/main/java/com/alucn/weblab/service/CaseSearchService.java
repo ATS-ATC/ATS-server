@@ -28,6 +28,7 @@ import javax.swing.text.DefaultEditorKit.InsertBreakAction;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ContextLoader;
 
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
@@ -39,6 +40,7 @@ import com.alucn.casemanager.server.listener.MainListener;
 import com.alucn.weblab.dao.impl.CaseSearchDaoImpl;
 import com.alucn.weblab.socket.TcpClient;
 import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.LabStatusUtil;
 import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 import com.microsoft.schemas.office.visio.x2012.main.VisioDocumentDocument1;
@@ -73,7 +75,6 @@ public class CaseSearchService {
 		String configPath = System.getenv("WEBLAB_CONF");
 		String [] args1 = {servletContext.getRealPath("conf")};       //localhost server
 		String [] args2 = { configPath };
-		//System.out.println(args2[0]!=null?args2[0]:args1[0]);
 		//String tagConfig = MainListener.configFilesPath+File.separator+"TagConfig.json";
 		String tagConfig = (args2[0]!=null?args2[0]:args1[0])+File.separator+"TagConfig.json";
 		//D:\eclipse-jee-oxygen-3a-win32-x86_64\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp1\wtpwebapps\weblab_kaliey\conf\TagConfig.json
@@ -108,7 +109,7 @@ public class CaseSearchService {
 		//JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,null);
 		JSONArray Servers = null;
 		try {
-			Servers = SocketClientConn.getLabStatus();
+			Servers = LabStatusUtil.getLabStatus();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -118,7 +119,6 @@ public class CaseSearchService {
 			JSONObject ServerMem = Servers.getJSONObject(i).getJSONObject("body").getJSONObject(Constant.LAB);
 			// String serverName = ServerMem.getString(Constant.SERVERNAME);
 			String sdeptid = ServerMem.getString("deptid");
-			// System.out.println("getCaseServer: " + ServerMem);
 			// getCaseServer: {"deptid":"1","serverName":"BJRMS21E","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Primary","mateServer":"BJRMS21F","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"],"laststatus":"Dead","lasttime":1552614155131}
 			// if(sdeptid.equals(deptid)||hasRole) {
 			if(sdeptid.equals(deptid)) {
@@ -308,7 +308,6 @@ public class CaseSearchService {
 								+query.get(i).get("server")+"', '"
 								+query.get(i).get("customer")+"', "
 								+gid+");";
-						System.out.println("disSql:="+disSql);
 						caseSearchDaoImpl.insert(jdbc, disSql);
 					}
 				}
@@ -385,7 +384,7 @@ public class CaseSearchService {
 		
 		if(!"".equals(ids)&&!"".equals(condition)&&!"".equals(login)) {
 			//JSONArray Servers = CaseConfigurationCache.getSingletonCaseProperties(CaseConfigurationCache.lock);
-			JSONArray Servers = SocketClientConn.getLabStatus();
+			JSONArray Servers = LabStatusUtil.getLabStatus();
 			StringBuffer midString =new StringBuffer();
 			String substring ="";
 			if(!ids.contains(",")) {
@@ -398,7 +397,6 @@ public class CaseSearchService {
 				int lastIndexOf = midString.lastIndexOf(",");
 				substring = midString.substring(0, lastIndexOf);
 			}
-			System.out.println("substring============="+substring);
 			
 			String [] conds = condition.split(";");
 			
@@ -411,26 +409,19 @@ public class CaseSearchService {
 			/*
 			 * 不做任何校验
 			 * String csql = "select * from kaliey.n_rerunning_case_tbl where stateflag='0' and case_info ='"+ids+"' order by create_time desc";
-			System.out.println("csql:============="+csql);
 			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
 			ArrayList<HashMap<String,Object>> cquery = caseSearchDaoImpl.query(jdbc, csql);
 			if(cquery.size()>0) {
 				SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
 				String date = (String) cquery.get(0).get("create_time");
-				System.out.println("ddate:========="+date);
 				Date ndate = new Date();
 				long from = simpleFormat.parse(date).getTime();
-				System.out.println("from:========"+from);
 				long to = ndate.getTime();
-				System.out.println("to:========"+to);
 				int minutes = (int) ((to - from)/(1000 * 60));
-				System.out.println("minutes:============"+minutes);
 				Object object = cquery.get(0).get("server_info");
 				JSONObject server_info = JSONObject.fromObject(object);
 				String serverName = (String) server_info.get("serverName");
-				System.out.println("serverName:===="+serverName );
 				//如果数据库的server_info字段为空，那么下面的代码会报空指针异常java.lang.NullPointerException
-				System.out.println("conds[11]:===="+conds[11]+"  :"+serverName.equals(conds[11]));
 				if(minutes<=10 && serverName.equals(conds[11])) {
 					returnMap.put("msg", "you checked case will be running in 10 minutes !");
 					returnMap.put("result", false);
@@ -462,7 +453,6 @@ public class CaseSearchService {
 				dataBase = "cases_info_db.case_tag";
 			}
 			String sql = "select * from "+dataBase+" where 1=1 and case_name in ("+substring+")";// and case_name not in ("+str+")";
-			System.out.println("sql+========="+sql);
 			ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 			if(query.size()==0) {
 				returnMap.put("result", false);
@@ -471,7 +461,6 @@ public class CaseSearchService {
 			}
 			
 			/*String nsql = "select case_name from "+conds[0]+" where 1=1 and case_name in ("+substring+")";// and case_name in ("+str+")";
-			System.out.println("nsql+========="+nsql);
 			ArrayList<HashMap<String,Object>> nquery = caseSearchDaoImpl.query(jdbc, nsql);*/
 			
 			
@@ -633,7 +622,6 @@ public class CaseSearchService {
 					csList.add("\""+serverName+"\"");
 				}
 				if(csList.size()>0) {
-					System.out.println("csList:========="+csList);
 					csMap.put(query.get(i).get("case_name").toString(), csList);
 					String disSql="replace into toDistributeCases (case_name, lab_number, mate, special_data, base_data, second_data, `release`, porting_release, SPA, RTDB, server, customer, group_id) VALUES('"
 							+query.get(i).get("case_name")+"', '"
@@ -651,7 +639,6 @@ public class CaseSearchService {
 							+csList.toString().trim()+"', '"
 							+query.get(i).get("customer")+"', "
 							+gid+");";
-					System.out.println("disSql:="+disSql);
 					caseSearchDaoImpl.insert(jdbc, disSql);
 				}else {
 					cfMap.put(query.get(i).get("case_name").toString(), cfList);
@@ -687,7 +674,6 @@ public class CaseSearchService {
 					String isql ="insert into kaliey.n_rerunning_case_tbl(int_id,title,server_info,query_condition,author,create_time) values("
 							//+max_id+",'"+title +"','"+server+"','"+condition+"','"+login+"',datetime('now', 'localtime'))";
 					+max_id+",'"+formtitle +"','"+server+"','"+condition+"','"+login+"',now())";
-					System.out.println("isql+================="+isql);
 					ps = conn.prepareStatement(isql);
 					ps.execute();
 					ps.close();
@@ -827,7 +813,6 @@ public class CaseSearchService {
 		/*if(auth=="all") {
 			
 		}*/
-		System.out.println("searchCaseRunLogInfo  >>  "+sql);
 		if(retrunType=="rows") {
 			if(""!=param.get("offset")&& ""!=param.get("limit")){
 				sql +=" limit "+param.get("offset")+","+param.get("limit");
@@ -895,8 +880,9 @@ public class CaseSearchService {
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
-
-	public void onlyrun(String set, String servers,String title,String login,String only, String flag, String condition) throws Exception {
+	@Transactional
+	public Map<String,Object> onlyrun(String set, String servers,String title,String login,String only, String flag, String condition,String hotslide) throws Exception {
+		Map<String,Object> returnMap = new HashMap<String,Object>();
 		String server = StringUtil.formatJsonString(servers);
 		// 第零步，判断是否是search传进来的case,如果是有一种特殊情况，全选flag选中后，直接使用关联insert
 		if(flag!="" && "true".equals(flag)) {
@@ -904,7 +890,7 @@ public class CaseSearchService {
 			if(caseLogId!=-1) {
 				// 保存server和case信息
 				String[] split2 = servers.split(",");
-				JSONArray Servers = SocketClientConn.getLabStatus();
+				JSONArray Servers = LabStatusUtil.getLabStatus();
 				List<List> serverParams = new ArrayList<>();
 				for (String str : split2) {
 					for (int i = 0; i < Servers.size(); i++) {
@@ -939,8 +925,9 @@ public class CaseSearchService {
 				}
 				insertCaseServer(serverParams);
 				
-				String sql = "insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id) "
-						+ splitCondition(condition, "", "case_name,'Y','"+server+"','"+login+"',now(),"+caseLogId);
+				String sql = "insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide) "
+						+ splitCondition(condition, "", "case_name,'Y','"+server+"','"+login+"',now(),"+caseLogId+",'"+hotslide+"'");
+				System.out.println(sql);
 				caseSearchDaoImpl.insert(jdbc, sql);
 			}
 		}
@@ -953,7 +940,6 @@ public class CaseSearchService {
 			}
 			int len = split.length;
 			String cases = casesql.substring(0, casesql.length()-1);
-			//System.out.println(cases); '72624/fn3916.json','72624/fn3917.json','72624/fn3918.json','72624/fn3919.json'
 			boolean checkCaseInfo = checkCaseInfo(cases,len);
 			if(checkCaseInfo) {
 				// 第二步，将数据存入日志记录表
@@ -962,7 +948,7 @@ public class CaseSearchService {
 				if (caseLogId!=-1) {
 					// 保存server和case信息
 					String[] split2 = servers.split(",");
-					JSONArray Servers = SocketClientConn.getLabStatus();
+					JSONArray Servers = LabStatusUtil.getLabStatus();
 					List<List> serverParams = new ArrayList<>();
 					for (String str : split2) {
 						for (int i = 0; i < Servers.size(); i++) {
@@ -1006,13 +992,17 @@ public class CaseSearchService {
 						list.add(login);
 						list.add(new Date().getTime());
 						list.add(caseLogId);
+						list.add(hotslide);
 						params.add(list);
 					}
 					// 第三步，将数据传入正式运行表中
 					InsertTempRunCase(params);
 				}
+			}else {
+				returnMap.put("msg", "case not exist");
 			}
 		}
+		return returnMap;
 	}
 	public boolean checkCaseInfo(String set,int len) throws Exception {
 		boolean result = false;
@@ -1038,8 +1028,8 @@ public class CaseSearchService {
 		jdbc.executeBatch(baksql,params);
 	}
 	public void InsertTempRunCase(List<List> params) throws Exception {
-		String isql ="insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id) "
-				+ "values(?,?,?,?,?,?)";
+		String isql ="insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide) "
+				+ "values(?,?,?,?,?,?,?)";
 		jdbc.executeBatch(isql,params);
 	}
 	public ArrayList<HashMap<String,Object>> getTempRunCaseResultByBatchId(String batchid) throws Exception {
@@ -1050,12 +1040,12 @@ public class CaseSearchService {
 	@Test
 	public void test() throws Exception {
 		CaseSearchService cs = new CaseSearchService();
-		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","");
+		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","","");
 	}
 	public String splitCondition(String cond,String retrunType,String fields) throws NumberFormatException, InterruptedException, IOException {
 		String sql = "";
 		String dataBase = "";
-		if(cond.contains(",")) {
+		if(cond.contains(";")) {
 			String [] conds = cond.split(";");
 			if("DailyCase".equals(conds[0])) {
 				dataBase = "cases_info_db.daily_case";

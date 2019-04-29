@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
@@ -116,5 +117,223 @@ public class MainService {
 				"where a.author='"+useName+"'";
 		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
 		return result;
+	}
+	public ArrayList<HashMap<String, Object>> getWelcomeBottom(String useName, String limit, String offset, boolean hasRole) throws Exception{
+		Boolean reporterFlag = getReporterFlag(useName);
+		ArrayList<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
+		if(reporterFlag) {
+			resultList = getReporterList(useName,limit,offset,hasRole);
+		}else {
+			resultList = getUserNormalList(useName,limit,offset,hasRole);
+		}
+		return resultList;
+	}
+	public int getWelcomeBottomCount(String useName, boolean hasRole) throws Exception{
+		Boolean reporterFlag = getReporterFlag(useName);
+		int result=0;
+		if(reporterFlag) {
+			result = getReporterListCount(useName,hasRole);
+		}else {
+			result = getUserNormalListCount(useName,hasRole);
+		}
+		return result;
+	}
+	private int getReporterListCount(String useName, boolean hasRole) throws Exception {
+		String sql ="select count(*) rc\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n" ;
+				if(!hasRole) {
+					sql = sql + "and e.to_reporter='"+useName+"'\n";
+				}
+				sql = sql +"and e.to_reporter is not null\n" + 
+				"group by a.feature_number,e.to_reporter";
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		int reInt = 0;
+		if(result.size()>0) {
+			Object object = result.get(0).get("rc");
+			reInt = Integer.parseInt(object.toString());
+		}
+		return reInt;
+	}
+	public ArrayList<HashMap<String, Object>> getReporterList(String useName, String limit, String offset, boolean hasRole) throws Exception {
+		String sql ="select \n" + 
+				"a.feature_number,\n" + 
+				"min(a.ftc_date)ftc_date,\n" + 
+				"sum(a.case_num) case_num,\n" + 
+				"sum(ifnull(b.dft,0)) dft,\n" + 
+				"sum(ifnull(c.fail,0)) fail,\n" + 
+				"sum(ifnull(d.uncheck,0)) uncheck,\n" + 
+				"ifnull((dft/a.case_num)*100,0) submit_rate,\n" + 
+				"ifnull((fail/dft)*100,0) fail_rate\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n";
+				if(!hasRole) {
+					sql = sql +"and e.to_reporter='"+useName+"'\n" ;
+				}
+				sql = sql + "and e.to_reporter is not null\n" + 
+				"group by a.feature_number,e.to_reporter\n"+
+				"order by fail_rate desc,submit_rate asc\n"+
+				"limit "+offset+","+limit;
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	private int getUserNormalListCount(String useName, boolean hasRole) throws Exception {
+		String sql ="select count(*) nc\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n" ;
+				if(!hasRole) {
+					sql = sql +"and a.user_name='"+useName+"'\n" ;
+				}
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		int reInt = 0;
+		if(result.size()>0) {
+			Object object = result.get(0).get("nc");
+			reInt = Integer.parseInt(object.toString());
+		}
+		return reInt;
+	}
+	public ArrayList<HashMap<String, Object>> getUserNormalList(String useName, String limit, String offset, boolean hasRole) throws Exception {
+		String sql ="select \n" + 
+				"a.feature_number,a.ftc_date,a.case_num,ifnull(b.dft,0) dft,ifnull(c.fail,0) fail,ifnull(d.uncheck,0) uncheck,\n" + 
+				"ifnull((dft/a.case_num)*100,0) submit_rate,\n" + 
+				"ifnull((fail/dft)*100,0) fail_rate\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n" ;
+				if(!hasRole) {
+					sql = sql + "and a.user_name = '"+useName+"'\n";
+				}
+				
+				sql = sql +"order by fail_rate desc,submit_rate asc limit "+offset+","+limit;
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	public int getNormalInfoCount(String feature_number) throws Exception {
+		String sql ="select count(1)\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n" + 
+				"and a.feature_number = '"+feature_number+"'";
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		int i = 0;
+		if(result.size()>0) i=result.size();
+		return i;
+	}
+	public ArrayList<HashMap<String, Object>> getNormalInfo(String feature_number, String limit, String offset) throws Exception {
+		String sql ="select \n" + 
+				"a.feature_number,a.user_name,e.to_reporter,a.ftc_date,a.case_num,ifnull(b.dft,0) dft,ifnull(c.fail,0) fail,ifnull(d.uncheck,0) uncheck,\n" + 
+				"ifnull((dft/a.case_num)*100,0) submit_rate,\n" + 
+				"ifnull((fail/dft)*100,0) fail_rate\n" + 
+				"from (\n" + 
+				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+				")a\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+				"left join (\n" + 
+				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+				"left join (\n" + 
+				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+				"left join (\n" + 
+				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+				")e on a.user_name= e.user_name\n" + 
+				"where 1=1\n" + 
+				"and a.ftc_date != 0\n" + 
+				"and a.feature_number = '"+feature_number+"'\n"+
+				"limit "+offset+","+limit;
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		return result;
+	}
+	public Boolean getReporterFlag(String useName) throws Exception {
+		String sql ="select user_name from cases_info_db.user_info \n" +
+				"where trim(to_reporter)='"+useName+"'";
+		//System.out.println(sql);
+		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
+		if(result.size()>0) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 }

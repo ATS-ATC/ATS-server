@@ -64,12 +64,9 @@ public class LoginController {
     public String loginCheckOut(NUser nuser, HttpSession session, Model model,HttpServletRequest request,HttpServletResponse response) throws Exception {
 		String Reqtoken = request.getParameter("Reqtoken")==null?"":request.getParameter("Reqtoken").toString().trim();
 		String loginToken = ""+session.getAttribute("token");
-		System.err.println(Reqtoken+"=========="+new Date().getTime());
-		System.err.println(loginToken+"=========="+new Date().getTime());
 		if (Reqtoken==null || loginToken==null || !loginToken.equals(Reqtoken)) { 
 			Object loginAttribute = session.getAttribute("login");
 			if(!"".equals(loginAttribute)) {
-				System.err.println("loginAttribute   >>   "+loginAttribute);
 				return "redirect:/getMain.do";
 			}
 			return "login";
@@ -86,13 +83,10 @@ public class LoginController {
 			Subject subject = SecurityUtils.getSubject();
 			UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), MD5Util.md5(nuser.getPassword()));
 			//UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), nuser.getPassword());
-			//System.out.println(nuser.getUsername()+" : "+nuser.getPassword());
 			try {
 				subject.login(token);
-				System.out.println("login success!");
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("login false!");
 				return "login";
 			}
 			
@@ -126,13 +120,10 @@ public class LoginController {
 				Subject subject = SecurityUtils.getSubject();
 				UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), MD5Util.md5(nuser.getPassword()));
 				//UsernamePasswordToken token = new UsernamePasswordToken(nuser.getUsername(), nuser.getPassword());
-				//System.out.println(nuser.getUsername()+" : "+nuser.getPassword());
 				try {
 					subject.login(token);
-					System.out.println("login success!");
 				} catch (Exception e) {
 					e.printStackTrace();
-					System.out.println("login false!");
 					return "login";
 				}
 				model.addAttribute("loginResult", "success");

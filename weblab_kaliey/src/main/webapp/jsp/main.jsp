@@ -216,7 +216,7 @@
 								</center>
 							</a>
 						<ul class="nav nav-pills nav-stacked">
-						  	<li id="home" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcomeInfo.do')">
+						  	<li id="home" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcome.do')">
 							  	<a href="#" style="padding-top: 0px;padding-bottom: 0px;padding-left:0px;padding-right:0px;">
 							  		<button type="button" class="btn btn-link btn-default  btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:132px; -->
 										&nbsp;&nbsp;
@@ -335,7 +335,7 @@
 						</button>
 					</center>
 					<ul class="nav nav-pills nav-stacked">
-						  	<li id="home_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcomeInfo.do')">
+						  	<li id="home_h" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getWelcome.do')">
 							  	<center style="background-color: rgb(66,81,95);height:30px;width: 30px;">
 									<button type="button" class="btn btn-link btn-sm" style="color: #AEB9C2;text-decoration:none;border:none;outline: none;padding-top: 8px;padding-left:0px;padding-right:0px;">
 										<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
@@ -390,7 +390,7 @@
 						</ul>
 				</div>
 				<div id="home_right">
-					<iframe  src="${pageContext.request.contextPath}/getWelcomeInfo.do" id="main-info" name="showList" style="width:100%;background-color:#ECEFF3;height: 100%" scrolling="yes" allowtransparency="yes" >
+					<iframe  src="${pageContext.request.contextPath}/getWelcome.do" id="main-info" name="showList" style="width:100%;background-color:#ECEFF3;height: 100%" scrolling="yes" allowtransparency="yes" >
 					</iframe>
 				</div>
 			</div>

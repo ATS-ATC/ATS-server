@@ -110,7 +110,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="addModalLabel">Add New Lab</h4>
+                <c:if test="${Math.ceil(Math.random()*10) > 9}" var="flag" scope="session">
+                	<h4 class="modal-title" id="addModalLabel" data-toggle="tooltip" data-placement="bottom" title="Your dignity's inside you. Nobody can take something away from you that you don't give them.">Add New Lab</h4>
+                </c:if>
+                <c:if test="${not flag}">
+                	<h4 class="modal-title" id="addModalLabel">Add New Lab</h4>
+                </c:if>
             </div>
             <div class="modal-body" id="add_body">
             	<div class="row">
@@ -121,6 +126,11 @@
 							    <div class="col-sm-4">
 							      <input type="text" class="form-control" id="aservername"  placeholder="servername" >
 							    </div>
+							    <div class="col-sm-4" style="color: gray;margin-top: 9px;font-size: 7px;">
+							      	<strong>> For example :</strong> &nbsp;&nbsp;&nbsp;&nbsp;BJRMS13A,CHSP13C 
+							    </div>
+							  </div>
+							  <div class="form-group">
 							    <label for="arelease" class="col-sm-2 control-label" style="text-align: left;">release</label>
 							    <div class="col-sm-4">
 									<input type="text" class="form-control" id="arelease"  placeholder="release" style="display: inline;">
@@ -209,6 +219,12 @@
 										<c:if test="${SPA!=null && fn:length(SPA) > 0}">
 											<c:forEach items="${SPA}" var="ospa">
 												<option name='ospa' value="${ospa}">${ospa}</option>
+												<%-- <c:if test="${spaDefault.indexOf(SPA) > -1 }"  var="flag" scope="session">
+													<option name='ospa' selected = "selected" value="${ospa}">${ospa}</option>
+												</c:if>
+												<c:if test="${not flag }">
+													<option name='ospa' value="${ospa}">${ospa}</option>
+												</c:if> --%>
 											</c:forEach>
 										</c:if>
 									</select>
@@ -233,14 +249,12 @@
 							    	<span id="esdb" class="glyphicon glyphicon-edit btn" aria-hidden="true" style="display: inline;"></span>
 							    </div> -->
 							  </div>
-							  
-							  
 						</form>
        				</div>
 				</div>
 			</div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">close</button>
                 <button type="button" class="btn btn-primary" id="addSubmit">submit</button>
             </div>
         </div><!-- /.modal-content -->
@@ -265,11 +279,11 @@
 								    <div class="col-sm-6" style="padding-right: 0px;">
 								      <input type="text" class="form-control" id="aeservername"  placeholder="servername" >
 								    </div>
-								    <div class="col-sm-4" style="padding-left: 0px;">
+								    <!-- <div class="col-sm-4" style="padding-left: 0px;">
 								      <span id="aecompletion" class="glyphicon glyphicon-leaf btn" aria-hidden="true" style="display: inline;"></span>
-								    </div>
+								    </div> -->
 								  </div>
-								  <input id="fgipflag" type="hidden" value='fgip2'/>
+								  <!-- <input id="fgipflag" type="hidden" value='fgip2'/>
 								  <div class="form-group" id="fgip2">
 								  		<label for="aeip2" class="col-sm-2 control-label" style="text-align: left;">ip</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
@@ -283,7 +297,7 @@
 								  		<label for="aeip" class="col-sm-2 control-label" style="text-align: left;">ip</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
 									      	<input type="text" class="form-control" id="aeip"  placeholder="ip" >
-									      		<!-- <div id="ipList"></div> -->
+									      		<div id="ipList"></div>
 									    </div>
 									    <div class="col-sm-4" style="padding-left: 0px;">
 									      <span id="editipbtn2" class="glyphicon glyphicon-cog btn" aria-hidden="true" style="display: inline;"></span>
@@ -300,7 +314,7 @@
 									    <div class="col-sm-6" style="padding-right: 0px;">
 									      <input type="text" class="form-control" id="aeprotocol"  placeholder="protocol" >
 									    </div>
-								  </div>
+								  </div> -->
 								  <div class="form-group" >
 								  		<label for="aeprotocol" class="col-sm-2 control-label" style="text-align: left;">group</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
@@ -313,9 +327,13 @@
 								  </div>
 								   
 								  <div class="form-group" >
-								  		<label for="aeset" class="col-sm-2 control-label" style="text-align: left;">set</label>
-									    <div class="col-sm-6" style="padding-right: 0px;">
-									      	<div id="setList"></div>
+								  		<label id="laeset" for="aeset" class="col-sm-2 control-label" style="text-align: left;">set</label>
+								  		<input id="lcreateflag" type="hidden" value="create"/>
+								  		<div class="col-sm-6" style="padding-right: 0px;">
+										    <div id="lcreatediv"><input id="lsset1" class="form-control"  type="text" placeholder="creaste set"/></div>
+										    <div id="lselectdiv" >
+										      	<div id="setList"></div>
+										    </div>
 									    </div>
 								  </div>
 								  <div id="completion"></div>
@@ -325,8 +343,9 @@
 					</div>
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary" id="addExistSubmit" disabled="disabled" >submit</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">close</button>
+	                <!-- <button type="button" class="btn btn-primary" id="addExistSubmit" disabled="disabled" >submit</button> -->
+	                <button type="button" class="btn btn-primary" id="addExistSubmit" >submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -354,16 +373,31 @@ $("#csset").click(function(){
 	}
 	
 });
+/* $("#laeset").click(function(){
+	//alert(1);
+	var lcreateflag = $("#lcreateflag").val();
+	if(lcreateflag=="select"){
+		var create =  '<input id="lsset1" class="form-control"  type="text" placeholder="creaste set"/>';
+		$("#lcreatediv").html(create);
+		$("#lselectdiv").attr("style","display: none;");
+		$("#lcreateflag").val("create");
+	}else if (lcreateflag=="create") {
+		$("#lcreatediv").html("");
+		$("#lselectdiv").attr("style","display: inline;");
+		$("#lcreateflag").val("select");
+	}
+	
+}); */
 
 
 $("#addExistSubmit").click(function(){
 	var aeservername = $("#aeservername").val().replace(" ","");
 	if(aeservername==""){
 		alert("please fill in servername.");
-		$("#addExistSubmit").attr("disabled","disabled");
+		//$("#addExistSubmit").attr("disabled","disabled");
 		return;
 	}
-	var fgipflag = $("#fgipflag").val();
+	/* var fgipflag = $("#fgipflag").val();
 	var aeip = "";
 	if(fgipflag=="fgip"){
 		aeip = $("#aeip").val().replace(" ","");
@@ -374,10 +408,10 @@ $("#addExistSubmit").click(function(){
 		}
 	}else if (fgipflag=="fgip2") {
 		aeip = $("#aeip2").val();
-	}
+	} */
 	/* var aeip = $("#aeip").val();
 	var aeip2 = $("#aeip2").val(); */
-	var aerelease = $("#aerelease").val().replace(" ","");
+	/* var aerelease = $("#aerelease").val().replace(" ","");
 	if(aerelease==""){
 		alert("please fill in release.");
 		$("#addExistSubmit").attr("disabled","disabled");
@@ -388,15 +422,38 @@ $("#addExistSubmit").click(function(){
 		alert("please fill in protocol.");
 		$("#addExistSubmit").attr("disabled","disabled");
 		return;
-	}
-	var aeset = $("#aeset").val();
+	} */
+	/* var aeset = $("#aeset").val();
 	if(aeset==""){
 		alert("please fill in set.");
 		$("#addExistSubmit").attr("disabled","disabled");
 		return;
-	}
+	} */
 	$("#addExistSubmit").attr("disabled","disabled");
-	var sdata = "labname="+aeservername+"&ip="+aeip+"&enwtpps="+aerelease+"&ss7="+aeprotocol+"&setname="+aeset;
+	//var sdata = "labname="+aeservername+"&ip="+aeip+"&enwtpps="+aerelease+"&ss7="+aeprotocol;
+	var sdata = "labname="+aeservername
+	var lcreateflag = $("#lcreateflag").val();
+	//判断是创建还是选择
+	if(lcreateflag=="select"){
+		var aeset = $("#aeset").val();
+		if(sset==""){
+			alert("set is required");
+			$("#addExistSubmit").attr("disabled","disabled");
+			return false;
+		}else {
+			sdata=sdata+"&setname="+aeset
+		}
+	}else if(lcreateflag=="create"){
+		var sset = $("#lsset1").val().replace(" ","");
+		if(sset==""){
+			alert("set is required");
+			$("#addExistSubmit").attr("disabled","disabled");
+			return false;
+		}else {
+			sdata=sdata+"&setname="+sset
+		}
+	}
+	//var sdata = "labname="+aeservername+"&ip="+aeip+"&enwtpps="+aerelease+"&ss7="+aeprotocol+"&setname="+aeset;
 	var ehdept = $("#ehdept").val();
 	//alert(ehdept);
 	if(ehdept==null){
@@ -405,15 +462,16 @@ $("#addExistSubmit").click(function(){
 	}else {
 		sdata=sdata+"&ehdept="+ehdept
 	}
-	alert(sdata);
+	//alert(sdata);
 	$.ajax({
-		url:"genClient.do",
+		url:"genClientNew.do",
 		data:sdata,
 		success:function(data){
 			if(data.result!=""&&data.result=="fail"){
 				alert(data.msg);
 				return ;
 			} else if(data.result!=""&&data.result=="success"){
+				alert(data.msg);
 				alert("Congratulations, Installation is done, please check the log.");
 				window.location.href="./addlablog.do";
 			}
@@ -546,7 +604,7 @@ $("#addSubmit").click(function(){
 	//alert(sdata);
 	$("#addSubmit").attr("disabled","disabled");
 	$.ajax({
-		url:"installLab.do",
+		url:"installLabNew.do",
 		data:sdata,
 		success:function(data){
 			if(data.result=="fail"){
@@ -585,8 +643,10 @@ $("#add").click(function(){
 
 
 $(function() {
-	
-	
+	var spaDefault = ${spaDefault};
+	$('#sspa').selectpicker('val', spaDefault);
+	var dbDefault = ${dbDefault};
+	$('#sdb').selectpicker('val', dbDefault);
 	
 	var $table = $('#table');
   	$table.bootstrapTable({

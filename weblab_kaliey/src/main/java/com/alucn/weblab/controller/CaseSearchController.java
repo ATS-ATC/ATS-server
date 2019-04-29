@@ -1,20 +1,25 @@
 package com.alucn.weblab.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.service.CaseSearchService;
 import com.alucn.weblab.service.LoginService;
-import com.alucn.weblab.utils.StringUtil;
-import com.mysql.fabric.xmlrpc.base.Array;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * @author haiqiw
@@ -41,7 +42,7 @@ import net.sf.json.JSONObject;
  */
 @Controller
 public class CaseSearchController {
-
+	private static Logger logger = Logger.getLogger(CaseSearchController.class);
 	@Autowired(required=true)
 	private CaseSearchService caseSearchService;
 	@Autowired
@@ -63,6 +64,7 @@ public class CaseSearchController {
 		}
 		return "success";
 	}
+	
 	@RequestMapping(path = "/runcase")
 	public String runcase(HttpSession session,Model model) throws Exception{
 		return "runCase";
@@ -117,7 +119,7 @@ public class CaseSearchController {
 	public JSONArray searchDeptServer(HttpSession session,HttpServletRequest request ) throws Exception{
 		String deptid = request.getParameter("deptid")==null?"":request.getParameter("deptid").toString().trim();
 		
-		System.out.println("searchDeptServer deptid : "+deptid);
+		logger.info("searchDeptServer deptid : "+deptid);
 		
 		Subject subject = SecurityUtils.getSubject();  
         boolean hasRole = subject.hasRole("admin");
@@ -140,7 +142,7 @@ public class CaseSearchController {
 		paramMap.put("limit", limit);
 		paramMap.put("offset", offset);
 		paramMap.put("caseName", caseName);
-		
+		logger.info(caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		returnMap.put("total",(String)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"total"));
 		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		return returnMap;
@@ -185,7 +187,7 @@ public class CaseSearchController {
         boolean hasRole = subject.hasRole("admin");
         
         ArrayList<HashMap<String, Object>> searchCaseRunLogInfos = (ArrayList<HashMap<String, Object>>) caseSearchService.searchCaseRunLogInfo(paramMap, session.getAttribute("auth").toString(),"rows",deptids,hasRole);
-        
+        logger.info(searchCaseRunLogInfos);
         /*for (HashMap<String, Object> runLogInfo : searchCaseRunLogInfos) {
         	runLogInfo.put("batch_status", caseSearchService.getBattchStatus(String.valueOf(runLogInfo.get("int_id"))));
 		}*/
@@ -230,7 +232,7 @@ public class CaseSearchController {
 				cMap.put("workable_release", split[12]);
 				cMap.put("server", split[13]);
 			}
-			//System.out.println("12-->" + split[12]);
+			//logger.info("12-->" + split[12]);
 			//ccMap.put("condition_info", cMap);
 			hashMap.put("condition", cMap);
 			
@@ -253,7 +255,7 @@ public class CaseSearchController {
 				List<String> asList = Arrays.asList(split2);
 				List<Map<String, Object>> sList = new ArrayList<Map<String, Object>>();
 				for (String string : asList) {
-					//System.out.println("string:============"+string);
+					//logger.info("string:============"+string);
 					HashMap<String,Object> ccMap = new HashMap<>();
 					String[] split3 = string.replace("}", "").split(",");
 					
@@ -294,7 +296,7 @@ public class CaseSearchController {
 		Map<String, Object> battchStatusCount = caseSearchService.getBattchStatusCount(int_id);
 		model.addAttribute("battchStatusCount",battchStatusCount);
 		//searchCaseRunLogInfoById.add(ccMap);
-		System.err.println("searchCaseRunLogInfoById:============"+searchCaseRunLogInfoById);
+		logger.info("searchCaseRunLogInfoById:============"+searchCaseRunLogInfoById);
 		model.addAttribute("searchCaseRunLogInfoById",searchCaseRunLogInfoById);
 		return "caseSearchInfo";
 	}
@@ -307,10 +309,10 @@ public class CaseSearchController {
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
 		String selectAllflag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
 		String formtitle = request.getParameter("formtitle")==null?"":request.getParameter("formtitle").toString().trim();
-		System.out.println("ids============="+ids);
-		System.out.println("condition============="+condition);
-		System.out.println("selectAllflag============="+selectAllflag);
-		System.out.println("\"false\".endsWith(selectAllflag)============="+"false".endsWith(selectAllflag));
+		logger.info("ids============="+ids);
+		logger.info("condition============="+condition);
+		logger.info("selectAllflag============="+selectAllflag);
+		logger.info("\"false\".endsWith(selectAllflag)============="+"false".endsWith(selectAllflag));
 		if("".equals(ids)&&"false".endsWith(selectAllflag)) {
 			returnMap.put("msg", "please checked some case");
 			return returnMap;
@@ -321,7 +323,7 @@ public class CaseSearchController {
 		}
 		
 		String login = (String) session.getAttribute("login");
-		System.out.println("login:============"+login);
+		logger.info("login:============"+login);
 		Map<String,Object> paramMap = new HashMap<String,Object>();
 		paramMap.put("ids", ids);
 		paramMap.put("condition", condition);
@@ -368,6 +370,7 @@ public class CaseSearchController {
 		String set = request.getParameter("set")==null?"":request.getParameter("set").toString().trim();
 		String server = request.getParameter("server")==null?"":request.getParameter("server").toString().trim();
 		String formtitle = request.getParameter("formtitle")==null?"":request.getParameter("formtitle").toString().trim();
+		String hotslide = request.getParameter("hotslide")==null?"":request.getParameter("hotslide").toString().trim();
 		String flag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
 		String login = (String) session.getAttribute("login");
@@ -380,8 +383,49 @@ public class CaseSearchController {
 			returnMap.put("msg", "please checked some server to run case");
 			return returnMap;
 		}
-		caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition);
+		Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition,hotslide);
+		if(onlyrun.get("msg")!=null) {
+			returnMap.put("msg", onlyrun.get("msg"));
+			return returnMap;
+		}
 		return returnMap;
+	}
+	@RequestMapping(path = "/exportCaseInfo")
+	public void exportCaseInfo(HttpSession session,HttpServletResponse response ,HttpServletRequest request ) throws Exception{
+		String logID = request.getParameter("logID")==null?"":request.getParameter("logID").toString().trim();
+		ArrayList<HashMap<String, Object>> runCaseResultByBatchId = caseSearchService.getTempRunCaseResultByBatchId(logID);
+		XSSFWorkbook wb = new XSSFWorkbook();
+		Sheet sh = wb.createSheet();
+        Row title = sh.createRow(0);
+        for(int i=0 ;i<runCaseResultByBatchId.size();i++) {
+        	Row row = sh.createRow(i+1);
+        	HashMap<String,Object> hashMap = runCaseResultByBatchId.get(i);
+        	int j=0;
+        	for(String key :hashMap.keySet()) {
+        		if(i==0) {
+        			Cell titleCell = title.createCell(j);
+        			titleCell.setCellValue(""+key);
+        		}
+        		Cell cell = row.createCell(j);
+        		String value = hashMap.get(key)+"";
+        		cell.setCellValue(value);
+        		j++;
+        	}
+        }
+        Date day=new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("multipart/form-data");
+        response.setHeader("Content-Disposition", "attachment;fileName=RC_"+logID+"_"+df.format(day)+".csv");
+        try {
+            OutputStream out = response.getOutputStream();
+            BufferedOutputStream bufout = new BufferedOutputStream(out);
+            bufout.flush();
+            wb.write(bufout);
+            bufout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
 	
 }

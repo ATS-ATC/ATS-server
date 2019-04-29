@@ -12,6 +12,16 @@
 	</properties>
   
   <dependencies>
+	<dependency>
+	    <groupId>redis.clients</groupId>
+	    <artifactId>jedis</artifactId>
+	    <version>2.9.0</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.springframework.data</groupId>
+	    <artifactId>spring-data-redis</artifactId>
+	    <version>1.8.1.RELEASE</version>
+	</dependency>
   
   <!-- Spring websocket and messaging -->
   <!-- <dependency>

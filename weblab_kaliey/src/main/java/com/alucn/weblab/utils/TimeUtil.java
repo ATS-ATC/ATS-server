@@ -2,6 +2,7 @@ package com.alucn.weblab.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 public class TimeUtil {
 
     public TimeUtil() {
@@ -69,6 +70,7 @@ public class TimeUtil {
     public static String stampToTime(long l) {
     	String res;
     	SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    	simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
     	long lt = l;
     	Date date = new Date(lt);
     	res = simpleDateFormat.format(date);

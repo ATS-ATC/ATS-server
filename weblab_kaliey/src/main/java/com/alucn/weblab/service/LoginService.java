@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.alucn.casemanager.server.common.LdapAuthentication;
@@ -30,7 +31,7 @@ public class LoginService {
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
-	
+	@Cacheable(value = "roles")
 	public ArrayList<HashMap<String, Object>> getRolesByName(String username) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -42,6 +43,7 @@ public class LoginService {
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
+	@Cacheable(value = "permissions")
 	public ArrayList<HashMap<String, Object>> getPermissionsByUserName(String username) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -54,7 +56,6 @@ public class LoginService {
 				+ "and c.stateflag=0 "
 				+ "and d.stateflag=0 "
 				+ "and a.username='"+username.trim()+"'";
-		//System.err.println("getPermissionsByUserName:"+sql);
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -70,7 +71,6 @@ public class LoginService {
 			return;
 		}
 		String sql = "insert into kaliey.n_user (username,password) values ('"+nuser.getUsername().trim()+"','"+password.trim()+"')";
-		System.out.println("createLdapUser >> "+sql);
 		userDaoImpl.insert(jdbc, sql);
 		String qsql = "select id from kaliey.n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";;
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, qsql);
@@ -83,6 +83,7 @@ public class LoginService {
 		userDaoImpl.insert(jdbc, dsql);
 	} 
 	//不排除逻辑删除账号
+	@Cacheable(value = "userAll")
 	public ArrayList<HashMap<String, Object>> queryAllNUser(NUser nuser) throws Exception{
     	/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -91,6 +92,7 @@ public class LoginService {
         return result;
 	}
 	//只取状态正常的账号
+	@Cacheable(value = "user")
 	public ArrayList<HashMap<String, Object>> queryNUser(NUser nuser) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -98,7 +100,6 @@ public class LoginService {
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
-	
 	
 	
 	public boolean getUser(NUser user) throws Exception{
@@ -111,7 +112,6 @@ public class LoginService {
         }
         return false;
 	}
-	
 	public boolean authUser(NUser user) throws Exception{
 	    LdapAuthentication ldapAuth = new LdapAuthentication(user.getUsername(),user.getPassword());
         String authResult = ldapAuth.getAuth();
@@ -121,7 +121,6 @@ public class LoginService {
         }
         return false;
 	}
-	
 	public boolean authAdministrator(NUser user){
 		if(user.getUsername().equals("root") && MD5Util.md5(user.getPassword()).equals("0ab9965a1da1500c7a293652ba814c57")){
 		//if(user.getUsername().equals("root") && user.getPassword().equals("26fa931348833ba971aa0d772c0fb24567192f1ecad3e4dd3d7013d8d5e5aef3")){
@@ -141,17 +140,17 @@ public class LoginService {
 	public void setUserDaoImpl(UserDaoImpl userDaoImpl) {
 		this.userDaoImpl = userDaoImpl;
 	}
-
+	@Cacheable(value = "deptIds")
 	public ArrayList<HashMap<String, Object>> getDeptIdsByUserName(String username) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select distinct dept_id from kaliey.n_user_dept "
 				+ "where stateflag=0 "
 				+ "and user_id in (select id from kaliey.n_user where stateflag=0 and username='"+username+"')";
-		//System.err.println(sql);
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
+	@Cacheable(value = "depts")
 	public ArrayList<HashMap<String, Object>> getDeptsByUserName(String username) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -162,6 +161,7 @@ public class LoginService {
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
+	@Cacheable(value = "deptAdm")
 	public ArrayList<HashMap<String, Object>> getDeptsByAdmin() throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
@@ -177,6 +177,7 @@ public class LoginService {
 		return result;
 	}
 */
+	@Cacheable(value = "dept")
 	public ArrayList<HashMap<String, Object>> getDeptById(String deptid) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -36,6 +38,7 @@ import com.alucn.weblab.service.LoginService;
 import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
 import com.alucn.weblab.socket.TcpClient;
+import com.alucn.weblab.utils.LabStatusUtil;
 import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 import com.alucn.weblab.utils.TimeUtil;
@@ -51,78 +54,79 @@ public class ServerInfoController {
 	private LoginService loginService;
 	@Autowired
 	private ServerInfoService serverInfoService;
-	@Autowired(required=true)
+	@Autowired(required = true)
 	private SpaAndRtdbManService spaAndRtdbManService;
-	
-	/*@RequestMapping(path = "/getServerInfo")
-	public String getServerInfo(Model model){
-		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getServerInfo();
-		model.addAttribute("infos", infos);
-		return "serverInfo";
-	}*/
-	
-	//lab变动日志记录表
+
+	/*
+	 * @RequestMapping(path = "/getServerInfo") public String getServerInfo(Model
+	 * model){ Map<String,Set<Map<String,JSONObject>>> infos =
+	 * serverInfoService.getServerInfo(); model.addAttribute("infos", infos); return
+	 * "serverInfo"; }
+	 */
+
+	// lab变动日志记录表
 	@RequestMapping(path = "/getServerStatusLog")
-	public String getServerStatusLog(HttpServletRequest request,Model model){
-		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
+	public String getServerStatusLog(HttpServletRequest request, Model model) {
+		String serverName = request.getParameter("serverName") == null ? "" : request.getParameter("serverName").toString().trim();
 		model.addAttribute("serverName", serverName);
 		return "serverStatusLog";
 	}
+
 	@RequestMapping(path = "/getServerStatusLogJson")
 	@ResponseBody
-	public Map<String,Object> getServerStatusLogJson(HttpServletRequest request,Model model,HttpSession session) throws Exception {
-		Map<String,Object> resultMap = new HashMap<String,Object>();
-		
-		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
-		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
-		String serverName = request.getParameter("serverName")==null?"":request.getParameter("serverName").toString().trim();
+	public Map<String, Object> getServerStatusLogJson(HttpServletRequest request, Model model, HttpSession session)
+			throws Exception {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		String limit = request.getParameter("limit") == null ? "" : request.getParameter("limit").toString().trim();
+		String offset = request.getParameter("offset") == null ? "" : request.getParameter("offset").toString().trim();
+		String serverName = request.getParameter("serverName") == null ? "" : request.getParameter("serverName").toString().trim();
 		System.err.println(serverName);
 		String username = (String) session.getAttribute("login");
 		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
-		List<String> deptids= new ArrayList<String>();
-		if(deptByUserName.size()>0) {
+		List<String> deptids = new ArrayList<String>();
+		if (deptByUserName.size() > 0) {
 			for (HashMap<String, Object> hashMap : deptByUserName) {
-				String deptid = ""+hashMap.get("dept_id");
-				if(deptid!=null && !"".equals(deptid)) {
+				String deptid = "" + hashMap.get("dept_id");
+				if (deptid != null && !"".equals(deptid)) {
 					deptids.add(deptid);
 				}
 			}
-			//deptid = (String) deptByUserName.get(0).get("dept_id");
+			// deptid = (String) deptByUserName.get(0).get("dept_id");
 		}
 		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit,offset,serverName,deptids,hasRole);
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getServerStatusLogJson(limit, offset,
+				serverName, deptids, hasRole);
 		for (HashMap<String, Object> hashMap : labLogJson) {
 			Long starttime = Long.parseLong((String) hashMap.get("starttime"));
-			Long endtime = Long.parseLong((String)hashMap.get("endtime"));
+			Long endtime = Long.parseLong((String) hashMap.get("endtime"));
 			String timeDifference = TimeUtil.getTimeDifference(endtime, starttime);
 			hashMap.put("hodingtime", timeDifference);
-			hashMap.put("starttime", TimeUtil.stampToTime(starttime));    
-			hashMap.put("endtime", TimeUtil.stampToTime(endtime));    
+			hashMap.put("starttime", TimeUtil.stampToTime(starttime));
+			hashMap.put("endtime", TimeUtil.stampToTime(endtime));
 		}
-		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptids,hasRole);
+		int labLogJsonCount = serverInfoService.getServerStatusLogJsonCount(serverName, deptids, hasRole);
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
 		return resultMap;
 	}
-	
-	
-	
-	@RequestMapping(value="/getServerInfoJson")
+
+	@RequestMapping(value = "/getServerInfoJson")
 	@ResponseBody
-	public ArrayList<HashMap<String, Object>> getServerInfoJson(HttpSession session) throws Exception{
-		
+	public ArrayList<HashMap<String, Object>> getServerInfoJson(HttpSession session) throws Exception {
+
 		ArrayList<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
-		Subject subject = SecurityUtils.getSubject();  
-        boolean hasRole = subject.hasRole("admin");
+		Subject subject = SecurityUtils.getSubject();
+		boolean hasRole = subject.hasRole("admin");
 		// Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-        Map<String,Set<ServerSort>> infos = serverInfoService.getNewServerInfo();
-		//logger.info("infos:==============="+infos);
-		int id =1;
-		for(String info :infos.keySet()) {
+		Map<String, Set<ServerSort>> infos = serverInfoService.getNewServerInfo();
+		// logger.info("infos:==============="+infos);
+		int id = 1;
+		for (String info : infos.keySet()) {
 			int pid = 0;
-			//父级目录
-			HashMap<String,Object> superMap = new LinkedHashMap<String, Object>();
+			// 父级目录
+			HashMap<String, Object> superMap = new LinkedHashMap<String, Object>();
 			superMap.put("id", id);
 			superMap.put("pid", pid);
 			superMap.put("name", info);
@@ -136,26 +140,26 @@ public class ServerInfoController {
 			superMap.put("mateServer", "");
 			superMap.put("deptname", "");
 			superMap.put("hodingtime", "");
-			
+
 			resultList.add(superMap);
-			pid=id;
+			pid = id;
 			id++;
-			//子级目录
+			// 子级目录
 			Set<ServerSort> sets = infos.get(info);
 			for (ServerSort set : sets) {
 				Map<String, JSONObject> maps = set.getMap();
-				for(String map :maps.keySet()) {
-					HashMap<String,Object> childMap = new LinkedHashMap<String, Object>();
+				for (String map : maps.keySet()) {
+					HashMap<String, Object> childMap = new LinkedHashMap<String, Object>();
 					id++;
 					JSONObject jsonObject = maps.get(map);
-					//logger.info("===============");
-					//logger.info(jsonObject);
-					//{"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
-					//{"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
-					//"taskStatus":{"status":"Idle","runningCase":""}
+					// logger.info("===============");
+					// logger.info(jsonObject);
+					// {"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
+					// {"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set2","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}
+					// "taskStatus":{"status":"Idle","runningCase":""}
 					JSONObject lab = jsonObject.getJSONObject("lab");
-					//logger.info(lab);
-					//logger.info("===============");
+					// logger.info(lab);
+					// logger.info("===============");
 					String serverName = lab.getString("serverName");
 					String serverIp = lab.getString("serverIp");
 					String serverRelease = lab.getString("serverRelease");
@@ -164,45 +168,38 @@ public class ServerInfoController {
 					String serverMate = lab.getString("serverMate");
 					String mateServer = lab.getString("mateServer");
 					String sdeptid = lab.getString("deptid");
-					
-					/*long lasttime = lab.getLong("lasttime");
-					long nowtime = new Date().getTime();
-					String timeDifference = TimeUtil.getTimeDifference(nowtime, lasttime);*/
-					//long hodingtime = nowtime-lasttime;
-					
+					String timeDifference = "0";
+					try {
+						long lasttime = lab.getLong("last_time");
+						long nowtime = new Date().getTime();
+						timeDifference = TimeUtil.getTimeDifference(nowtime, lasttime);
+					} catch (Exception e) {
+						System.out.println(lab);
+						e.printStackTrace();
+					}
 					ArrayList<HashMap<String, Object>> deptById = loginService.getDeptById(sdeptid);
 					String deptname = "";
-					if(deptById.size()>0) {
+					if (deptById.size() > 0) {
 						deptname = (String) deptById.get(0).get("dept_name");
 					}
-					
+
 					String labdeptid = "";
 					try {
 						labdeptid = lab.getString("deptid");
-					}catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					String status = jsonObject.getJSONObject("taskStatus").getString("status");
-					/*int stateflag = 1;
-					if("Idle".equals(status)) {
-						stateflag=0;
-					}
-					if("Dead".equals(status)) {
-						stateflag=1;
-					}
-					if("Running".equals(status)) {
-						stateflag=2;
-					}
-					if("Ready".equals(status)) {
-						stateflag=3;
-					}
-					if("Finished".equals(status)) {
-						stateflag=4;
-					}*/
+					/*
+					 * int stateflag = 1; if("Idle".equals(status)) { stateflag=0; }
+					 * if("Dead".equals(status)) { stateflag=1; } if("Running".equals(status)) {
+					 * stateflag=2; } if("Ready".equals(status)) { stateflag=3; }
+					 * if("Finished".equals(status)) { stateflag=4; }
+					 */
 					childMap.put("id", id);
 					childMap.put("pid", pid);
 					childMap.put("name", serverName);
-					//childMap.put("status", stateflag);
+					// childMap.put("status", stateflag);
 					childMap.put("status", status);
 					childMap.put("type", "server");
 					childMap.put("serverIp", serverIp);
@@ -212,135 +209,133 @@ public class ServerInfoController {
 					childMap.put("serverMate", serverMate);
 					childMap.put("mateServer", mateServer);
 					childMap.put("deptname", deptname);
-					//childMap.put("hodingtime", timeDifference);
-					childMap.put("hodingtime", 0);
+					childMap.put("hodingtime", timeDifference);
+					// childMap.put("hodingtime", 0);
 					String username = (String) session.getAttribute("login");
 					ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
-					List<String> deptids= new ArrayList<>();
-					if(deptByUserName.size()>0) {
+					List<String> deptids = new ArrayList<>();
+					if (deptByUserName.size() > 0) {
 						for (HashMap<String, Object> hashMap : deptByUserName) {
-							String deptid = ""+hashMap.get("dept_id");
-							if(deptid!=null && !"".equals(deptid)) {
+							String deptid = "" + hashMap.get("dept_id");
+							if (deptid != null && !"".equals(deptid)) {
 								deptids.add(deptid);
 							}
 						}
-						//deptid = (String) deptByUserName.get(0).get("deptid");
+						// deptid = (String) deptByUserName.get(0).get("deptid");
 					}
-					if(deptids.contains(labdeptid)||hasRole) {
+					if (deptids.contains(labdeptid) || hasRole) {
 						resultList.add(childMap);
 					}
-					//logger.info("resultList:========"+resultList);
+					// logger.info("resultList:========"+resultList);
 					id++;
 				}
 			}
-			
+
 		}
-		Set <Integer> setList = new HashSet();
-		List <Integer> idList = new ArrayList<>();
-		for (int i=0;i<resultList.size();i++) {
-			int sid =  (int) resultList.get(i).get("id");
+		Set<Integer> setList = new HashSet();
+		List<Integer> idList = new ArrayList<>();
+		for (int i = 0; i < resultList.size(); i++) {
+			int sid = (int) resultList.get(i).get("id");
 			int spid = (int) resultList.get(i).get("pid");
 			String stype = (String) resultList.get(i).get("type");
-			if("server".equals(stype)) {
+			if ("server".equals(stype)) {
 				setList.add(spid);
-			}
-			else if("set".equals(stype)) {
+			} else if ("set".equals(stype)) {
 				idList.add(sid);
 			}
 		}
 		idList.removeAll(setList);
-		//logger.info("idList >> "+idList);
+		// logger.info("idList >> "+idList);
 		ArrayList<HashMap<String, Object>> midResultList = new ArrayList<HashMap<String, Object>>();
-		
+
 		for (HashMap<String, Object> hashMap : resultList) {
 			int sid = (int) hashMap.get("id");
-			if(!idList.contains(sid)) {
+			if (!idList.contains(sid)) {
 				midResultList.add(hashMap);
 			}
 		}
-		
+
 		return midResultList;
 	}
-	
-	
-	
+
 	@RequestMapping(path = "/getServerInfo")
-	public String getServerInfo(Model model, HttpSession session) throws Exception{
-		
-		//2
-		//Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-		/*JSONArray jsonTree = new JSONArray();
-		for (String info : infos.keySet()) {
-			JSONObject value = new JSONObject();
-			value.put("text", info);
-			Set<ServerSort> sets = infos.get(info);
-			logger.info(sets);
-			JSONArray childTree = new JSONArray();
-			for (ServerSort set : sets) {
-				JSONObject child = new JSONObject();
-				Map<String, JSONObject> maps = set.getMap();
-				//logger.info(maps);
-				for (String map : maps.keySet()) {
-					child.put("text", map);
-				}
-				childTree.add(child);
-			}
-			value.put("nodes", childTree);
-			jsonTree.add(value);
-		}
-		
-		model.addAttribute("jsonTree", jsonTree);*/
-		//1 
-		//Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-		//model.addAttribute("infos", infos);
-		
-		//3
-		
-		
-		
-		//logger.info(infos);
-		//{set1=[ServerSort [map={BJRMS21A={"lab":{"serverName":"BJRMS21A","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21B={"lab":{"serverName":"BJRMS21B","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21C={"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21D={"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}], ServerSort [map={BJRMS21E={"lab":{"serverName":"BJRMS21E","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Primary","mateServer":"BJRMS21F","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}, BJRMS21F={"lab":{"serverName":"BJRMS21F","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Secondary","mateServer":"BJRMS21E","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}]]}
+	public String getServerInfo(Model model, HttpSession session) throws Exception {
+
+		// 2
+		// Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
+		/*
+		 * JSONArray jsonTree = new JSONArray(); for (String info : infos.keySet()) {
+		 * JSONObject value = new JSONObject(); value.put("text", info); Set<ServerSort>
+		 * sets = infos.get(info); logger.info(sets); JSONArray childTree = new
+		 * JSONArray(); for (ServerSort set : sets) { JSONObject child = new
+		 * JSONObject(); Map<String, JSONObject> maps = set.getMap();
+		 * //logger.info(maps); for (String map : maps.keySet()) { child.put("text",
+		 * map); } childTree.add(child); } value.put("nodes", childTree);
+		 * jsonTree.add(value); }
+		 * 
+		 * model.addAttribute("jsonTree", jsonTree);
+		 */
+		// 1
+		// Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
+		// model.addAttribute("infos", infos);
+
+		// 3
+
+		// logger.info(infos);
+		// {set1=[ServerSort
+		// [map={BJRMS21A={"lab":{"serverName":"BJRMS21A","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}],
+		// ServerSort
+		// [map={BJRMS21B={"lab":{"serverName":"BJRMS21B","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Standalone","mateServer":"N","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}],
+		// ServerSort
+		// [map={BJRMS21C={"lab":{"serverName":"BJRMS21C","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Primary","mateServer":"BJRMS21D","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}},
+		// BJRMS21D={"lab":{"serverName":"BJRMS21D","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Line","serverMate":"Secondary","mateServer":"BJRMS21C","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}],
+		// ServerSort
+		// [map={BJRMS21E={"lab":{"serverName":"BJRMS21E","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Primary","mateServer":"BJRMS21F","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}},
+		// BJRMS21F={"lab":{"serverName":"BJRMS21F","serverIp":"135.242.17.206","serverRelease":"SP17.9","serverProtocol":"ITU","serverType":"Group","serverMate":"Secondary","mateServer":"BJRMS21E","setName":"set1","serverSPA":["AethosTest","CDRPP311","CDRPPGW311","DIAMCL179","DROUTER179","ECTRL179","ENWTPPS179","EPAY179","EPPSA179","EPPSM179","GATEWAY179","NWTCOM111","NWTGSM066"],"serverRTDB":["SCRRTDBV7","AECIDB179","SGLDB28H","TIDDB28C","GPRSSIM08","AIRTDB179","CTRTDB179","HTIDDB179","PMOUDB179","PROMDB179","SIMDB179","SYDB179","GCIPL312","VTXDB179","SHRTDB28F","CDBRTDB","RCNRDB173","HMRTDB173","SESSDB311","ACMDB104","SIMIDXDB","FSNDB173","UARTDB287","RERTDB279","SFFDB28C","GCURDB","SLTBLRTDB","ID2MDN01","GTMDB28A"]},"taskStatus":{"status":"Idle","runningCase":""},"taskResult":{"success":[],"fail":[]}}}]]}
 		String username = (String) session.getAttribute("login");
 		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
-		
+
 		ArrayList<HashMap<String, Object>> deptByUserName = new ArrayList<HashMap<String, Object>>();
-		if(hasRole) {
-			deptByUserName=loginService.getDeptsByAdmin();
-		}else {
-			deptByUserName=loginService.getDeptsByUserName(username);
+		if (hasRole) {
+			deptByUserName = loginService.getDeptsByAdmin();
+		} else {
+			deptByUserName = loginService.getDeptsByUserName(username);
 		}
-		/*String deptname="";
-		String deptid="";*/
-		Map<Object, Object> deptmap  = new HashMap<Object, Object>();
-		List<String> deptids= new ArrayList<>();
-		if(deptByUserName.size()>0) {
+		/*
+		 * String deptname=""; String deptid="";
+		 */
+		Map<Object, Object> deptmap = new HashMap<Object, Object>();
+		List<String> deptids = new ArrayList<>();
+		if (deptByUserName.size() > 0) {
 			for (HashMap<String, Object> hashMap : deptByUserName) {
-				String deptid = ""+hashMap.get("dept_id");
-				String deptName = ""+hashMap.get("dept_name");
-				if(deptid!=null && !"".equals(deptid)) {
-					deptmap.put(deptName,deptid);
-					//deptmap.put("deptName",deptName);
-					//deptmap.put("deptid",deptid);
+				String deptid = "" + hashMap.get("dept_id");
+				String deptName = "" + hashMap.get("dept_name");
+				if (deptid != null && !"".equals(deptid) && !"default".equals(deptName)) {
+					deptmap.put(deptName, deptid);
+					// deptmap.put("deptName",deptName);
+					// deptmap.put("deptid",deptid);
 					deptids.add(deptid);
 				}
 			}
-			//deptname = (String) deptByUserName.get(0).get("dept_name");
-			//deptid = (String) deptByUserName.get(0).get("deptid");
+			// deptname = (String) deptByUserName.get(0).get("dept_name");
+			// deptid = (String) deptByUserName.get(0).get("deptid");
 		}
 		model.addAttribute("deptmap", deptmap);
-		//model.addAttribute("deptname", deptname);
-		//model.addAttribute("deptid", deptid);
+		// model.addAttribute("deptname", deptname);
+		// model.addAttribute("deptid", deptid);
 		model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
-		//JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
-		JSONArray Servers = SocketClientConn.getLabStatus();
-		//result.put("Servers", Servers);
-		//List setList = new ArrayList<>();
+		// JSONArray Servers =
+		// CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
+		// true, null);
+		JSONArray Servers = LabStatusUtil.getLabStatus();
+		// result.put("Servers", Servers);
+		// List setList = new ArrayList<>();
 		Set sets = new HashSet<>();
-		if(Servers.size()>0) {
-			for (int i =0 ;i<Servers.size();i++) {
+		if (Servers.size() > 0) {
+			for (int i = 0; i < Servers.size(); i++) {
 				JSONObject lab = Servers.getJSONObject(i).getJSONObject("body").getJSONObject(Constant.LAB);
-				String sdeptid ="";
+				String sdeptid = "";
 				try {
 					sdeptid = lab.getString("deptid");
 				} catch (Exception e) {
@@ -349,146 +344,162 @@ public class ServerInfoController {
 				if (hasRole) {
 					String setName = lab.getString("setName");
 					sets.add(setName);
-				}else if(deptids.contains(sdeptid)) {
+				} else if (deptids.contains(sdeptid)) {
 					String setName = lab.getString("setName");
 					sets.add(setName);
-				} 
+				}
 			}
 		}
 		sets.add("default");
 		model.addAttribute("sets", sets);
+		
+		String[] spaDefault = {"'EPAY'", "'EPPSA'", "'ENWTPPS'", "'EPPSM'", "'NWTCOM'", "'NWTGSM'", "'GATEWAY'", "'AETHOSTEST'", "'DIAMCL'", "'DROUTER'", "'ECTRL'"};
+		String[] dbDefault = {"'ACMDB'","'SIMDB'","'AIRTDB'","'CTRTDB'","'GPRSSIM'"};
+		
+		model.addAttribute("spaDefault", Arrays.asList(spaDefault));
+		model.addAttribute("dbDefault", Arrays.asList(dbDefault));
 		return "serverInfo3";
 	}
-	/*@RequestMapping(path = "/testGetServerInfo")
-	public String test(Model model){
-		Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
-		logger.info("-----------------------infos------------------------------");
-		return null;
-	}*/
+
+	/*
+	 * @RequestMapping(path = "/testGetServerInfo") public String test(Model model){
+	 * Map<String,Set<ServerSort>> infos = serverInfoService.getServerInfo();
+	 * logger.info("-----------------------infos------------------------------");
+	 * return null; }
+	 */
 	@RequestMapping(path = "/getServerDetails")
-	public String getServerDetails(String serverName, Model model){
-		Map<String,Set<Map<String,JSONObject>>> infos = serverInfoService.getNewServerInfoNosort();
-		for(String key : infos.keySet()){
-			Set<Map<String,JSONObject>> set = infos.get(key);
+	public String getServerDetails(String serverName, Model model) {
+		Map<String, Set<Map<String, JSONObject>>> infos = serverInfoService.getNewServerInfoNosort();
+		for (String key : infos.keySet()) {
+			Set<Map<String, JSONObject>> set = infos.get(key);
 			Iterator<Map<String, JSONObject>> iterator = set.iterator();
-			while(iterator.hasNext()){
-				Map<String,JSONObject> serverOrMate = iterator.next();
-				if(serverOrMate.get(serverName)!=null){
+			while (iterator.hasNext()) {
+				Map<String, JSONObject> serverOrMate = iterator.next();
+				if (serverOrMate.get(serverName) != null) {
 					model.addAttribute("info", JSONObject.fromObject(serverOrMate.get(serverName)));
 				}
 			}
 		}
 		return "serverDetails";
 	}
-	
+
 	@RequestMapping(path = "/addlablog")
-	public String addlablog(Model model) throws Exception{
-		//model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
+	public String addlablog(Model model) throws Exception {
+		// model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
 		return "addlablog";
 	}
+
 	@RequestMapping(path = "/addlablogJson")
 	@ResponseBody
-	public Map<String,Object> addlablogJson(HttpServletRequest request,Model model,HttpSession session) throws Exception {
-		Map<String,Object> resultMap = new HashMap<String,Object>();
-		
-		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
-		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
-		String labname = request.getParameter("labname")==null?"":request.getParameter("labname").toString().trim();
+	public Map<String, Object> addlablogJson(HttpServletRequest request, Model model, HttpSession session)
+			throws Exception {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		String limit = request.getParameter("limit") == null ? "" : request.getParameter("limit").toString().trim();
+		String offset = request.getParameter("offset") == null ? "" : request.getParameter("offset").toString().trim();
+		String labname = request.getParameter("labname") == null ? "" : request.getParameter("labname").toString().trim();
 		String username = (String) session.getAttribute("login");
 		ArrayList<HashMap<String, Object>> deptByUserName = loginService.getDeptIdsByUserName(username);
-		
-		//System.out.println("addlablogJson : "+deptByUserName);
-		
-		List<String> deptids= new ArrayList<>();
-		if(deptByUserName.size()>0) {
+
+		// System.out.println("addlablogJson : "+deptByUserName);
+
+		List<String> deptids = new ArrayList<>();
+		if (deptByUserName.size() > 0) {
 			for (HashMap<String, Object> hashMap : deptByUserName) {
-				String deptid = ""+hashMap.get("dept_id");
-				//System.out.println(deptid);
-				if(deptid!=null && !"".equals(deptid)) {
+				String deptid = "" + hashMap.get("dept_id");
+				// System.out.println(deptid);
+				if (deptid != null && !"".equals(deptid)) {
 					deptids.add(deptid);
 				}
 			}
 		}
 		Subject subject = SecurityUtils.getSubject();
 		boolean hasRole = subject.hasRole("admin");
-		//System.out.println(deptids);
-		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit,offset,labname,deptids,hasRole);
-		if(labLogJson.size()>0) {
+		// System.out.println(deptids);
+		ArrayList<HashMap<String, Object>> labLogJson = serverInfoService.getLabLogJson(limit, offset, labname, deptids,
+				hasRole);
+		if (labLogJson.size() > 0) {
 			for (HashMap<String, Object> hashMap : labLogJson) {
 				String createtime = (String) hashMap.get("createtime");
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
 				long lt = new Long(createtime);
-		        Date date = new Date(lt);
+				Date date = new Date(lt);
 				String format = simpleDateFormat.format(date);
 				hashMap.put("createtime", format);
 			}
 		}
-		int labLogJsonCount = serverInfoService.getLabLogJsonCount(labname,deptids);
-		
+		int labLogJsonCount = serverInfoService.getLabLogJsonCount(labname, deptids);
+
 		resultMap.put("rows", labLogJson);
 		resultMap.put("total", labLogJsonCount);
-		
+
 		return resultMap;
-		
+
 	}
+
 	@RequestMapping(path = "/addServerInfo")
-	public String addServerInfo(Model model) throws Exception{
+	public String addServerInfo(Model model) throws Exception {
 		model.addAllAttributes(spaAndRtdbManService.getSpaAndRtdbInfo());
 		return "addServerInfo";
 	}
+
 	@RequestMapping(path = "/getLabInfo")
 	@ResponseBody
-	public Map<String, Object> getLabInfo(HttpSession session,Model model,HttpServletRequest request) throws Exception{
-		String aeservername = request.getParameter("aeservername")==null?"":request.getParameter("aeservername").toString().trim();
+	public Map<String, Object> getLabInfo(HttpSession session, Model model, HttpServletRequest request)
+			throws Exception {
+		String aeservername = request.getParameter("aeservername") == null ? ""
+				: request.getParameter("aeservername").toString().trim();
 		Map<String, Object> result = new HashMap<String, Object>();
-		//通过lab的名称获取genClient所需要的信息返回
-		JSONObject reqUrl = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+aeservername+".json");
-		if(!reqUrl.isEmpty()) {
+		// 通过lab的名称获取genClient所需要的信息返回
+		JSONObject reqUrl = HttpReq
+				.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/" + aeservername + ".json");
+		if (!reqUrl.isEmpty()) {
 			JSONArray jsonArray = reqUrl.getJSONArray("content");
-			if(jsonArray.size()>0) {
-				
+			if (jsonArray.size() > 0) {
+
 				String labname = jsonArray.getJSONObject(0).getString("labname");
 				String status = jsonArray.getJSONObject(0).getString("status");
 				String ips = jsonArray.getJSONObject(0).getString("ips");
-				String ip ="";
+				String ip = "";
 				List<String> ipList = new ArrayList<>();
-				if(ips.contains(",")) {
+				if (ips.contains(",")) {
 					String[] ipss = ips.split(",");
 					for (String string : ipss) {
 						ipList.add(string);
 					}
-					ip=ipss[0];
+					ip = ipss[0];
 				}
 				String ss7 = jsonArray.getJSONObject(0).getString("ss7");
 				String enwtpps = jsonArray.getJSONObject(0).getString("enwtpps");
 				String log = jsonArray.getJSONObject(0).getString("log");
 				String free = jsonArray.getJSONObject(0).getString("free");
 				String ptversion = jsonArray.getJSONObject(0).getString("log");
-				if("Succeed".equals(status)) {
+				if ("Succeed".equals(status)) {
 					result.put("ipList", ipList);
 					result.put("ss7", ss7);
 					result.put("enwtpps", enwtpps);
-				}else if ("Installing".equals(status)) {
+				} else if ("Installing".equals(status)) {
 					result.put("result", "fail");
 					result.put("msg", "lab is installing");
 					return result;
-				}else if ("Failed".equals(status)) {
+				} else if ("Failed".equals(status)) {
 					result.put("result", "fail");
 					result.put("msg", "lab status failed");
 					return result;
 				}
-			}else {
+			} else {
 				result.put("result", "fail");
 				result.put("msg", "cannot find the lab");
 				return result;
 			}
 		}
-		
+
 		String username = session.getAttribute("login").toString();
-		System.err.println("=======>"+username);
+		System.err.println("=======>" + username);
 		NUser user = new NUser();
 		user.setUsername(username);
-		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
+		ArrayList<HashMap<String, Object>> queryNUser = new ArrayList<HashMap<String, Object>>();
 		ArrayList<HashMap<String, Object>> deptIdsByUserName = new ArrayList<HashMap<String, Object>>();
 		try {
 			queryNUser = loginService.queryNUser(user);
@@ -496,35 +507,42 @@ public class ServerInfoController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		List<String> deptids= new ArrayList<String>();
-		if(deptIdsByUserName.size()>0) {
+		List<String> deptids = new ArrayList<String>();
+		if (deptIdsByUserName.size() > 0) {
 			for (HashMap<String, Object> hashMap : deptIdsByUserName) {
-				String deptid = ""+hashMap.get("dept_id");
-				if(deptid!=null && !"".equals(deptid)) {
+				String deptid = "" + hashMap.get("dept_id");
+				if (deptid != null && !"".equals(deptid)) {
 					deptids.add(deptid);
 				}
 			}
-			//deptid = (String) deptByUserName.get(0).get("dept_id");
+			// deptid = (String) deptByUserName.get(0).get("dept_id");
 		}
-		String createid ="";
-		if(queryNUser.size()>0) {
+		String createid = "";
+		if (queryNUser.size() > 0) {
 			createid = (String) queryNUser.get(0).get("id");
 		}
-		//JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
-		JSONArray Servers = SocketClientConn.getLabStatus();
-		//result.put("Servers", Servers);
-		//List setList = new ArrayList<>();
+		// JSONArray Servers =
+		// CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,
+		// true, null);
+		JSONArray Servers = LabStatusUtil.getLabStatus();
+		// result.put("Servers", Servers);
+		// List setList = new ArrayList<>();
 		Set sets = new HashSet<>();
-		if(Servers.size()>0) {
-			for (int i =0 ;i<Servers.size();i++) {
+		if (Servers.size() > 0) {
+			for (int i = 0; i < Servers.size(); i++) {
 				JSONObject lab = Servers.getJSONObject(i).getJSONObject("body").getJSONObject(Constant.LAB);
-				String sdeptid ="";
+				String sdeptid = "";
 				try {
 					sdeptid = lab.getString("deptid");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				if(deptids.contains(sdeptid)) {
+				Subject subject = SecurityUtils.getSubject();
+				boolean hasRole = subject.hasRole("admin");
+				if (hasRole) {
+					String setName = lab.getString("setName");
+					sets.add(setName);
+				} else if (deptids.contains(sdeptid)) {
 					String setName = lab.getString("setName");
 					sets.add(setName);
 				}
@@ -535,293 +553,361 @@ public class ServerInfoController {
 		result.put("result", "success");
 		return result;
 	}
-	//http://localhost:8080/weblab/genClient.do?labname=CHSP12B&ip=135.2.213.211&enwtpps=SP18.9&ss7=ITU&setname=set1
+
+	// http://localhost:8080/weblab/genClient.do?labname=CHSP12B&ip=135.2.213.211&enwtpps=SP18.9&ss7=ITU&setname=set1
 	@RequestMapping(path = "/genClient")
 	@ResponseBody
-	public Map<String, Object> genClient(HttpSession session,HttpServletRequest request) throws Exception{
+	public Map<String, Object> genClient(HttpSession session, HttpServletRequest request) throws Exception {
 		Map<String, Object> result = new HashMap<String, Object>();
-		
-		
-		
-		String labname = request.getParameter("labname")==null?"":request.getParameter("labname").toString().trim();
-		String ip = request.getParameter("ip")==null?"":request.getParameter("ip").toString().trim();
-		String enwtpps = request.getParameter("enwtpps")==null?"":request.getParameter("enwtpps").toString().trim();
-		String ss7 = request.getParameter("ss7")==null?"":request.getParameter("ss7").toString().trim();
-		String setname = request.getParameter("setname")==null?"":request.getParameter("setname").toString().trim();
-		String ehdept = request.getParameter("ehdept")==null?"":request.getParameter("ehdept").toString().trim();
+
+		String labname = request.getParameter("labname") == null ? ""
+				: request.getParameter("labname").toString().trim();
+		String ip = request.getParameter("ip") == null ? "" : request.getParameter("ip").toString().trim();
+		String enwtpps = request.getParameter("enwtpps") == null ? ""
+				: request.getParameter("enwtpps").toString().trim();
+		String ss7 = request.getParameter("ss7") == null ? "" : request.getParameter("ss7").toString().trim();
+		String setname = request.getParameter("setname") == null ? ""
+				: request.getParameter("setname").toString().trim();
+		String ehdept = request.getParameter("ehdept") == null ? "" : request.getParameter("ehdept").toString().trim();
 		String username = session.getAttribute("login").toString();
-		
-		System.out.println("ehdept:"+ehdept);
-		
+
+		System.out.println("ehdept:" + ehdept);
+
 		NUser user = new NUser();
 		user.setUsername(username);
-		ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
-		//String deptid= "";
-		String createid= "";
+		ArrayList<HashMap<String, Object>> queryNUser = new ArrayList<HashMap<String, Object>>();
+		// String deptid= "";
+		String createid = "";
 		try {
 			queryNUser = loginService.queryNUser(user);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if(queryNUser.size()>0) {
-			//deptid = (String) queryNUser.get(0).get("deptid");
+		if (queryNUser.size() > 0) {
+			// deptid = (String) queryNUser.get(0).get("deptid");
 			createid = (String) queryNUser.get(0).get("id");
 		}
-		String createtime =  new Date().getTime()+"";
-		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", ehdept, createid, createtime,"");
+		String createtime = new Date().getTime() + "";
+		serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", ehdept,
+				createid, createtime, "");
 		try {
-			logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+ehdept);
-			//为了测试注释掉执行部分
-			Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+setname+" "+ehdept);
-			serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime()+"", createtime);
+			logger.info("cd /home/huanglei && ./genClient.sh " + labname + " " + ip + " " + enwtpps + " " + ss7 + " "
+					+ setname + " " + ehdept);
+			// 为了测试注释掉执行部分
+			Exec("cd /home/huanglei && ./genClient.sh " + labname + " " + ip + " " + enwtpps + " " + ss7 + " " + setname
+					+ " " + ehdept);
+			serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime() + "", createtime);
 			result.put("result", "success");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			serverInfoService.editLabStatus("Failed", "", labname, new Date().getTime()+"", createtime);
+			serverInfoService.editLabStatus("Failed", "", labname, new Date().getTime() + "", createtime);
 			result.put("result", "fail");
 		}
 		return result;
 	}
-	public Map<String, Object> getlabGroupFlag(String labname,String deptid) throws Exception {
+	@RequestMapping(path = "/genClientNew")
+	@ResponseBody
+	public Map<String, Object> genClientNew(HttpSession session, HttpServletRequest request) throws Exception {
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String labname = request.getParameter("labname") == null ? "" : request.getParameter("labname").toString().trim();
+		//String ip = request.getParameter("ip") == null ? "" : request.getParameter("ip").toString().trim();
+		//String enwtpps = request.getParameter("enwtpps") == null ? "" : request.getParameter("enwtpps").toString().trim();
+		//String ss7 = request.getParameter("ss7") == null ? "" : request.getParameter("ss7").toString().trim();
+		String setname = request.getParameter("setname") == null ? "" : request.getParameter("setname").toString().trim();
+		String ehdept = request.getParameter("ehdept") == null ? "" : request.getParameter("ehdept").toString().trim();
+		String username = session.getAttribute("login").toString();
+		
+		System.out.println("ehdept:" + ehdept);
+		
+		NUser user = new NUser();
+		user.setUsername(username);
+		ArrayList<HashMap<String, Object>> queryNUser = new ArrayList<HashMap<String, Object>>();
+		// String deptid= "";
+		String createid = "";
+		try {
+			queryNUser = loginService.queryNUser(user);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (queryNUser.size() > 0) {
+			// deptid = (String) queryNUser.get(0).get("deptid");
+			createid = (String) queryNUser.get(0).get("id");
+		}
+		String createtime = new Date().getTime() + "";
+		//serverInfoService.addLabStatus("Installing", "exist", "", enwtpps, ss7, labname, "", "", ip, "", "", ehdept,createid, createtime, "");
+		try {
+			//logger.info("cd /home/huanglei && ./genClient.sh " + labname + " " + ip + " " + enwtpps + " " + ss7 + " " + setname + " " + ehdept);
+			// 为了测试注释掉执行部分
+			/*
+			 * String reqData = "{\"ip\": \"" + ip + "\", " + "\"labname\": \"" + labname +
+			 * "\", " + "\"release\": \"" + enwtpps + "\", " + "\"protocol\": \"" + ss7 +
+			 * "\", " + "\"deptid\": \"" + ehdept + "\", " + "\"setname\": \""+ setname +
+			 * "\"}";
+			 */
+			String reqData =  "{\"labname\": \"" + labname + "\",  \"deptid\": \"" + ehdept + "\",  \"setname\": \""+ setname + "\"}";
+			System.out.println(reqData);
+			//Exec("cd /home/huanglei && ./genClient.sh " + labname + " " + ip + " " + enwtpps + " " + ss7 + " " + setname+ " " + ehdept);
+			//serverInfoService.editLabStatus("Succeed", "", labname, new Date().getTime() + "", createtime);
+			//result.put("result", "success");
+			
+			String resResult = HttpReq.reqUrl("http://135.242.16.160:8000/auto-test/api/add_exist_lab", reqData); 
+			result.put("msg", resResult);
+			 
+			result.put("result", "success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			//serverInfoService.editLabStatus("Failed", "", labname, new Date().getTime() + "", createtime);
+			result.put("result", "fail");
+		}
+		return result;
+	}
+
+	public Map<String, Object> getlabGroupFlag(String labname, String deptid) throws Exception {
 		Map<String, Object> result = new HashMap<>();
-		if(deptid.equals("1")) {
+		if (deptid.equals("1")) {
 			result.put("result", false);
 			result.put("msg", "The default group does not allow lab creation.");
 			return result;
 		}
-		JSONObject reqUrl = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/"+labname+".json");
-		if(!reqUrl.isEmpty()) {
+		JSONObject reqUrl = HttpReq
+				.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/" + labname + ".json");
+		if (!reqUrl.isEmpty()) {
 			JSONArray jsonArray = reqUrl.getJSONArray("content");
-			if(jsonArray.size()>0) {
+			if (jsonArray.size() > 0) {
 				String labuser = jsonArray.getJSONObject(0).getString("labuser");
 				NUser user = new NUser();
 				user.setUsername(labuser.trim());
-				ArrayList<HashMap<String,Object>> queryNUser = loginService.queryNUser(user);
-				if(queryNUser.size()==1) {
-					if(queryNUser.get(0).get("deptid").equals(deptid)) {
+				ArrayList<HashMap<String, Object>> queryNUser = loginService.queryNUser(user);
+				if (queryNUser.size() == 1) {
+					if (queryNUser.get(0).get("deptid").equals(deptid)) {
 						result.put("result", true);
 						return result;
-					}else {
+					} else {
 						result.put("result", false);
-						result.put("msg", queryNUser.get(0).get("username")+" is not in your group.");
+						result.put("msg", queryNUser.get(0).get("username") + " is not in your group.");
 						return result;
 					}
-				}else {
+				} else {
 					result.put("result", false);
-					result.put("msg", queryNUser.get(0).get("username")+"  is not registered in the system.");
+					result.put("msg", queryNUser.get(0).get("username") + "  is not registered in the system.");
 					return result;
 				}
-			}else {
+			} else {
 				result.put("result", false);
-				result.put("msg", labname+" information cannot be obtained.");
+				result.put("msg", labname + " information cannot be obtained.");
 				return result;
 			}
 		}
 		return result;
 	}
-	//通过labname获取lab的运行状态（内存中的状态）
+
+	// 通过labname获取lab的运行状态（内存中的状态）
 	@RequestMapping(path = "/testStatus")
 	@ResponseBody
-	public Map<String, Object> getLabStatus(String labname){
+	public Map<String, Object> getLabStatus(String labname) {
 		Map<String, Object> result = new HashMap<>();
-		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
-		//result.put("Servers", Servers);
-		//List setList = new ArrayList<>();
+		JSONArray Servers = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true,
+				null);
+		// result.put("Servers", Servers);
+		// List setList = new ArrayList<>();
 		Set sets = new HashSet<>();
-		if(Servers.size()>0) {
-			for (int i =0 ;i<Servers.size();i++) {
+		if (Servers.size() > 0) {
+			for (int i = 0; i < Servers.size(); i++) {
 				JSONObject lab = Servers.getJSONObject(i).getJSONObject(Constant.LAB);
-				String status ="";
+				String status = "";
 				try {
 					status = lab.getString("status");
 					logger.info(status);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 			}
 		}
 		return result;
 	}
+
 	@RequestMapping(path = "/installLab")
 	@ResponseBody
-	public Map<String, Object> installLab(HttpSession session,HttpServletRequest request) throws Exception{
-		
-		
-		
+	public Map<String, Object> installLab(HttpSession session, HttpServletRequest request) throws Exception {
+
 		Map<String, Object> result = new HashMap<String, Object>();
-		
-		
-		String aservername = request.getParameter("aservername")==null?"":request.getParameter("aservername").toString().trim();
-		String arelease = request.getParameter("arelease")==null?"":request.getParameter("arelease").toString().trim();
-		String aprotocol = request.getParameter("aprotocol")==null?"":request.getParameter("aprotocol").toString().trim();
-		/*String aservertype = request.getParameter("aservertype")==null?"":request.getParameter("aservertype").toString().trim();
-		String amatetype = request.getParameter("amatetype")==null?"":request.getParameter("amatetype").toString().trim();*/
-		String hdept = request.getParameter("hdept")==null?"":request.getParameter("hdept").toString().trim();
-		String ainsflag = request.getParameter("ainsflag")==null?"":request.getParameter("ainsflag").toString().trim();
-		String sspa = request.getParameter("sspa")==null?"":request.getParameter("sspa").toString().trim();
-		String sdb = request.getParameter("sdb")==null?"":request.getParameter("sdb").toString().trim();
-		String sset = request.getParameter("sset")==null?"":request.getParameter("sset").toString().trim();
-		
+
+		String aservername = request.getParameter("aservername") == null ? "" : request.getParameter("aservername").toString().trim();
+		String arelease = request.getParameter("arelease") == null ? "" : request.getParameter("arelease").toString().trim();
+		String aprotocol = request.getParameter("aprotocol") == null ? "" : request.getParameter("aprotocol").toString().trim();
 		/*
-		部门添加权限验证：
-		
-		   	super用户
-			通过 labname 查 用户
-				1、用户在系统内，查询部门，与传入的部门id比对
-				2、用户不在系统内，返回失败
-			
-			admin用户
-				不限制
-			
+		 * String aservertype =
+		 * request.getParameter("aservertype")==null?"":request.getParameter(
+		 * "aservertype").toString().trim(); String amatetype =
+		 * request.getParameter("amatetype")==null?"":request.getParameter("amatetype").
+		 * toString().trim();
 		 */
-		Subject subject = SecurityUtils.getSubject();  
+		String hdept = request.getParameter("hdept") == null ? "" : request.getParameter("hdept").toString().trim();
+		String ainsflag = request.getParameter("ainsflag") == null ? "" : request.getParameter("ainsflag").toString().trim();
+		String sspa = request.getParameter("sspa") == null ? "" : request.getParameter("sspa").toString().trim();
+		String sdb = request.getParameter("sdb") == null ? "" : request.getParameter("sdb").toString().trim();
+		String sset = request.getParameter("sset") == null ? "" : request.getParameter("sset").toString().trim();
+		
+
+		/*
+		 * 部门添加权限验证：
+		 * 
+		 * super用户 通过 labname 查 用户 1、用户在系统内，查询部门，与传入的部门id比对 2、用户不在系统内，返回失败
+		 * 
+		 * admin用户 不限制
+		 * 
+		 */
+		Subject subject = SecurityUtils.getSubject();
 		boolean isPermitted = subject.isPermitted("lab:create");
 		boolean hasAdminRole = subject.hasRole("admin");
-		//如果是超级管理员，不做校验
-		if(!hasAdminRole) {
-			if(!isPermitted) {
+		// 如果是超级管理员，不做校验
+		if (!hasAdminRole) {
+			if (!isPermitted) {
 				result.put("result", "fail");
-				result.put("msg", "Sorry ,You have no authority to operate the business, please contact the super administrator.");
+				result.put("msg",
+						"Sorry ,You have no authority to operate the business, please contact the super administrator.");
 				return result;
-			}else {
-				Map<String, Object> getlabGroupFlag = getlabGroupFlag(aservername,hdept);
-				if(!(boolean)getlabGroupFlag.get("result")) {
+			} else {
+				Map<String, Object> getlabGroupFlag = getlabGroupFlag(aservername, hdept);
+				if (!(boolean) getlabGroupFlag.get("result")) {
 					result.put("result", "fail");
 					result.put("msg", getlabGroupFlag.get("msg"));
 					return result;
 				}
 			}
 		}
-        
-        /*
-         安装前进行check
-			如果lab正在运行（running）则不进行安装，返回失败
-         */
+
+		/*
+		 * 安装前进行check 如果lab正在运行（running）则不进行安装，返回失败
+		 */
 		Map<String, Object> labStatus = getLabStatus(aservername);
-        
+
 		String db = StringUtil.formatJsonString(sdb);
 		String spa = StringUtil.formatJsonString(sspa);
-		
-		String reqData = "{\"protocol\": \""+aprotocol+"\", "
-        		+ "\"labname\": [\""+aservername+"\"], "
-        		+ "\"DB\": "+db+", "
-        		+ "\"mate\": \"N\", "
-        		+ "\"release\": \""+arelease+"\", "
-        		+ "\"SPA\": "+spa+", "
-        		+ "\"ins_flag\": \""+ainsflag+"\"}";
-		
-		//logger.info(reqData);
+
+		String reqData = "{\"protocol\": \"" + aprotocol + "\", " + "\"labname\": [\"" + aservername + "\"], "
+				+ "\"DB\": " + db + ", " + "\"mate\": \"N\", " + "\"release\": \"" + arelease + "\", " + "\"SPA\": "
+				+ spa + ", " + "\"ins_flag\": \"" + ainsflag + "\"}";
+
+		// logger.info(reqData);
 		/*
-		{
-			"protocol": "ITU",
-			"labname": ["CHSP12B"],
-			"DB": ["SIMDB","ACMDB"],
-			"mate": "N",
-			"release": "SP18.9",
-			"SPA": ["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","DIAMCL"],
-			"ins_flag": "0"
-		}
-		*/
-		
+		 * { "protocol": "ITU", "labname": ["CHSP12B"], "DB": ["SIMDB","ACMDB"], "mate":
+		 * "N", "release": "SP18.9", "SPA":
+		 * ["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","DIAMCL"],
+		 * "ins_flag": "0" }
+		 */
+
 		String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
-		//String resResult = "OK";
-		logger.info("installLab  >> resResult  >>  "+resResult);
-		if("OK".equals(resResult)) {
-			//logger.info("1");
+		// String resResult = "OK";
+		logger.info("installLab  >> resResult  >>  " + resResult);
+		if ("OK".equals(resResult)) {
+			// logger.info("1");
 			result.put("result", "success");
 			result.put("msg", "Congratulations, Installation is underway, please check the log after 10 seconds.");
-			//开启线程，检测状态，等到lab安装完成返回success时genclient
+			// 开启线程，检测状态，等到lab安装完成返回success时genclient
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					//logger.info("2");
-					String addLabFlag="false";//用于添加lab动作记录到数据库
+					// logger.info("2");
+					String addLabFlag = "false";// 用于添加lab动作记录到数据库
 					int i = 0;
 					int count = 0;
-					long createtime=new Date().getTime();
-					String createid ="";
-					String deptid ="";
+					long createtime = new Date().getTime();
+					String createid = "";
+					String deptid = "";
 					String username = session.getAttribute("login").toString();
 					NUser user = new NUser();
 					user.setUsername(username);
-					ArrayList<HashMap<String, Object>> queryNUser =  new ArrayList<HashMap<String, Object>>();
+					ArrayList<HashMap<String, Object>> queryNUser = new ArrayList<HashMap<String, Object>>();
 					try {
 						queryNUser = loginService.queryNUser(user);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					if(queryNUser.size()>0) {
+					if (queryNUser.size() > 0) {
 						createid = (String) queryNUser.get(0).get("id");
 						deptid = (String) queryNUser.get(0).get("deptid");
 					}
-					while(true) {
+					while (true) {
 						try {
-							//等待10s
-							Thread.sleep(1000*10);
-							
-							//Thread.sleep(1000*10);
+							// 等待10s
+							Thread.sleep(1000 * 10);
+
+							// Thread.sleep(1000*10);
 							Date date = new Date();
-							SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); 
-							logger.info(df.format(date)+ " >>  installLab >> "+aservername+" thread "+count);
+							SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+							logger.info(df.format(date) + " >>  installLab >> " + aservername + " thread " + count);
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
-						if(i>50) {
-							//genClient.sh异常10次跳出循环
+						if (i > 50) {
+							// genClient.sh异常10次跳出循环
 							break;
 						}
-						JSONObject reqUrl = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/dailylab/"+aservername+".json");
-						if(!reqUrl.isEmpty()) {
+						JSONObject reqUrl = HttpReq.reqUrl(
+								"http://135.251.249.124:9333/spadm/default/labapi/dailylab/" + aservername + ".json");
+						if (!reqUrl.isEmpty()) {
 							JSONArray jsonArray = reqUrl.getJSONArray("content");
-							if(jsonArray.size()>0) {
-								
+							if (jsonArray.size() > 0) {
+
 								String labname = jsonArray.getJSONObject(0).getString("labname");
 								String status = jsonArray.getJSONObject(0).getString("status");
-								//String status = "Succeed";
+								// String status = "Succeed";
 								String ips = jsonArray.getJSONObject(0).getString("ips");
-								String ip ="";
-								if(ips.contains(",")) {
+								String ip = "";
+								if (ips.contains(",")) {
 									String[] ipss = ips.split(",");
-									ip=ipss[0];
+									ip = ipss[0];
 								}
-								//String ss7 = jsonArray.getJSONObject(0).getString("ss7");
-								//String enwtpps = jsonArray.getJSONObject(0).getString("enwtpps");
+								// String ss7 = jsonArray.getJSONObject(0).getString("ss7");
+								// String enwtpps = jsonArray.getJSONObject(0).getString("enwtpps");
 								String ss7 = aprotocol;
 								String enwtpps = arelease;
 								String log = jsonArray.getJSONObject(0).getString("log");
 								String free = jsonArray.getJSONObject(0).getString("free");
 								String ptversion = jsonArray.getJSONObject(0).getString("log");
-								
-								if(addLabFlag=="false") {	
-									String labStatus = serverInfoService.addLabStatus(status,"new","",enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime+"",ainsflag);
-									//labStatus 返回success表示记录到数据库内成功，返回fail则表示添加到数据库失败<因为在线程中，所以暂时没啥用>
-									//只添加一次
-									addLabFlag="true";
+
+								if (addLabFlag == "false") {
+									String labStatus = serverInfoService.addLabStatus(status, "new", "", enwtpps, ss7,
+											labname, db, free, ips, ptversion, spa, deptid, createid, createtime + "",
+											ainsflag);
+									// labStatus 返回success表示记录到数据库内成功，返回fail则表示添加到数据库失败<因为在线程中，所以暂时没啥用>
+									// 只添加一次
+									addLabFlag = "true";
 								}
-								if("Installing".equals(status) ) {
-									SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); 
-									logger.info(df.format(new Date())+"  >>  Installing  >>"+i); 
-									/*JSONArray infos = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock, true, null);
-									infos.add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21F\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21E\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}");
-									for(int i=0; i<infos.size(); i++){
-										CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,false,infos.getJSONObject(i).getJSONObject(Constant.BODY));
-									}*/
-								}else if ("Succeed".equals(status)) {
+								if ("Installing".equals(status)) {
+									SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+									logger.info(df.format(new Date()) + "  >>  Installing  >>" + i);
+									/*
+									 * JSONArray infos = CaseConfigurationCache.readOrWriteSingletonCaseProperties(
+									 * CaseConfigurationCache.lock, true, null); infos.
+									 * add("{\"head\":{\"reqType\":\"caselistack\",\"response\":\"\"},\"body\":{\"lab\":{\"serverName\":\"BJRMS21F\",\"serverIp\":\"135.242.17.206\",\"serverRelease\":\"SP17.9\",\"serverProtocol\":\"ITU\",\"serverTpye\": \"G\",\"serverMate\": \"S\",\"mateServer\": \"BJRMS21E\",\"setName\": \"set1\",\"serverSPA\":[\"AethosTest\",\"CDRPP311\",\"CDRPPGW311\",\"DIAMCL179\",\"DROUTER179\",\"ECTRL179\",\"ENWTPPS179\",\"EPAY179\",\"EPPSA179\",\"EPPSM179\",\"GATEWAY179\",\"NWTCOM111\",\"NWTGSM066\"],\"serverRTDB\":[\"SCRRTDBV7\",\"AECIDB179\",\"SGLDB28H\",\"TIDDB28C\",\"GPRSSIM08\",\"AIRTDB179\",\"CTRTDB179\",\"HTIDDB179\",\"PMOUDB179\",\"PROMDB179\",\"SIMDB179\",\"SYDB179\",\"GCIPL312\",\"VTXDB179\",\"SHRTDB28F\",\"CDBRTDB\",\"RCNRDB173\",\"HMRTDB173\",\"SESSDB311\",\"ACMDB104\",\"SIMIDXDB\",\"FSNDB173\",\"UARTDB287\",\"RERTDB279\",\"SFFDB28C\",\"GCURDB\",\"SLTBLRTDB\",\"ID2MDN01\",\"GTMDB28A\"]},\"taskStatus\":{\"status\":\"Ready\",\"runningCase\":\"\"},\"taskResult\":{\"success\":[],\"fail\":[]}}}"
+									 * ); for(int i=0; i<infos.size(); i++){
+									 * CaseConfigurationCache.readOrWriteSingletonCaseProperties(
+									 * CaseConfigurationCache.lock,false,infos.getJSONObject(i).getJSONObject(
+									 * Constant.BODY)); }
+									 */
+								} else if ("Succeed".equals(status)) {
 									try {
-										serverInfoService.editLabStatus(status,log,labname,new Date().getTime()+"",createtime+"");
-										//logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
-										//Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+" "+ss7+" "+sset+" "+deptid);
+										serverInfoService.editLabStatus(status, log, labname, new Date().getTime() + "",
+												createtime + "");
+										// logger.info("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+"
+										// "+enwtpps+" "+ss7+" "+sset+" "+deptid);
+										// Exec("cd /home/huanglei && ./genClient.sh "+labname+" "+ip+" "+enwtpps+"
+										// "+ss7+" "+sset+" "+deptid);
 										break;
 									} catch (Exception e) {
 										e.printStackTrace();
 										i++;
 										continue;
 									}
-								}else if ("Failed".equals(status)) {
-									//如果失败，则直接跟新记录表，跳出循环
+								} else if ("Failed".equals(status)) {
+									// 如果失败，则直接跟新记录表，跳出循环
 									try {
-										serverInfoService.editLabStatus(status,log,labname,new Date().getTime()+"",createtime+"");
+										serverInfoService.editLabStatus(status, log, labname, new Date().getTime() + "",
+												createtime + "");
 										break;
 									} catch (Exception e) {
 										e.printStackTrace();
@@ -830,48 +916,99 @@ public class ServerInfoController {
 									}
 								}
 							}
-							
-						}else {
+
+						} else {
 							continue;
 						}
 						count++;
 						try {
-							//等待10分钟
-							Thread.sleep(1000*60*10);
-							logger.info("10m >> installLab >> "+aservername+" thread "+count);
+							// 等待10分钟
+							Thread.sleep(1000 * 60 * 10);
+							logger.info("10m >> installLab >> " + aservername + " thread " + count);
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
 					}
-					
+
 				}
 			});
 			thread.start();
 		}
-		if("BAD".equals(resResult)) {
+		if ("BAD".equals(resResult)) {
 			result.put("result", "fail");
 			result.put("msg", "Do not accept installation requests, please contact the super administrator.");
 		}
 		return result;
 	}
+
+	@RequestMapping(path = "/installLabNew")
+	@ResponseBody
+	public Map<String, Object> installLabNew(HttpSession session, HttpServletRequest request) throws Exception {
+
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		String aservername = request.getParameter("aservername") == null ? "" : request.getParameter("aservername").toString().trim();
+		String arelease = request.getParameter("arelease") == null ? "" : request.getParameter("arelease").toString().trim();
+		String aprotocol = request.getParameter("aprotocol") == null ? "" : request.getParameter("aprotocol").toString().trim();
+		String hdept = request.getParameter("hdept") == null ? "" : request.getParameter("hdept").toString().trim();
+		String ainsflag = request.getParameter("ainsflag") == null ? "" : request.getParameter("ainsflag").toString().trim();
+		String sspa = request.getParameter("sspa") == null ? "" : request.getParameter("sspa").toString().trim();
+		String sdb = request.getParameter("sdb") == null ? "" : request.getParameter("sdb").toString().trim();
+		String sset = request.getParameter("sset") == null ? "" : request.getParameter("sset").toString().trim();
+		Subject subject = SecurityUtils.getSubject();
+		boolean isPermitted = subject.isPermitted("lab:create");
+		boolean hasAdminRole = subject.hasRole("admin");
+		// 如果是超级管理员，不做校验
+		if (!hasAdminRole) {
+			if (!isPermitted) {
+				result.put("result", "fail");
+				result.put("msg", "Sorry ,You have no authority to operate the business, please contact the super administrator.");
+				return result;
+			} else {
+				Map<String, Object> getlabGroupFlag = getlabGroupFlag(aservername, hdept);
+				if (!(boolean) getlabGroupFlag.get("result")) {
+					result.put("result", "fail");
+					result.put("msg", getlabGroupFlag.get("msg"));
+					return result;
+				}
+			}
+		}
+		String db = StringUtil.formatJsonString(sdb);
+		String spa = StringUtil.formatJsonString(sspa);
+
+		String reqData = "{\"protocol\": \"" + aprotocol + "\", " + "\"labname\": \"" + aservername + "\", "
+				+ "\"DB\": " + db + ", " + "\"mate\": \"N\", "+ "\"setname\": \""+sset+"\", "+ "\"deptid\": \""+hdept+"\", " + "\"release\": \"" + arelease + "\", " + "\"SPA\": "
+				+ spa + ", " + "\"ins_flag\": \"" + ainsflag + "\"}";
+		System.out.println(reqData);
+		
+		String resResult = HttpReq.reqUrl("http://135.242.16.160:8000/auto-test/api/add_new_lab",reqData); 
+		logger.info("installLab  >> resResult  >>  " + resResult);
+		result.put("msg",resResult);
+		result.put("result", "success");
+		
+		return result;
+	}
+
 	public static String Exec(String cmd) throws Exception {
 		String[] cmds = new String[] { "/bin/sh", "-c", cmd };
-        Process ps = Runtime.getRuntime().exec(cmds);
-        BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
-        StringBuffer sb = new StringBuffer();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
-        }
-        String genClientLog = sb.toString();
-        return genClientLog;
+		Process ps = Runtime.getRuntime().exec(cmds);
+		BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+		StringBuffer sb = new StringBuffer();
+		String line;
+		while ((line = br.readLine()) != null) {
+			sb.append(line);
+		}
+		String genClientLog = sb.toString();
+		return genClientLog;
 	}
+
 	@RequestMapping(path = "/addServerDetails")
-	public void addServerDetails(HttpSession session,NServer server) throws Exception{
-		
-		//检测角色 >>  /addServerInfo   roles[spuer,admin]
-		//insert into kaliey.n_permission_url(permission_name,url,type,remark) values('authc,roles["admin","super"]','/addServerInfo.do','menu','新增lab超级用户以上权限');		
-		
+	public void addServerDetails(HttpSession session, NServer server) throws Exception {
+
+		// 检测角色 >> /addServerInfo roles[spuer,admin]
+		// insert into kaliey.n_permission_url(permission_name,url,type,remark)
+		// values('authc,roles["admin","super"]','/addServerInfo.do','menu','新增lab超级用户以上权限');
+
 		String useName = session.getAttribute("login").toString();
 		NUser nuser = new NUser();
 		nuser.setUsername(useName);
@@ -880,8 +1017,8 @@ public class ServerInfoController {
 		int deptId = Integer.parseInt(queryNUser.get(0).get("deptid").toString());
 		server.setCreateUserId(id);
 		server.setCreateDeptId(deptId);
-		//serverInfoService.addServerDetails(server);
-		//添加server
+		// serverInfoService.addServerDetails(server);
+		// 添加server
 		JSONObject reqdate = new JSONObject();
 		reqdate.put("ins_flag", "0");
 		reqdate.put("protocol", server.getServerProtocol());
@@ -895,76 +1032,63 @@ public class ServerInfoController {
 		String serverSPA = server.getServerSPA();
 		String SPA = StringUtil.formatJsonString(serverSPA);
 		reqdate.put("SPA", SPA);
-		
-		//{"ins_flag":"0","protocol":"ANSI","labname":["BJRMS21H"],"DB":["CTRTDB","XBRTDB","GNRTDB","SGLDB","SGLRTDB","SIMDB"],"mate":"N","release":"SP17.9","SPA":["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","ECGS"]}
-		logger.info("addServerDetails >> reqdate >> "+reqdate);
-        String reqData = "{\"protocol\": \""+server.getServerProtocol()+"\", "
-		        		+ "\"labname\": [\""+server.getServerName()+"\"], "
-		        		+ "\"DB\": "+DB+", "
-		        		+ "\"mate\": \"N\", "
-		        		+ "\"release\": \""+server.getServerRelease()+"\", "
-		        		+ "\"SPA\": "+SPA+", "
-		        		+ "\"ins_flag\": \"0\"}";
 
-        logger.info("addServerDetails >> reqData >> "+reqData);
-        String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
-        //String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqdate.toString());
-        logger.info("addServerInfo >> resResult >> "+resResult);
-        
-        
+		// {"ins_flag":"0","protocol":"ANSI","labname":["BJRMS21H"],"DB":["CTRTDB","XBRTDB","GNRTDB","SGLDB","SGLRTDB","SIMDB"],"mate":"N","release":"SP17.9","SPA":["DROUTER","ENWTPPS","EPAY","EPPSA","EPPSM","NWTCOM","NWTGSM","ECGS"]}
+		logger.info("addServerDetails >> reqdate >> " + reqdate);
+		String reqData = "{\"protocol\": \"" + server.getServerProtocol() + "\", " + "\"labname\": [\""
+				+ server.getServerName() + "\"], " + "\"DB\": " + DB + ", " + "\"mate\": \"N\", " + "\"release\": \""
+				+ server.getServerRelease() + "\", " + "\"SPA\": " + SPA + ", " + "\"ins_flag\": \"0\"}";
+
+		logger.info("addServerDetails >> reqData >> " + reqData);
+		String resResult = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json", reqData);
+		// String resResult =
+		// HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/certapi/certtask.json",
+		// reqdate.toString());
+		logger.info("addServerInfo >> resResult >> " + resResult);
+
 	}
-	
-	//定义一个方法：传入lab名字和用户的deptid，取判断是否可以使用该lab-->已经有方法完成此功能
-	/*public Map<String, Object> isCanUseLab(String labname,String deptid) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		if(labname==null||"".equals(labname)) {
-			result.put("result", "false");
-			result.put("msg", "labname is require.");
-			return result;
-		}
-		if(deptid==null||"".equals(deptid)) {
-			result.put("result", "false");
-			result.put("msg", "deptid is require.");
-			return result;
-		}
-		JSONObject reqUrl = HttpReq.reqUrl("http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/"+labname+".json");
-		//http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/BJVM12B.json
-		//"labuser": "Yang PAN",
-		if(!reqUrl.isEmpty()) {
-			JSONArray jsonArray = reqUrl.getJSONArray("content");
-			if(jsonArray.size()>0) {
-				String labuser = jsonArray.getJSONObject(0).getString("labuser");
-				
-			}else {
-				result.put("result", "false");
-				result.put("msg", "No lab was found.");
-				return result;
-			}
-		}
-		return result;
-	}*/
+
+	// 定义一个方法：传入lab名字和用户的deptid，取判断是否可以使用该lab-->已经有方法完成此功能
+	/*
+	 * public Map<String, Object> isCanUseLab(String labname,String deptid) {
+	 * Map<String, Object> result = new HashMap<String, Object>();
+	 * if(labname==null||"".equals(labname)) { result.put("result", "false");
+	 * result.put("msg", "labname is require."); return result; }
+	 * if(deptid==null||"".equals(deptid)) { result.put("result", "false");
+	 * result.put("msg", "deptid is require."); return result; } JSONObject reqUrl =
+	 * HttpReq.reqUrl(
+	 * "http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/"+labname+
+	 * ".json");
+	 * //http://135.251.249.124:9333/spadm/default/labapi/kvmlabusage/BJVM12B.json
+	 * //"labuser": "Yang PAN", if(!reqUrl.isEmpty()) { JSONArray jsonArray =
+	 * reqUrl.getJSONArray("content"); if(jsonArray.size()>0) { String labuser =
+	 * jsonArray.getJSONObject(0).getString("labuser");
+	 * 
+	 * }else { result.put("result", "false"); result.put("msg",
+	 * "No lab was found."); return result; } } return result; }
+	 */
 
 	@RequestMapping(path = "/removeServerInfo")
-	public void removeServerInfo(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
-		//System.out.println("1111111111111111111"+condition);
-		out.write(serverInfoService.removeServerInfo(condition));
+	public void removeServerInfo(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+		// System.out.println("1111111111111111111"+condition);
+		out.write(serverInfoService.removeServerInfoNew(condition));
 	}
-	
+
 	@RequestMapping(path = "/removeServerDetails")
-	public void removeServerDetails(NServer server) throws Exception{
+	public void removeServerDetails(NServer server) throws Exception {
 		serverInfoService.addServerDetails(server);
 	}
-	
+
 	@RequestMapping(path = "/updateServerInfo")
-	public String updateServerInfo(String model) throws Exception{
+	public String updateServerInfo(String model) throws Exception {
 		return "addServerInfo";
 	}
-	
+
 	@RequestMapping(path = "/cancel")
-	public void cancel(Model model, HttpSession session, String condition,  PrintWriter out) throws Exception{
-		out.write(serverInfoService.cancel(condition));
+	public void cancel(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+		out.write(serverInfoService.cancelNew(condition));
 	}
-	
+
 	public ServerInfoService getServerInfoService() {
 		return serverInfoService;
 	}

@@ -92,7 +92,6 @@ public class QueryCaseInfoController {
 			}
 		}
 		int total = queryCaseInfoService.getQueryCaseInfoTableCount(userName, qtype,feature,mate,lab);
-		//System.out.println("queryCaseInfoTable:========"+queryCaseInfoTable);
 		returnMap.put("rows", queryCaseInfoTable);
 		returnMap.put("total", total);
 		
@@ -112,8 +111,6 @@ public class QueryCaseInfoController {
 	@ResponseBody
 	public void getExportCaseInfoTable(HttpSession session,HttpServletRequest request,HttpServletResponse response ,String qtype,String etype,String ftype) throws Exception{
 		
-		//System.out.println("etype============================"+etype);
-		System.out.println("ftype============================"+ftype);
 		
 		String userName = session.getAttribute("login").toString();
 		//String auth = session.getAttribute("auth").toString();
@@ -121,7 +118,6 @@ public class QueryCaseInfoController {
 		
 		if(ftype!=null && !"".equals(ftype)) {
 			if("csv".equals(ftype)) {
-				//System.out.println("java.io.tmpdir  >>  "+System.getProperty("java.io.tmpdir"));
 				
 				//HSSFWorkbook  wb = new HSSFWorkbook();
 				XSSFWorkbook  wb = new XSSFWorkbook();//java.lang.NoSuchFieldError: RETURN_NULL_AND_BLANK
@@ -182,16 +178,13 @@ public class QueryCaseInfoController {
 		        logger.info("XSSFWorkbook : 2");
 		        Date day=new Date();    
 		        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
-		        //System.out.println(df.format(day));   
 		        response.setCharacterEncoding("utf-8");
 		        response.setContentType("multipart/form-data");
 		        response.setHeader("Content-Disposition", "attachment;fileName=CS_"+qtype+"_"+df.format(day)+".csv");
-		        //System.err.println("3");
 		        try {  
 		            OutputStream out = response.getOutputStream();
 		            BufferedOutputStream bufout = new BufferedOutputStream(out);
 		            bufout.flush();
-		            //System.err.println("4");
 		            wb.write(bufout);
 		            bufout.close();
 		        } catch (IOException e) {  

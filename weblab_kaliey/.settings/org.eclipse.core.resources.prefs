@@ -2,7 +2,10 @@
 <<<<<<<=Updated upstream
 >>>>>>>=Stashed changes
 eclipse.preferences.version=1
+encoding//src/main/java/com/alucn/weblab/controller/CaseSearchController.java=UTF-8
 encoding//src/main/java/com/alucn/weblab/disarray/DistriButeCaseToLab.java=UTF-8
+encoding//src/main/java/com/alucn/weblab/service/CaseSearchService.java=UTF-8
 encoding//src/main/resources=UTF-8
+encoding//src/main/resources/redis.properties=UTF-8
 encoding//src/main/webapp/conf/dynamic-refresh-unable.properties=UTF-8
 encoding//src/main/webapp/demo.jsp=UTF-8

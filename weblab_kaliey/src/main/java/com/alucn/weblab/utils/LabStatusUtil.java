@@ -14,20 +14,46 @@ import net.sf.json.JSONObject;
 
 public class LabStatusUtil {
 	public static void main(String[] args) {
-		getLabStatus();
+		LabStatusUtil.getLabStatus();
 	}
 	
-	public static String getLabStatus() {
+	public static JSONArray getLabStatus() {
 		JSONObject jsonFile = getJsonFile("http://135.242.16.160:8000/auto-test/api/get_lab_info");
+		JSONArray jsonArray = new JSONArray();
 		if(!jsonFile.isEmpty()) {
 			Object result = jsonFile.getJSONObject("data").get("result");
 			if("SUCCESS".equals(result)) {
-				JSONArray jsonArray = jsonFile.getJSONObject("data").getJSONArray("msg");
-				System.out.println(jsonArray);
+				jsonArray = jsonFile.getJSONObject("data").getJSONArray("msg");
 			}
 		}
-		
-		return null;
+		JSONArray infos = new JSONArray();
+		if(!"[]".equals(jsonArray.toString()) && !"".equals(jsonArray.toString())) {
+			for(int i=0; i<jsonArray.size(); i++){
+				
+				JSONObject body = new JSONObject();
+				
+				JSONObject lab = jsonArray.getJSONObject(i);
+				body.put("lab", lab);
+				
+				JSONObject taskStatus = new JSONObject();
+				taskStatus.put("status",lab.getString("status"));
+				try {
+					taskStatus.put("runningCase",lab.getString("runningCase"));
+				} catch (Exception e) {
+					e.printStackTrace();
+					taskStatus.put("runningCase","");
+				}
+				body.put("taskStatus", taskStatus);
+				
+				body.put("taskResult","{\"success\":[],\"fail\":[]}");
+				
+				JSONObject temp = new JSONObject();
+				temp.put("head", "{\"reqType\": \"getlabstatus\",\"response\": \"\"}");
+				temp.put("body",body);
+				infos.add(temp);
+			}
+		}
+		return infos;
 	}
 	public static JSONObject getJsonFile(String inUrl) {
 		URL url;

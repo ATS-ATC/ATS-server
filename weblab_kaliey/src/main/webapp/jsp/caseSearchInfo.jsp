@@ -36,9 +36,11 @@ $(function(){
 	}
 	else if(success_count > 0 && fail_count == 0 && runing_count == 0){
 		$('#pass').removeAttr("hidden");
+		//$('#export').removeAttr("hidden");
 	}
 	else if(success_count > 0 && fail_count > 0 && runing_count == 0) {
 		$('#main').removeAttr("hidden");
+		//$('#export').removeAttr("hidden");
 		var myChart = echarts.init(document.getElementById('main'));
 		var option = {
 			   title : {
@@ -104,10 +106,18 @@ $(function(){
 	}
 	else if(fail_count > 0 && success_count == 0 && runing_count == 0){
 		$('#fail').removeAttr("hidden");
+		//$('#export').removeAttr("hidden");
 	}
 	else if(success_count == 0 && fail_count == 0 && runing_count == 0){
 		$('#error').removeAttr("hidden");
 	}
+	
+	$('#export').click(function(){
+		$("#subExport").attr("disabled","disabled");
+		var exportForm = document.getElementById('exportForm');
+		exportForm.submit();
+	})
+	
 });
 </script>
 <title>caseSearchInfo</title>
@@ -118,9 +128,19 @@ $(function(){
 	
 	<div class="panel panel-default">
 	    <div class="panel-body">
-		    <h3 style="font-weight: 800;text-align: center;">${searchCaseRunLogInfoById[0].title }</h3>
+	    	<div style="text-align: center;">
+		    	<h3 style="font-weight: 800;display: inline;">${searchCaseRunLogInfoById[0].title }</h3>
+		    	<sub id="export">
+		    		<form action="exportCaseInfo.do" style="display: inline;" id="exportForm">
+		    			<input name="logID" value="${searchCaseRunLogInfoById[0].int_id }" hidden/>
+		    			<div id="subExport" class="btn"  style="background-color: #E1E6E0;color: #124191;padding-top: 1px;padding-bottom: 1px;">
+		    				<span class="glyphicon glyphicon-export" aria-hidden="true" style="padding-bottom: 5px;">export
+		    			</div>
+		    		</form>
+		    	</sub>
+		  	</div>  
 		    <br><br>
-	        <h4 style="font-weight: 800">Form Info</h4>
+	        <h4 style="font-weight: 800 ;">Form Info</h4>
 	        <hr>
 	        <div class="row">
 	        	<!-- <div class="col-md-2" style="text-align: right;">
@@ -284,6 +304,7 @@ $(function(){
 		        				<th>submit_date</th> -->
 		        				<th>complete_date</th>
 		        				<th>case_cost</th>
+		        				<th>hotslide</th>
 		        				<!-- <th>target_release</th>
 		        				<th>submit_channel</th> -->
 		        			</tr>
@@ -299,6 +320,7 @@ $(function(){
 		        					<td>${data.submit_date }</td> --%>
 		        					<td>${data.complete_date }</td>
 		        					<td>${data.case_cost }</td>
+		        					<td>${data.hotslide }</td>
 		        					<%-- <td>${data.target_release }</td>
 		        					<td>${data.submit_channel }</td> --%>
 		        				</tr>

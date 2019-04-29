@@ -1,7 +1,6 @@
 package com.alucn.weblab.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,19 +18,14 @@ import org.springframework.stereotype.Service;
 import com.alucn.casemanager.server.common.CaseConfigurationCache;
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.model.ServerMate;
 import com.alucn.casemanager.server.common.model.ServerSort;
-import com.alucn.casemanager.server.common.model.ServerType;
 import com.alucn.casemanager.server.common.util.Fifowriter;
 import com.alucn.casemanager.server.common.util.FileUtil;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
+import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.weblab.dao.impl.ServerInfoDaoImpl;
-import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NServer;
-import com.alucn.weblab.model.Server;
-import com.alucn.weblab.socket.TcpClient;
 import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.LabStatusUtil;
 import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 
@@ -113,7 +107,7 @@ public class ServerInfoService {
 	public Map<String,Set<Map<String,JSONObject>>> getNewServerInfoNosort(){
 		JSONArray infos = null;
 		try {
-			infos = SocketClientConn.getLabStatus();
+			infos = LabStatusUtil.getLabStatus();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -280,7 +274,7 @@ public class ServerInfoService {
 		
 		JSONArray infos = null;
 		try {
-			infos = SocketClientConn.getLabStatus();
+			infos = LabStatusUtil.getLabStatus();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -397,7 +391,14 @@ public class ServerInfoService {
 			System.out.println(str);
 		}
 	}*/
-	
+	public String removeServerInfoNew(String serverName){
+		System.out.println("removeServerInfoNew : "+serverName);
+		String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+		//"name="+serverName+"&op=REMOVE_SERVER";
+		String data = "{\"name\": \""+serverName+"\", \"op\": \"REMOVE_SERVER\"}";
+		String reqUrl = HttpReq.reqUrl(httpUrl, data);
+		return reqUrl;
+	}
 	public String removeServerInfo(String serverName){
 		try {
 		    JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
@@ -436,7 +437,14 @@ public class ServerInfoService {
 	
 	public void updateServerInfo(){
 	}
-	
+	public String cancelNew(String serverName){
+		System.out.println("cancelNew : "+serverName);
+		String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+		//String data = "name="+serverName+"&op=CANCEL_ALL";
+		String data = "{\"name\": \""+serverName+"\", \"op\": \"CANCEL_ALL\"}";
+		String reqUrl = HttpReq.reqUrl(httpUrl, data);
+		return reqUrl;
+	}
 	public String cancel(String serverName){
 		try {
 			String cmd = "sh /home/huanglei/autoPreLab/stopClient.sh "+serverName;
@@ -475,9 +483,9 @@ public class ServerInfoService {
 		String[] cmds = new String[] {"sh "+sftpTargetPath+File.separator+shellName};
 		logger.info("addServerDetails >> cmds:============="+cmds.toString());
 		String[] result = FileUtil.execShellCmdBySSH(server.getServerIp(), port, userName, password, cmds);
-		for(String str : result){
-			System.out.println(str);
-		}
+		/*
+		 * for(String str : result){ System.out.println(str); }
+		 */
 	}
 
 	public String addLabStatus(String status,String type, String log, String enwtpps, String ss7, String labname, String db, String free, String ips, String ptversion, String spa, String deptid, String createid, String createtime, String ainsflag) {
@@ -495,7 +503,6 @@ public class ServerInfoService {
 		String sql = "insert into kaliey.n_add_lab_status(status,type,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime,modifytime,insflag) "
 				+ "values('"+status+"','"+type+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"','"+createtime+"','','"+ainsflag+"')";
 		try {
-			System.err.println("addLabStatus >> "+sql);
 			serverInfoDaoImpl.insert(jdbc, sql);
 		} catch (Exception e) {
 			result ="fail";
@@ -513,7 +520,6 @@ public class ServerInfoService {
 		}else {
 			sql = "update kaliey.n_add_lab_status set status='"+status+"',log='"+log+"',modifytime=now() where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
 		}
-		System.err.println("editLabStatus >> "+sql);
 		serverInfoDaoImpl.insert(jdbc, sql);
 		
 	}
@@ -532,7 +538,6 @@ public class ServerInfoService {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
 		sql=sql+"order by createtime desc limit "+offset+","+limit;
-		System.out.println("ServerInfoService >> getAllDeptInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -546,7 +551,6 @@ public class ServerInfoService {
 		if(labname!=null && !"".equals(labname)) {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
-		System.out.println("ServerInfoService >> getAllDeptInfoJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -568,7 +572,6 @@ public class ServerInfoService {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		sql=sql+"order by endtime desc limit "+offset+","+limit;
-		System.out.println("ServerInfoService >> getServerStatusLogJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -585,7 +588,6 @@ public class ServerInfoService {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		//sql=sql+"order by endtime desc limit "+offset+","+limit;
-		System.err.println("ServerInfoService >> getServerStatusLogJson >> sql "+sql);
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));

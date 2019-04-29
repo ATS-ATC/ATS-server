@@ -29,7 +29,6 @@ public class ReleasesController {
 	@RequestMapping(value="/getReleases")
 	public String getQueryCaseInfo(Model model) throws Exception {
 		ArrayList<HashMap<String, Object>> releases = releasesService.getReleases();
-		//System.out.println("releases:==========="+releases);
 		model.addAttribute("releases",releases);
 		return "releases";
 	}

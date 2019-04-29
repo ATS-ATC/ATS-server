@@ -122,7 +122,6 @@ public class QueryCaseInfoService {
 		if(!"".equals(limit)) {
 			sql = sql+" limit "+offset+","+limit;
 		}
-		System.out.println("sql==========="+sql);
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		//ResultSet resultSet = state_DftCaseDB.executeQuery(sql);
 		

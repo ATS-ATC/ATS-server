@@ -1,6 +1,5 @@
 <%@page import="java.util.Set"%>
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <html>
@@ -189,7 +188,7 @@ $(document).ready(function() {
 							<div class="col-md-12 column">
 								<h4>Failed Cases</h4>
 								<div style="background-color: white;">
-									<div class="row" style="margin-left: 10px; margin-right: 13px;">
+									<div class="row pre-scrollable" style="margin-left: 10px; margin-right: 13px;max-height: 500px;">
 										<table id="tb_departments" class="text-nowrap" data-toggle="table" style="background-color: #FBFCFC">
 											<thead>
 												<tr>
@@ -209,7 +208,7 @@ $(document).ready(function() {
 																	<tr>
 																		<td>
 																			<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>" disabled />
-																			<c:if test="${errorCaseMap.report_path!=null}" var="norPathFlag" scope="session">
+																			<c:if test="${errorCaseMap.report_path!=null && errorCaseMap.report_path!=\"\"}" var="norPathFlag" scope="session">
 																				<a href="${errorCaseMap.report_path }" target="_blank">
 																					<c:out value="${errorCaseMap.casename}"></c:out>
 																					<span class="glyphicon glyphicon-link"></span>
@@ -229,7 +228,7 @@ $(document).ready(function() {
 																	<tr>
 																		<td>
 																			<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>"  />
-																			<c:if test="${errorCaseMap.report_path!=null}" var="norPathFlag" scope="session">
+																			<c:if test="${errorCaseMap.report_path!=null && errorCaseMap.report_path!=\"\"}" var="norPathFlag" scope="session">
 																				<a href="${errorCaseMap.report_path }" target="_blank">
 																					<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																					<span class="glyphicon glyphicon-link"></span>
@@ -249,7 +248,7 @@ $(document).ready(function() {
 																	<tr>
 																		<td>
 																			<input type="checkbox" name="errorcases" value="<c:out value="${errorCaseMap.casename}"/>"  />
-																			<c:if test="${errorCaseMap.report_path!=null}" var="norPathFlag" scope="session">
+																			<c:if test="${errorCaseMap.report_path!=null && errorCaseMap.report_path!=\"\"}" var="norPathFlag" scope="session">
 																				<a href="${errorCaseMap.report_path }" target="_blank">
 																					<font color=red><c:out value="${errorCaseMap.casename}"></c:out></font>
 																					<span class="glyphicon glyphicon-link"></span>
@@ -321,7 +320,12 @@ $(document).ready(function() {
 			            </div>
 						<div class="row ">
 							<div class="col-md-12 column">
-								<h4>Failed Describe</h4>
+								<c:if test="${Math.ceil(Math.random()*10) > 9}" var="flag" scope="session">
+									<h4 data-toggle="tooltip" data-placement="bottom" title="You become what you believe. You are where you are today in your life based on everything you have believed.">Failed Describe</h4>
+								</c:if>
+								 <c:if test="${not flag}">
+									<h4>Failed Describe</h4>
+								</c:if>
 								<div class="col-md-12 column" style="margin-right: 15px;">
 									<textarea class="form-control" rows="3" cols="135" id="desc" name="desc" style="width: 100%;"></textarea>
 								</div>

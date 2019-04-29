@@ -111,19 +111,16 @@ function showPass() {
     right:10%;
     top:25%
 }
-body{ 
+/* body{ 
 	background: #FFFFFF url(images/237.png) no-repeat fixed left;
-	/* background:url(images/245.jpg);
-	background-size:100%;
-	background-repeat:no-repeat; */
-}
+} */
 </style>
 </head>
 <body>
 	<div class="container-fluid">
 		<div class="row">
 		  	<div class="col-md-9" style="padding-left: 0px; padding-right: 0px;">
-				<!-- <img class="img-responsive" alt="Responsive image"  src="images/233.png" style="width: 100%;height: auto;"> -->
+				<img class="img-responsive" alt="Responsive image"  src="images/237.png" style="width: 90%;height: auto;padding-top: 3%;padding-left: 2%">
 			</div>
 		  	<div class="col-md-3">
 				<div class="row">
