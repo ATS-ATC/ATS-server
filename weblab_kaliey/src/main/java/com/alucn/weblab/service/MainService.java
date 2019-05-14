@@ -121,7 +121,7 @@ public class MainService {
 	public ArrayList<HashMap<String, Object>> getWelcomeBottom(String useName, String limit, String offset, boolean hasRole) throws Exception{
 		Boolean reporterFlag = getReporterFlag(useName);
 		ArrayList<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
-		if(reporterFlag) {
+		if(reporterFlag || hasRole) {
 			resultList = getReporterList(useName,limit,offset,hasRole);
 		}else {
 			resultList = getUserNormalList(useName,limit,offset,hasRole);
@@ -131,7 +131,7 @@ public class MainService {
 	public int getWelcomeBottomCount(String useName, boolean hasRole) throws Exception{
 		Boolean reporterFlag = getReporterFlag(useName);
 		int result=0;
-		if(reporterFlag) {
+		if(reporterFlag || hasRole) {
 			result = getReporterListCount(useName,hasRole);
 		}else {
 			result = getUserNormalListCount(useName,hasRole);
@@ -139,29 +139,31 @@ public class MainService {
 		return result;
 	}
 	private int getReporterListCount(String useName, boolean hasRole) throws Exception {
-		String sql ="select count(*) rc\n" + 
-				"from (\n" + 
-				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
-				")a\n" + 
-				"left join (\n" + 
-				"select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
-				") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
-				"left join (\n" + 
-				"select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
-				") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
-				"left join (\n" + 
-				"select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
-				") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
-				"left join (\n" + 
-				"select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
-				")e on a.user_name= e.user_name\n" + 
-				"where 1=1\n" + 
-				"and a.ftc_date != 0\n" ;
-				if(!hasRole) {
-					sql = sql + "and e.to_reporter='"+useName+"'\n";
-				}
-				sql = sql +"and e.to_reporter is not null\n" + 
-				"group by a.feature_number,e.to_reporter";
+		String sql ="select count(*) as rc from \n" + 
+		        "(select \n" + 
+                "a.feature_number \n"+
+                "from (\n" + 
+                "select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
+                ")a\n" + 
+                "left join (\n" + 
+                "select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author\n" + 
+                ") b on a.feature_number = b.feature_number and a.user_name= b.author\n" + 
+                "left join (\n" + 
+                "select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author\n" + 
+                ") c on a.feature_number = c.feature_number and a.user_name= c.author\n" + 
+                "left join (\n" + 
+                "select feature_number,owner,count(1) uncheck from cases_info_db.error_case_info where err_reason is null and feature_number!='' group by feature_number,owner\n" + 
+                ") d on a.feature_number = d.feature_number and a.user_name= d.owner\n" + 
+                "left join (\n" + 
+                "select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info \n" + 
+                ")e on a.user_name= e.user_name\n" + 
+                "where 1=1\n" + 
+                "and a.ftc_date != 0\n";
+                if(!hasRole) {
+                    sql = sql +"and e.to_reporter='"+useName+"'\n" ;
+                }
+                sql = sql + "and e.to_reporter is not null\n" + 
+                "group by a.feature_number,e.to_reporter) as reports";
 		//System.out.println(sql);
 		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
 		int reInt = 0;
@@ -179,8 +181,9 @@ public class MainService {
 				"sum(ifnull(b.dft,0)) dft,\n" + 
 				"sum(ifnull(c.fail,0)) fail,\n" + 
 				"sum(ifnull(d.uncheck,0)) uncheck,\n" + 
-				"ifnull((dft/a.case_num)*100,0) submit_rate,\n" + 
-				"ifnull((fail/dft)*100,0) fail_rate\n" + 
+				"ifnull((sum(ifnull(b.dft,0))/sum(a.case_num))*100,0) submit_rate,\n" + 
+                "ifnull((sum(ifnull(c.fail,0))/sum(ifnull(b.dft,0)))*100,0) fail_rate, \n" +
+                "to_reporter \n" +
 				"from (\n" + 
 				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
 				")a\n" + 
@@ -272,7 +275,7 @@ public class MainService {
 		return result;
 	}
 	public int getNormalInfoCount(String feature_number) throws Exception {
-		String sql ="select count(1)\n" + 
+		String sql ="select count(1) as nc\n" + 
 				"from (\n" + 
 				"select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name\n" + 
 				")a\n" + 
@@ -293,9 +296,12 @@ public class MainService {
 				"and a.feature_number = '"+feature_number+"'";
 		//System.out.println(sql);
 		ArrayList<HashMap<String, Object>> result = mainDaoImpl.query(jdbc, sql);
-		int i = 0;
-		if(result.size()>0) i=result.size();
-		return i;
+		int reInt = 0;
+        if(result.size()>0) {
+            Object object = result.get(0).get("nc");
+            reInt = Integer.parseInt(object.toString());
+        }
+        return reInt;
 	}
 	public ArrayList<HashMap<String, Object>> getNormalInfo(String feature_number, String limit, String offset) throws Exception {
 		String sql ="select \n" + 

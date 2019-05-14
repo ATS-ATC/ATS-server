@@ -244,6 +244,9 @@ var TableInit = function () {
                 formatter: function (value, row, index) {
                 	return Math.round(row.fail_rate)+'%';
                 }
+            },{
+                field: 'to_reporter',
+                title: 'Reporter'
             }
             ]
         });

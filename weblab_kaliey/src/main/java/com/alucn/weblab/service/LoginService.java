@@ -15,6 +15,7 @@ import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.utils.KalieyMysqlUtil;
 import com.alucn.weblab.utils.MD5Util;
+import com.alucn.casemanager.server.common.Ldap;
 
 @Service("loginService")
 public class LoginService {
@@ -113,13 +114,22 @@ public class LoginService {
         return false;
 	}
 	public boolean authUser(NUser user) throws Exception{
+	    Ldap ldapAuth = new com.alucn.casemanager.server.common.Ldap();
+        if(ldapAuth.getAuth(user.getUsername(),user.getPassword()).equals(Constant.AUTHSUCCESS))
+        {
+            return true;
+        }
+        return false;
+        /*
 	    LdapAuthentication ldapAuth = new LdapAuthentication(user.getUsername(),user.getPassword());
         String authResult = ldapAuth.getAuth();
         //String authResult = ldapAuth.getAuthTest();
         if(authResult.equals(Constant.AUTHSUCCESS)){
             return true;
         }
+        
         return false;
+        */
 	}
 	public boolean authAdministrator(NUser user){
 		if(user.getUsername().equals("root") && MD5Util.md5(user.getPassword()).equals("0ab9965a1da1500c7a293652ba814c57")){
