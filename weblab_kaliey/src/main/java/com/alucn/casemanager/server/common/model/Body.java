@@ -4,22 +4,18 @@ import java.util.List;
 import java.util.Map;
 
 
-/**
- * 响应报文体
- * @author wanghaiqi
- *
- */
+
 public class Body {
 
-	private String status;             //当前客户端状态 1：idle 2:running 3:die
-	private String release;            //版本
-	private String protocol;           //协议
+	private String status;             //2:running 3:die
+	private String release;            //
+	private String protocol;           //
 	private String spa;                //spa
 	private String rtdb;               //rtdb
-	private String casenum;            //case数量
-	private String completedcasenum;   //已经完成的case数量
-	private String currentcasename;    //当前正在跑的case名称
-	private List<Map<String,String>> casestatus;       //case状态
+	private String casenum;            //
+	private String completedcasenum;   //
+	private String currentcasename;    //
+	private List<Map<String,String>> casestatus;       //状态
 	
 	
 	

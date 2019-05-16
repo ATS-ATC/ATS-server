@@ -120,7 +120,6 @@ public class FileUtil {
 	
 	
 	 /**
-	  * 2017年6月7日 下午2:14:31
 	  * @author haiqiw
 	  * FileUtil.java
 	  * @return void
@@ -161,7 +160,6 @@ public class FileUtil {
     }
 
     /**
-     * 2017年6月7日 下午2:34:49
      * @author haiqiw
      * FileUtil.java
      * @return void
@@ -189,7 +187,6 @@ public class FileUtil {
         return session;
     }
 	/**
-	 * 2017年6月7日 下午2:36:15
 	 * @author haiqiw
 	 * FileUtil.java
 	 * @return void
@@ -217,7 +214,6 @@ public class FileUtil {
         }
     }
     /**
-     * 2017年6月7日 下午2:44:31
      * @author haiqiw
      * FileUtil.java
      * @return void
@@ -258,7 +254,6 @@ public class FileUtil {
     }
 
     /**
-     * 2017年6月7日 下午3:21:16
      * @author haiqiw
      * FileUtil.java
      * @return String[]
@@ -306,7 +301,6 @@ public class FileUtil {
     }
     
     /**
-     * 2017年6月7日 下午3:29:08
      * @author haiqiw
      * FileUtil.java
      * @return String

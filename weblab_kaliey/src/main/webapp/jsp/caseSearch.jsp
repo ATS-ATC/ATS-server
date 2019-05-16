@@ -3,6 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -21,6 +22,8 @@
 <link href="${pageContext.request.contextPath}/css/loading.css" rel="stylesheet" />
 <script src="${pageContext.request.contextPath}/js/fileinput.min.js" type="text/javascript"></script>
 <link href="${pageContext.request.contextPath}/css/fileinput.min.css" rel="stylesheet">
+<script src="${pageContext.request.contextPath}/js/bootstrap-datetimepicker.min.js"></script>
+<link href="${pageContext.request.contextPath}/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
 <!-- <link href="./css/adminstyle.css" rel="stylesheet"> -->
 <title>SPA and RTDB</title>
 <style type="text/css">
@@ -58,6 +61,18 @@ $(function() {
 	    };
 	    return temp;
 	};
+	$('.form_datetime').datetimepicker({
+        //language:  'fr',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        minView: "month",
+        format: "yyyymmdd",
+        forceParse: 0,
+        showMeridian: 1
+    });
 	$('#runLog').bootstrapTable({
         url: 'searchCaseRunLog.do',   //请求后台的URL（*）
         method: 'get',                      //请求方式（*）
@@ -138,19 +153,22 @@ $(function() {
 	
 	function getCondition (server){
 		var condition = "";
-		var ds = $('option[name="ds"]:checked');
-		var r = $('option[name="r"]:checked');
-		var wr = $('option[name="wr"]:checked');
-		var c = $('option[name="c"]:checked');
-		var bd = $('option[name="bd"]:checked');
-		var m = $('option[name="m"]:checked');
-		var ln = $('option[name="ln"]:checked');
-		var sd = $('option[name="sd"]:checked');
-		var pr = $('option[name="pr"]:checked');
-		var cs = $('option[name="cs"]:checked'); 
-		var proq = $('option[name="proq"]:checked'); 
-		var fi = document.getElementById("featureid").value;
+		var data_source = $('option[name="data_source"]:checked');
+		var type = $('option[name="scenario"]:checked');
+		var base_release = $('option[name="base_release"]:checked');
+		var workable_release = $('option[name="workable_release"]:checked');
+		var customer = $('option[name="customer"]:checked');
+		var base_data = $('option[name="base_data"]:checked');
+		var mate = $('option[name="mate"]:checked');
+		var lab_number = $('option[name="lab_number"]:checked');
+		var special_data = $('option[name="special_data"]:checked');
+		var porting_release = $('option[name="porting_release"]:checked');
+		var case_status = $('option[name="case_status"]:checked'); 
+		var protocol = $('option[name="protocol"]:checked'); 
+		var feature_number = document.getElementById("featureid").value;
+		var case_name = document.getElementById("case_name").value;
 		var author = document.getElementById("author").value;
+		
 		//var server = document.getElementById("server").options[document.getElementById("server").selectedIndex].value;
 		/* var server =$('#server').val(); 
 		if(server.length==0){
@@ -162,8 +180,8 @@ $(function() {
 			});
 			return;
 		} */
-		if (ds.length == 0 && r.length == 0 && c.length == 0 && bd.length == 0 && m.length == 0
-				&& ln.length == 0 && sd.length == 0	&& pr.length == 0 && cs.length == 0 && fi == "" && author == "") {
+		if (data_source.length == 0 && base_release.length == 0 && customer.length == 0 && base_data.length == 0 && mate.length == 0
+				&& lab_number.length == 0 && special_data.length == 0	&& porting_release.length == 0 && case_status.length == 0 && feature_number == "" && author == "") {
 			$("#reminder").dialog({
 				open : function(event, ui) {
 					$(this).html("");
@@ -172,155 +190,42 @@ $(function() {
 			});
 			return;
 		}
-		if(ds.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < ds.length; i++) {
-				condition += ds.get(i).value;
-				if(i == ds.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}
 		
-		if(r.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < r.length; i++) {
-				condition += r.get(i).value;
-				if(i == r.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}
+
+		base_release.name = "base_release"; 
+		workable_release.name = "workable_release"; 
+		customer.name = "customer";
+		base_data.name = "base_data"; 
+		mate.name = "mate";  
+		lab_number.name = "lab_number";  
+		special_data.name = "special_data";  
+		porting_release.name = "porting_release";  
+		case_status.name = "case_status";  
+		protocol.name = "protocol"; 
 		
-		if(c.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < c.length; i++) {
-				condition += c.get(i).value;
-				if(i == c.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
+		condition = "data_source=";
+		condition += data_source.get(0).value;
+		
+		condition += "&type=";
+        condition += type.get(0).value;
+        
+		var item_list = [base_release,workable_release,customer,base_data,mate,lab_number,special_data,porting_release,case_status,protocol];
+		
+		for (var i = 0; i < item_list.length; i++) 
+		{
+			condition += "&" + item_list[i].name + "=";
+			for (var j = 0; j < item_list[i].length; j++) {
+                condition += item_list[i].get(j).value;
+                if(j != item_list[i].length-1){           
+                    condition += ",";
+                }
+            }
 			
-		if(bd.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < bd.length; i++) {
-				condition += bd.get(i).value;
-				if(i == bd.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
 		}
 		
-		if(m.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < m.length; i++) {
-				condition += m.get(i).value;
-				if(i == m.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}
-		
-		if(ln.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < ln.length; i++) {
-				condition += ln.get(i).value;
-				if(i == ln.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
-			
-		
-		if(sd.length == 0){
-			condition += ";";
-		}else{
-			for (var i = 0; i < sd.length; i++) {
-				condition += sd.get(i).value;
-				if(i == sd.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}
-		
-		if(pr.length == 0){
-			condition += ";";
-		}else{	
-			for (var i = 0; i < pr.length; i++) {
-				condition += pr.get(i).value;
-				if(i == pr.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
-			
-		if(cs.length == 0){
-			condition += ";";
-		}else{	
-			for (var i = 0; i < cs.length; i++) {
-				condition += cs.get(i).value;
-				if(i == cs.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
-		
-			
-		condition += fi;
-		condition += ";";
-		condition += author;
-		condition += ";";
-		if(proq.length == 0){
-			condition += ";";
-		}else{	
-			for (var i = 0; i < proq.length; i++) {
-				condition += proq.get(i).value;
-				if(i == proq.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
-		if(wr.length == 0){
-			condition += ";";
-		}else{	
-			for (var i = 0; i < wr.length; i++) {
-				condition += wr.get(i).value;
-				if(i == wr.length-1){
-					condition += ";";
-				}else{
-					condition += ",";
-				}
-			}
-		}	
-		condition += server;
-		condition += ";";
+		condition += "&case_name="+case_name;
+		condition += "&feature_number="+feature_number;
+		condition += "&author="+author;
 		return condition;
 	}
 	
@@ -623,6 +528,7 @@ $(function() {
 			alert("Please input title !");
 			return false;
 		}
+		var schedule_date = $('#dtp_input').val();
 		var hotslide =$('#hotslide').val();
 		if("import" == inCaseType){
 			//alert("import")
@@ -652,7 +558,9 @@ $(function() {
 				flag:"",
 				condition:"",
 				formtitle:formtitle,
-				hotslide:hotslide
+				hotslide:hotslide,
+				schedule_date:schedule_date
+				
 			}, function(data) {
 				if(data.msg != null){
 					alert(data.msg);
@@ -692,7 +600,8 @@ $(function() {
 				flag:flag,
 				condition:condition,
 				formtitle:formtitle,
-				hotslide:hotslide
+				hotslide:hotslide,
+				schedule_date:schedule_date
 			}, function(data) {
 				if(data.msg != null){
 					alert(data.msg);
@@ -755,7 +664,7 @@ function selectApar(){
 						dept=dept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
 						// idept=idept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
 					} */
-					dept=dept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].serverProtocol+")</option>";
+					dept=dept+"<option value='"+data[i].serverName+"'>"+data[i].serverName +" ("+data[i].setName + "-" +data[i].serverProtocol+")</option>";
 				}
 			dept=dept+"</select>";
 			// idept=idept+"</select>";
@@ -838,8 +747,8 @@ function selectApar(){
 												<h5 style="display: inline;"><strong>Base Data</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${base_data!=null && fn:length(base_data) > 0}">
-														<c:forEach items="${base_data}" var="bd">
-															<option name="bd" value="${bd}">${bd}</option>
+														<c:forEach items="${base_data}" var="base_data">
+															<option name="base_data" value="${base_data}">${base_data}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -848,8 +757,8 @@ function selectApar(){
 												<h5 style="display: inline;"><strong>Mate</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${mate!=null && fn:length(mate) > 0}">
-														<c:forEach items="${mate}" var="m">
-															<option  name="m" value="${m}">${m}</option>
+														<c:forEach items="${mate}" var="mate">
+															<option  name="mate" value="${mate}">${mate}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -860,8 +769,8 @@ function selectApar(){
 												<h5 style="display: inline;"><strong>Lab Number</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${lab_number!=null && fn:length(lab_number) > 0}">
-														<c:forEach items="${lab_number}" var="ln">
-															<option name="ln" value="${ln}">${ln}</option>
+														<c:forEach items="${lab_number}" var="lab_number">
+															<option name="lab_number" value="${lab_number}">${lab_number}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -870,8 +779,8 @@ function selectApar(){
 												<h5 style="display: inline;"><strong>Special Data</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1">
 												    <c:if test="${special_data!=null && fn:length(special_data) > 0}">
-														<c:forEach items="${special_data}" var="sd">
-															<option name="sd" value="${sd}">${sd}</option>
+														<c:forEach items="${special_data}" var="special_data">
+															<option name="special_data" value="${special_data}">${special_data}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -880,8 +789,8 @@ function selectApar(){
 												<h5 style="display: inline;"><strong>Porting Release</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 												    <c:if test="${porting_release!=null && fn:length(porting_release) > 0}">
-														<c:forEach items="${porting_release}" var="pr">
-															<option name="pr" value="${pr}">${pr}</option>
+														<c:forEach items="${porting_release}" var="porting_release">
+															<option name="porting_release" value="${porting_release}">${porting_release}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -891,9 +800,9 @@ function selectApar(){
 											<div class="col-md-4">
 												<h5 style="display: inline;"><strong>Release</strong></h5>
 												<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
-												    <c:if test="${release!=null && fn:length(release) > 0}">
-														<c:forEach items="${release}" var="r">
-															<option name="r" value="${r}">${r}</option>
+												    <c:if test="${base_release!=null && fn:length(base_release) > 0}">
+														<c:forEach items="${base_release}" var="base_release">
+															<option name="base_release" value="${base_release}">${base_release}</option>
 														</c:forEach>
 													</c:if>
 												</select>
@@ -910,9 +819,9 @@ function selectApar(){
 								<div style="margin-right: 13px;">
 									<h5 style="display: inline;"><strong>WorkableRelease</strong></h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true"  data-max-options="1">
-									    <c:if test="${release!=null && fn:length(release) > 0}">
-											<c:forEach items="${release}" var="wr">
-												<option name="wr" value="${wr}">${wr}</option>
+									    <c:if test="${base_release!=null && fn:length(base_release) > 0}">
+											<c:forEach items="${base_release}" var="workable_release">
+												<option name="workable_release" value="${workable_release}">${workable_release}</option>
 											</c:forEach>
 										</c:if>
 									</select>
@@ -923,9 +832,13 @@ function selectApar(){
 									<h5 style="display: inline;"><strong>Case Status</strong></h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 									    <c:if test="${case_status!=null && fn:length(case_status) > 0}">
-											<c:forEach items="${case_status}" var="cs">
-												<option name="cs" value="${cs}">${cs}</option>
-											</c:forEach>
+											<option name='case_status' value="I">Initial </option>
+	                                        <option name='case_status' value="S">Succeed</option>
+	                                        <option name='case_status' value="F">Failed</option>
+	                                        <option name='case_status' value="R">Re-sub</option>
+	                                        <option name='case_status' value="PP">Pre-Pending</option>
+	                                        <option name='case_status' value="P">Pending</option>
+	                                        <option name='case_status' value="O">Obsolete</option>
 										</c:if>
 									</select>
 								</div>
@@ -935,8 +848,8 @@ function selectApar(){
 									<h5 style="display: inline;"><strong>Customer</strong></h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" >
 									    <c:if test="${customer!=null && fn:length(customer) > 0}">
-											<c:forEach items="${customer}" var="c">
-												<option name="c" value="${c}">${c}</option>
+											<c:forEach items="${customer}" var="customer">
+												<option name="customer" value="${customer}">${customer}</option>
 											</c:forEach>
 										</c:if>
 									</select>
@@ -944,18 +857,13 @@ function selectApar(){
 							</div>
 						</div>
             			<div class="row" style="margin-bottom: 10px">
-            				<div class="col-md-4">
-	            				<div style="margin-right: 13px;">
-									<h5 style="display: inline;"><strong>Data Source</strong></h5>
-									<select class="selectpicker nav navbar-nav navbar-right"  data-live-search="true" data-max-options="1" >
-									    <c:if test="${data_source!=null && fn:length(data_source) > 0}">
-											<c:forEach items="${data_source}" var="ds">
-												<option name='ds' value="${ds}">${ds}</option>
-											</c:forEach>
-										</c:if>
-									</select>
-								</div>
-							</div>
+							<div class="col-md-4">
+                                <div style="margin-right: 0;">
+                                    <h5 style="display: inline;"><strong>Case ID</strong></h5>
+                                    <input class="nav navbar-nav navbar-right" type="text" name="case_name" id="case_name" value=""
+                                        style="padding-bottom: 2px; padding-top: 2px;width: 219px;margin-right: 0.1px;border-radius:4px;">
+                                </div>
+                            </div>
 							<div class="col-md-4">
 								<div style="margin-right: 0;">
 									<h5 style="display: inline;"><strong>Feature ID</strong></h5>
@@ -967,11 +875,35 @@ function selectApar(){
 								<div style="margin-right: 28px;">
 									<h5 style="display: inline;"><strong>Protocol</strong></h5>
 									<select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
-										<option name='proq' value="ANSI">ANSI</option>
-										<option name='proq' value="ITU">ITU</option>
+										<option name='protocol' value="ANSI">ANSI</option>
+										<option name='protocol' value="ITU">ITU</option>
 									</select>
 								</div>
 							</div>
+						</div>
+						<div class="row" style="margin-bottom: 10px">
+						  <div class="col-md-4">
+                                <div style="margin-right: 13px;">
+                                    <h5 style="display: inline;"><strong>Data Source</strong></h5>
+                                    <select class="selectpicker nav navbar-nav navbar-right"  data-live-search="true" data-max-options="1" >
+                                        <c:if test="${data_source!=null && fn:length(data_source) > 0}">
+                                            <c:forEach items="${data_source}" var="data_source">
+                                                <option name='data_source' value="${data_source}">${data_source}</option>
+                                            </c:forEach>
+                                        </c:if>
+                                    </select>
+                                </div>
+                            </div>
+							<div class="col-md-4">
+                                <div style="margin-right: 13px;">
+                                    <h5 style="display: inline;"><strong>Scenario</strong></h5>
+                                    <select class="selectpicker nav navbar-nav navbar-right" multiple data-live-search="true" data-max-options="1" >
+                                        <option name='scenario' value="dft" selected="selected">DFT </option>
+                                        <option name='scenario' value="ut">UT</option>
+                                        <option name='scenario' value="ar">AR</option>
+                                    </select>
+                                </div>
+                            </div>
             			</div>
             		</div>
             		<br/><br/>
@@ -1078,8 +1010,24 @@ function selectApar(){
 								
 				            </div>
 				            <div class="modal-footer">
-				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				                <button type="button" class="btn btn-default" id="RunOnly">&nbsp;&nbsp;&nbsp;&nbsp;Only Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
+				                <div class="row">
+		                            <div class="col-md-12 column">
+		                                <div class="form-group">
+		                                    <label for="dtp_input1" class="col-md-2 control-label">Target Fix Date</label>
+		                                    <div class="input-group date form_datetime col-md-5" data-date-format="yyyyMMdd" data-link-field="dtp_input1">
+		                                        <input id="dtp_input" class="form-control" size="16" type="text" value="" readonly>
+		                                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+		                                        <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+		                                    </div> 
+		                                </div>
+		                            </div>
+		                        
+			                        <div class="col-md-12 column text-right">
+			                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                         <button type="button" class="btn btn-default" id="RunOnly">&nbsp;&nbsp;&nbsp;&nbsp;Only Run&nbsp;&nbsp;&nbsp;&nbsp;</button>
+			                        </div>
+			                    </div>
+				               
 				                <!-- 暂时关闭该功能 -->
 				                <%-- <shiro:hasPermission name="case:update">
 				                	<button type="button" class="btn btn-primary" id="Rerunning">&nbsp;&nbsp;&nbsp;&nbsp;Update Run&nbsp;&nbsp;&nbsp;&nbsp;</button>

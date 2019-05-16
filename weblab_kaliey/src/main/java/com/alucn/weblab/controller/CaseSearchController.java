@@ -142,7 +142,8 @@ public class CaseSearchController {
 		paramMap.put("limit", limit);
 		paramMap.put("offset", offset);
 		paramMap.put("caseName", caseName);
-		logger.info(caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
+		System.out.println(condition);
+		//logger.info(caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		returnMap.put("total",(String)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"total"));
 		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		return returnMap;
@@ -216,6 +217,20 @@ public class CaseSearchController {
 		for (HashMap<String, Object> hashMap : searchCaseRunLogInfoById) {
 			String condition = (String) hashMap.get("query_condition");
 			if(!"".equals(condition.trim())) {
+			    String [] conds = condition.split("&");
+		        for (int i = 0; i < conds.length; i++)
+		        {
+		            String [] paras = conds[i].split("=");
+		            if(paras.length == 2)
+		            {
+		                cMap.put(paras[0], paras[1]);
+		            }
+		            else
+		            {
+		                cMap.put(paras[0],"");
+		            }
+		        }
+		        /*
 				String[] split = condition.trim().split(";");
 				cMap.put("dataSource", split[0]);
 				cMap.put("release", split[1]);
@@ -231,7 +246,10 @@ public class CaseSearchController {
 				cMap.put("protocol", split[11]);
 				cMap.put("workable_release", split[12]);
 				cMap.put("server", split[13]);
+				*/
 			}
+			String server_info = (String) hashMap.get("server_info");
+			cMap.put("server", server_info);    
 			//logger.info("12-->" + split[12]);
 			//ccMap.put("condition_info", cMap);
 			hashMap.put("condition", cMap);
@@ -373,6 +391,7 @@ public class CaseSearchController {
 		String hotslide = request.getParameter("hotslide")==null?"":request.getParameter("hotslide").toString().trim();
 		String flag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
+		String schedule_date = request.getParameter("schedule_date")==null?"":request.getParameter("schedule_date").toString().trim();
 		String login = (String) session.getAttribute("login");
 		
 		if("".equals(set) && "".equals(flag)) {
@@ -383,7 +402,7 @@ public class CaseSearchController {
 			returnMap.put("msg", "please checked some server to run case");
 			return returnMap;
 		}
-		Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition,hotslide);
+		Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition,hotslide, schedule_date);
 		if(onlyrun.get("msg")!=null) {
 			returnMap.put("msg", onlyrun.get("msg"));
 			return returnMap;

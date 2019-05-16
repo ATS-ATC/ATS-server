@@ -1,5 +1,6 @@
 package com.alucn.weblab.service;
 
+import java.awt.ItemSelectable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.ServletContext;
 import javax.swing.text.DefaultEditorKit.InsertBreakAction;
 
+import org.apache.catalina.tribes.transport.nio.ParallelNioSender;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,7 @@ import com.alucn.weblab.utils.StringUtil;
 import com.microsoft.schemas.office.visio.x2012.main.VisioDocumentDocument1;
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.mysql.fabric.xmlrpc.base.Data;
+import com.mysql.jdbc.log.Log;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -62,7 +65,6 @@ public class CaseSearchService {
 	private CaseSearchDaoImpl caseSearchDaoImpl;
 	private Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
 	public static volatile String sqlAdmin = "";
-	public static volatile String dataBase = "";
 	//private Lock lock = new ReentrantLock(true);
 	@Autowired
 	private ServletContext servletContext;
@@ -80,6 +82,7 @@ public class CaseSearchService {
 		//D:\eclipse-jee-oxygen-3a-win32-x86_64\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp1\wtpwebapps\weblab_kaliey\conf\TagConfig.json
 		//System.err.println("getCaseSearch >> tagConfig >> "+tagConfig);
 		
+		System.err.println(tagConfig);
 		
 		JSONObject caseSearchItems = JSONObject.fromObject(Fiforeader.readCaseInfoFromChannel(tagConfig));
 		JSONArray single = caseSearchItems.getJSONArray("single");
@@ -129,146 +132,114 @@ public class CaseSearchService {
 		// caseSearchItemMap.put("servers",serversName);
 		return result;
 	}
+	
+	public String convert_condtion_to_sql(String condition)
+	{
+	    String sql = "";
+	    String database = "";
+	    String [] conds = condition.split("&");
+	    for (int i = 0; i < conds.length; i++)
+	    {
+	        String [] paras = conds[i].split("=");
+	        if ("data_source".equals(paras[0]))
+	        {
+	            if("DailyCase".equals(paras[1]))
+	            {
+	                database = "cases_info_db.daily_case";
+	            }
+	            else{
+	                database = "cases_info_db.case_tag";
+	            }
+	        }
+	        else if ("protocol".equals(paras[0])) 
+	        {   if(paras.length == 2)
+                {
+    	            if("ANSI".equals(paras[1])) {
+                        sql += " and base_data like 'VzW%'";
+                    }else if ("ITU".equals(paras[1])) {
+                        sql += " and base_data not like 'VzW%'";
+                    }
+                }
+            }
+	        else if ("workable_release".equals(paras[0])) {
+	            if(paras.length == 2)
+                {
+                    try {
+                        Map<String, List<String>> caseSearch = getCaseSearch();
+                        List<String> list = caseSearch.get("base_release");
+                        //System.err.println(caseSearch.get("release"));
+                        int indexOf = -1;
+                        if(list.contains(paras[1])) {
+                            indexOf = list.indexOf(paras[1]);
+                        }
+                        List<String> subList = new ArrayList<>();
+                        if(indexOf != -1) {
+                            subList = list.subList(0, indexOf);
+                        }
+                        if(subList.size()>0) {
+                            sql += " and (";
+                            //System.err.println(subList); // [SP29.12, SP29.13, SP29.14, SP29.15]
+                            for (String str : subList) {
+                                sql += "porting_release like '%" + str + "+%' or ";
+                            }
+                            sql = sql.substring(0, sql.length() -3) + " or base_release = '" + paras[1] + "' "
+                                       +" or porting_release like '%" + paras[1] + "%')";
+                        }
+                    } catch (NumberFormatException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+	        else 
+	        {
+	            if(paras.length == 2)
+	            {
+	                sql += " and " + paras[0] + " in (";
+	                String [] para_conds = paras[1].split(",");	           
+	                for(int j = 0; j < para_conds.length; j++)
+	                {
+	                    sql += "'" + para_conds[j] + "'";
+	                    if(j != para_conds.length-1){           
+	                        sql += ",";
+	                    }
+	                }
+	                sql += ")";
+
+	            }
+            }
+	    }
+	    sql = " from " + database + " where 1=1 " + sql;
+	    return sql;
+	}
+	
 	public Object searchCaseInfo(Map<String, Object> param ,String cond, String auth,String retrunType) throws Exception{
 		
-		String [] conds = cond.split(";");
-		if("".equals(conds[0])){
-			return "Please select a data source !";
-		}
-		if("DailyCase".equals(conds[0])) {
-			dataBase = "cases_info_db.daily_case";
-		} else if("DftTag".equals(conds[0])) {
-			dataBase = "cases_info_db.case_tag";
-		}
+	    
 		String scope = "*";
 		if(retrunType=="total") {
 			scope = "count(1) rcount";
 		}
-		String sql = "select "+scope+" from "+dataBase+" where 1=1 ";
-		if(conds.length>1) {
-			if(!"".equals(conds[1])){
-				String [] release = conds[1].split(",");
-				sql += "and base_release in (";
-				for(int i=0; i<release.length; i++){
-					sql += "'"+release[i]+"'";
-					if(i==(release.length-1)){
-						sql += ") ";
-					}else{
-						sql += ",";
-					}
-				}
-			}
-			if(!"".equals(conds[2])){
-				String [] customer = conds[2].split(",");
-				sql += "and customer in (";
-				for(int i=0; i<customer.length; i++){
-					sql += "'"+customer[i]+"'";
-					if(i==(customer.length-1)){
-						sql += ") ";
-					}else{
-						sql += ",";
-					}
-				}
-			}
-			if(!"".equals(conds[3])){
-				String [] base_data = conds[3].split(",");
-				sql += "and base_data in (";
-				for(int i=0; i<base_data.length; i++){
-					sql += "'"+base_data[i]+"'";
-					if(i==(base_data.length-1)){
-						sql += ") ";
-					}else{
-						sql += ",";
-					}
-				}
-			}
-			if(!"".equals(conds[4])){
-				sql += "and mate='"+conds[4]+"' ";
-			}
-			if(!"".equals(conds[5])){
-				sql += "and lab_number='"+conds[5]+"' ";
-			}
-			if(!"".equals(conds[6])){
-				sql += "and special_data='"+conds[6]+"' ";
-			}
-			if(!"".equals(conds[7])){
-				String [] porting_release = conds[7].split(",");
-				sql += "and porting_release in (";
-				for(int i=0; i<porting_release.length; i++){
-					sql += "'"+porting_release[i]+"'";
-					if(i==(porting_release.length-1)){
-						sql += ") ";
-					}else{
-						sql += ",";
-					}
-				}
-			}
-			if(!"".equals(conds[8])){
-				String [] case_status = conds[8].split(",");
-				sql += "and case_status in (";
-				for(int i=0; i<case_status.length; i++){
-					sql += "'"+case_status[i].toUpperCase().charAt(0)+"'";
-					if(i==(case_status.length-1)){
-						sql += ") ";
-					}else{
-						sql += ",";
-					}
-				}
-			}
-			if(!"".equals(conds[9])){
-				sql += "and feature_number='"+conds[9]+"' ";
-			}
-			if(!"".equals(conds[10])){
-				sql += "and author='"+conds[10]+"' ";
-			}
-			if(!"".equals(conds[11])){
-				System.err.println("11 --> " + conds[11]);
-				if("ANSI".equals(conds[11])) {
-					sql += "and base_data like 'VzW%'";
-				}else if ("ITU".equals(conds[12])) {
-					sql += "and base_data not like 'VzW%'";
-				}
-			}
-			if(!"".equals(conds[12])){
-				System.err.println("12 --> " + conds[12]); // 12 --> SP29.16
-				Map<String, List<String>> caseSearch = getCaseSearch();
-				List<String> list = caseSearch.get("release");
-				//System.err.println(caseSearch.get("release"));
-				int indexOf = -1;
-				if(list.contains(conds[12])) {
-					indexOf = list.indexOf(conds[12]);
-				}
-				List<String> subList = new ArrayList<>();
-				if(indexOf != -1) {
-					subList = list.subList(0, indexOf);
-				}
-				if(subList.size()>0) {
-					sql += " and (";
-					//System.err.println(subList); // [SP29.12, SP29.13, SP29.14, SP29.15]
-					for (String str : subList) {
-						sql += "porting_release like '%" + str + "+%' or ";
-					}
-					sql = sql.substring(0, sql.length() -3) + " or base_release = '" + conds[12] + "' "
-			                   +" or porting_release like '%" + conds[12] + "%')";
-				}
-			}
-		}
-		//System.err.println("caseName:+++++++["+param.get("caseName")+"]");
+		String sql;
+		String tmp_sql = convert_condtion_to_sql(cond);
+		System.err.println("tmp_sql:==="+tmp_sql);
+        sql = "select "+scope+ tmp_sql;
+		
 		if(""!=param.get("caseName")&&param.get("caseName")!=null) {
 			sql += "and case_name='"+param.get("caseName")+"' ";
 		}
-		if(retrunType=="rows") {
-			if(""!=param.get("offset")&& ""!=param.get("limit")){
-				sql +=" limit "+param.get("offset")+","+param.get("limit");
-			}
-		}
-		/*JdbcUtil jdbc = null;
-		if(conds[0].equals(Constant.DAILYCASE)){
-			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-		}else if(conds[0].equals(Constant.DFTTAG)){
-			jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-		}*/
-		
+
+        if(retrunType=="rows") {
+            if(""!=param.get("offset")&& ""!=param.get("limit")){
+                sql +=" limit "+param.get("offset")+","+param.get("limit");
+            }
+        }
 		
 		//query_sql:===select * from DailyCase where 1=1 and feature_number='731590' and case_name='null'  limit null,null
 		System.err.println("query_sql:==="+sql);
@@ -447,6 +418,7 @@ public class CaseSearchService {
 			}else if(conds[0].equals(Constant.DFTTAG)){
 				jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
 			}*/
+			String dataBase = "";
 			if("DailyCase".equals(conds[0])) {
 				dataBase = "cases_info_db.daily_case";
 			} else if("DftTag".equals(conds[0])) {
@@ -881,11 +853,32 @@ public class CaseSearchService {
 		return query;
 	}
 	@Transactional
-	public Map<String,Object> onlyrun(String set, String servers,String title,String login,String only, String flag, String condition,String hotslide) throws Exception {
+	public Map<String,Object> onlyrun(String set, String servers,String title,String login,String only, String flag, String condition,String hotslide, String schedule_date) throws Exception {
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		String server = StringUtil.formatJsonString(servers);
 		// 第零步，判断是否是search传进来的case,如果是有一种特殊情况，全选flag选中后，直接使用关联insert
+		System.out.println(schedule_date);
+		String complete_date = "";
+        String target_release = "";
+        if(!"".equals(schedule_date))
+        {
+            complete_date = "WAIT";
+            //get workable_releas
+            String [] conds = condition.split("&");
+            for (int i = 0; i < conds.length; i++)
+            {
+                String [] paras = conds[i].split("=");
+                if ("workable_release".equals(paras[0]))
+                {
+                    if(paras.length == 2)
+                    {
+                        target_release = paras[1];
+                    }
+                }
+            }
+        }
 		if(flag!="" && "true".equals(flag)) {
+		    System.out.println("select all");
 			int caseLogId = insertCaseLog(title,server,login,condition);
 			if(caseLogId!=-1) {
 				// 保存server和case信息
@@ -925,8 +918,8 @@ public class CaseSearchService {
 				}
 				insertCaseServer(serverParams);
 				
-				String sql = "insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide) "
-						+ splitCondition(condition, "", "case_name,'Y','"+server+"','"+login+"',now(),"+caseLogId+",'"+hotslide+"'");
+				String sql = "insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide, complete_date, target_release, schedule_date) "
+						+ splitCondition(condition, "", "case_name,'Y','"+server+"','"+login+"',now(),"+caseLogId+",'"+hotslide+"'"+",'"+complete_date+"'"+",'"+target_release+"'"+",'"+schedule_date+"'");
 				System.out.println(sql);
 				caseSearchDaoImpl.insert(jdbc, sql);
 			}
@@ -993,6 +986,9 @@ public class CaseSearchService {
 						list.add(new Date().getTime());
 						list.add(caseLogId);
 						list.add(hotslide);
+						list.add(complete_date);
+						list.add(target_release);
+						list.add(schedule_date);
 						params.add(list);
 					}
 					// 第三步，将数据传入正式运行表中
@@ -1028,8 +1024,8 @@ public class CaseSearchService {
 		jdbc.executeBatch(baksql,params);
 	}
 	public void InsertTempRunCase(List<List> params) throws Exception {
-		String isql ="insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide) "
-				+ "values(?,?,?,?,?,?,?)";
+		String isql ="insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide, complete_date, target_release, schedule_date) "
+				+ "values(?,?,?,?,?,?,?,?,?,?)";
 		jdbc.executeBatch(isql,params);
 	}
 	public ArrayList<HashMap<String,Object>> getTempRunCaseResultByBatchId(String batchid) throws Exception {
@@ -1040,135 +1036,26 @@ public class CaseSearchService {
 	@Test
 	public void test() throws Exception {
 		CaseSearchService cs = new CaseSearchService();
-		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","","");
+		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","","","");
 	}
 	public String splitCondition(String cond,String retrunType,String fields) throws NumberFormatException, InterruptedException, IOException {
+	    
+	    
 		String sql = "";
 		String dataBase = "";
-		if(cond.contains(";")) {
-			String [] conds = cond.split(";");
-			if("DailyCase".equals(conds[0])) {
-				dataBase = "cases_info_db.daily_case";
-			} else if("DftTag".equals(conds[0])) {
-				dataBase = "cases_info_db.case_tag";
-			}
-			String scope = "*";
-			if(retrunType=="total") {
-				scope = "count(1) rcount";
-			}
-			if(!"".equals(fields)) {
-				scope = fields;
-			}
-			sql = "select "+scope+" from "+dataBase+" where 1=1 ";
-			if(conds.length>1) {
-				if(!"".equals(conds[1])){
-					String [] release = conds[1].split(",");
-					sql += "and base_release in (";
-					for(int i=0; i<release.length; i++){
-						sql += "'"+release[i]+"'";
-						if(i==(release.length-1)){
-							sql += ") ";
-						}else{
-							sql += ",";
-						}
-					}
-				}
-				if(!"".equals(conds[2])){
-					String [] customer = conds[2].split(",");
-					sql += "and customer in (";
-					for(int i=0; i<customer.length; i++){
-						sql += "'"+customer[i]+"'";
-						if(i==(customer.length-1)){
-							sql += ") ";
-						}else{
-							sql += ",";
-						}
-					}
-				}
-				if(!"".equals(conds[3])){
-					String [] base_data = conds[3].split(",");
-					sql += "and base_data in (";
-					for(int i=0; i<base_data.length; i++){
-						sql += "'"+base_data[i]+"'";
-						if(i==(base_data.length-1)){
-							sql += ") ";
-						}else{
-							sql += ",";
-						}
-					}
-				}
-				if(!"".equals(conds[4])){
-					sql += "and mate='"+conds[4]+"' ";
-				}
-				if(!"".equals(conds[5])){
-					sql += "and lab_number='"+conds[5]+"' ";
-				}
-				if(!"".equals(conds[6])){
-					sql += "and special_data='"+conds[6]+"' ";
-				}
-				if(!"".equals(conds[7])){
-					String [] porting_release = conds[7].split(",");
-					sql += "and porting_release in (";
-					for(int i=0; i<porting_release.length; i++){
-						sql += "'"+porting_release[i]+"'";
-						if(i==(porting_release.length-1)){
-							sql += ") ";
-						}else{
-							sql += ",";
-						}
-					}
-				}
-				if(!"".equals(conds[8])){
-					String [] case_status = conds[8].split(",");
-					sql += "and case_status in (";
-					for(int i=0; i<case_status.length; i++){
-						sql += "'"+case_status[i].toUpperCase().charAt(0)+"'";
-						if(i==(case_status.length-1)){
-							sql += ") ";
-						}else{
-							sql += ",";
-						}
-					}
-				}
-				if(!"".equals(conds[9])){
-					sql += "and feature_number='"+conds[9]+"' ";
-				}
-				if(!"".equals(conds[10])){
-					sql += "and author='"+conds[10]+"' ";
-				}
-				if(!"".equals(conds[11])){
-					System.err.println("11 --> " + conds[11]);
-					if("ANSI".equals(conds[11])) {
-						sql += "and base_data like 'VzW%'";
-					}else if ("ITU".equals(conds[12])) {
-						sql += "and base_data not like 'VzW%'";
-					}
-				}
-				if(!"".equals(conds[12])){
-					System.err.println("12 --> " + conds[12]); // 12 --> SP29.16
-					Map<String, List<String>> caseSearch = getCaseSearch();
-					List<String> list = caseSearch.get("release");
-					//System.err.println(caseSearch.get("release"));
-					int indexOf = -1;
-					if(list.contains(conds[12])) {
-						indexOf = list.indexOf(conds[12]);
-					}
-					List<String> subList = new ArrayList<>();
-					if(indexOf != -1) {
-						subList = list.subList(0, indexOf);
-					}
-					if(subList.size()>0) {
-						sql += " and (";
-						//System.err.println(subList); // [SP29.12, SP29.13, SP29.14, SP29.15]
-						for (String str : subList) {
-							sql += "porting_release like '%" + str + "+%' or ";
-						}
-						sql = sql.substring(0, sql.length() -3) + " or base_release = '" + conds[12] + "' "
-				                   +" or porting_release like '%" + conds[12] + "%')";
-					}
-				}
-			}
-		} 
+		
+		String scope = "*";
+        if(retrunType=="total") {
+            scope = "count(1) rcount";
+        }
+        if(!"".equals(fields)) {
+            scope = fields;
+        }
+        
+        String tmp_sql = convert_condtion_to_sql(cond);
+        System.err.println("tmp_sql:==="+tmp_sql);
+        sql = "select "+scope+ tmp_sql;
+        
 		return sql;
 	}
 

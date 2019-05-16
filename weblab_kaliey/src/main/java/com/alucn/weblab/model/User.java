@@ -1,10 +1,6 @@
 package com.alucn.weblab.model;
 
-/**
- * @author haiqiw
- * 2017年6月2日 下午5:02:06
- * desc: user bean
- */
+
 public class User {
 
 	private String userName;

@@ -10,11 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.alucn.weblab.service.SpaAndRtdbManService;
 
-/**
- * @author haiqiw
- * 2017年6月2日 下午5:39:08
- * desc: spaAndRtdbManController
- */
+
 
 @Controller
 //@RequestMapping("/spaAndRtdbMan")

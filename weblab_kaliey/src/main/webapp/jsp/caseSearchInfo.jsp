@@ -149,13 +149,13 @@ $(function(){
 	        	<div class="col-md-12"  style="padding-left: 30px;padding-right: 10px;">
 	        		<strong style="color:#8897A6 ">ID : ${searchCaseRunLogInfoById[0].int_id } </strong> 
 	        		<br>
-	        		<strong>Author : </strong><code>${searchCaseRunLogInfoById[0].author }</code>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <code>${searchCaseRunLogInfoById[0].create_time }</code>
+	        		<strong>Submiter : </strong><code>${searchCaseRunLogInfoById[0].author }</code>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <code>${searchCaseRunLogInfoById[0].create_time }</code>
 	        		<!-- <hr> -->
 	        		<br><br>
 	        		<div class="row">
 	        			<div class="col-md-5">
-			        		<strong>dataSource : </strong>${searchCaseRunLogInfoById[0].condition.dataSource }<br>
-			        		<strong>release : </strong>${searchCaseRunLogInfoById[0].condition.release }<br>
+			        		<strong>dataSource : </strong>${searchCaseRunLogInfoById[0].condition.data_source }<br>
+			        		<strong>base_release : </strong>${searchCaseRunLogInfoById[0].condition.base_release }<br>
 			        		<strong>customer : </strong>${searchCaseRunLogInfoById[0].condition.customer }<br>
 			        		<strong>base_data : </strong>${searchCaseRunLogInfoById[0].condition.base_data }<br>
 			        		<strong>mate : </strong>${searchCaseRunLogInfoById[0].condition.mate }<br>

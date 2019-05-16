@@ -23,7 +23,7 @@
                 <td rowspan="5" style=""><img src="${pageContext.request.contextPath}/images/icons8-box-important-100.png" alt=""></td>  
                 <td class="header">500</td>  
             </tr>  
-            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>guoyouworld@163.com</strong> for feedback</td></tr>  
+            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>lei.k.huang@nokia-sbell.com</strong> for feedback</td></tr>  
         </table>  
     </div>  
 </body>

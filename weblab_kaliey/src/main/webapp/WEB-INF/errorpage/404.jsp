@@ -25,7 +25,7 @@
             </tr>  
             <tr><td>Reason 1: you typed the wrong url</td></tr>  
             <tr><td>Reason 2: this page has been accessed by the webmaster (that is, I...) deleted</td></tr>  
-            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>guoyouworld@163.com</strong> for feedback</td></tr>  
+            <tr><td>If refreshing the page doesn't solve the problem, you can send an email to <strong>lei.k.huang@nokia-sbell.com</strong> for feedback</td></tr>  
         </table>  
     </div>  
 </body>
