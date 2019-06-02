@@ -10,14 +10,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ReleasesDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
+import com.alucn.weblab.utils.JDBCHelper;
 import net.sf.json.JSONObject;
 
 @Service("releasesService")
@@ -25,12 +19,12 @@ public class ReleasesService {
 	
 	@Autowired(required=true)
 	private ReleasesDaoImpl releasesDaoImpl;
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	public ArrayList<HashMap<String, Object>> getReleases() throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select * from kaliey.n_version_info where stateflag=0 order by version_date desc";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = releasesDaoImpl.query(jdbc, sql);
 		for (HashMap<String, Object> hashMap : result) {
 			HashMap<String, Object> urlList = new HashMap<String, Object>();

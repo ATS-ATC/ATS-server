@@ -1,30 +1,21 @@
 package com.alucn.weblab.service;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tools.ant.taskdefs.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.UserDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 
 @Service("userService")
 public class UserService {
 	
 	@Autowired(required=true)
 	private UserDaoImpl userDaoImpl;
-	
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	public ArrayList<HashMap<String, Object>> getAllUserInfoJson(String limit,String offset,String username, String sort, String sortOrder) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
@@ -63,12 +54,14 @@ public class UserService {
 			sql=sql+" order by deptid desc";
 		}
 		sql=sql+" limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
 	public int getAllUserInfoJsonCount(String username) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select count(*) co from kaliey.n_user where 1=1 and id!=1 ";
 		if(username!=null && !"".equals(username)) {
 			sql=sql+"and username like '%"+username+"%' ";
@@ -91,6 +84,7 @@ public class UserService {
 	public ArrayList<HashMap<String, Object>> getAllRoles() throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_role where stateflag=0 ";
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
@@ -98,6 +92,7 @@ public class UserService {
 	public ArrayList<HashMap<String, Object>> getAllDept() throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_dept where stateflag=0 ";
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
@@ -111,6 +106,7 @@ public class UserService {
 				"where 1=1 " + 
 				"and a.stateflag=0 " + 
 				"and a.role_name='"+rolename+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -145,6 +141,7 @@ public class UserService {
 				") c on a.id=c.user_id " + 
 				"where 1=1 "+
 				"and a.id='"+id+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -167,6 +164,7 @@ public class UserService {
 			return "fail";
 		}*/
 		//第一步：通过id获取账户信息
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> userInfoById = new ArrayList<HashMap<String, Object>>();
 		try {
 			userInfoById = getUserInfoById(id);
@@ -352,6 +350,7 @@ public class UserService {
 			sql=sql+"and a.dept_name like '%"+deptname+"%' ";
 		}
 		sql=sql+"limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -363,6 +362,7 @@ public class UserService {
 		if(deptname!=null && !"".equals(deptname)) {
 			sql=sql+"and dept_name like '%"+deptname+"%' ";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -374,11 +374,13 @@ public class UserService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql ="insert into kaliey.n_dept(dept_name,remark) values('"+adeptname+"','"+aremark+"')";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		userDaoImpl.insert(jdbc, sql);
 	}
 	public void deleteDeptInfo(String id) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql ="delete from kaliey.n_dept where id="+id;
 		userDaoImpl.delete(jdbc, sql);
 	}
@@ -391,6 +393,7 @@ public class UserService {
 		if(id!=null && !"".equals(id)) {
 			sql=sql+"and a.id="+id+" ";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -405,6 +408,7 @@ public class UserService {
 		String sql = "select a.id,a.dept_name,a.remark,a.stateflag,ifnull(b.ccount,\"0\") ccount from kaliey.n_dept a " + 
 				"left join(select dept_id,count(1) ccount from kaliey.n_user_dept group by dept_id) b on a.id=b.dept_id " + 
 				"where 1=1 and a.id="+id;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()==0) {
 			resultMap.put("result", "fail");
@@ -485,6 +489,7 @@ public class UserService {
 			sql=sql+"and a.role_name like '%"+rolename+"%' ";
 		}
 		sql=sql+"limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -496,6 +501,7 @@ public class UserService {
 		if(rolename!=null && !"".equals(rolename)) {
 			sql=sql+"and role_name like '%"+rolename+"%' ";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -511,6 +517,7 @@ public class UserService {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "delete from kaliey.n_user where id="+id;
 		try {
 			userDaoImpl.delete(jdbc, sql);

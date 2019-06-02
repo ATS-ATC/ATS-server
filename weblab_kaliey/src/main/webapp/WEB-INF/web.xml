@@ -66,10 +66,11 @@
 	<!-- <listener>
     	<listener-class>com.alucn.weblab.listener.TestLabListener</listener-class>
 	</listener> -->
-	<!--
+	
 	<listener>
     	<listener-class>com.alucn.casemanager.server.listener.MainListener</listener-class>
 	</listener>
+	<!--
 	 <listener>
 		<listener-class>com.alucn.casemanager.server.listener.ServerListener</listener-class>	
 	</listener>

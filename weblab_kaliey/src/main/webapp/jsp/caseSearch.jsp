@@ -1013,7 +1013,7 @@ function selectApar(){
 				                <div class="row">
 		                            <div class="col-md-12 column">
 		                                <div class="form-group">
-		                                    <label for="dtp_input1" class="col-md-2 control-label">Target Fix Date</label>
+		                                    <label for="dtp_input1" class="col-md-2 control-label">Schedule Date</label>
 		                                    <div class="input-group date form_datetime col-md-5" data-date-format="yyyyMMdd" data-link-field="dtp_input1">
 		                                        <input id="dtp_input" class="form-control" size="16" type="text" value="" readonly>
 		                                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>

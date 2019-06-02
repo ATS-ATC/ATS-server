@@ -1,31 +1,18 @@
 package com.alucn.weblab.service;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.QueryCaseDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 
 @Service("queryCaseInfoService")
 public class QueryCaseInfoService {
 	
 	@Autowired(required=true)
 	private QueryCaseDaoImpl queryCaseDaoImpl;
-	
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	/*public ArrayList<HashMap<String, Object>> getQueryCaseInfoTable(String userName,String caseStatus,String feature,String offset,String limit,String etype) throws Exception{
 		String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB");
@@ -122,6 +109,7 @@ public class QueryCaseInfoService {
 		if(!"".equals(limit)) {
 			sql = sql+" limit "+offset+","+limit;
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		//ResultSet resultSet = state_DftCaseDB.executeQuery(sql);
 		
@@ -158,6 +146,7 @@ public class QueryCaseInfoService {
 			sql = sql+" and a.lab_number = '"+lab+"'";
 		}
 		sql = sql+" and a.case_status='"+caseStatus+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = queryCaseDaoImpl.query(jdbc, sql);
 		int totle =0;
 		for(int i=0; i<result.size();i++){

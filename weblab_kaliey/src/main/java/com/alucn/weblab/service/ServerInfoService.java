@@ -24,9 +24,8 @@ import com.alucn.casemanager.server.common.util.FileUtil;
 import com.alucn.casemanager.server.common.util.HttpReq;
 import com.alucn.weblab.dao.impl.ServerInfoDaoImpl;
 import com.alucn.weblab.model.NServer;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 import com.alucn.weblab.utils.LabStatusUtil;
-import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 
 import net.sf.json.JSONArray;
@@ -38,8 +37,6 @@ public class ServerInfoService {
 	
 	@Autowired(required=true)
 	private ServerInfoDaoImpl serverInfoDaoImpl;
-	
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	public Map<String,Set<Map<String,JSONObject>>> getServerInfoNosort(){
 		/*JSONArray infos = new JSONArray();
@@ -392,13 +389,45 @@ public class ServerInfoService {
 		}
 	}*/
 	public String removeServerInfoNew(String serverName){
-		System.out.println("removeServerInfoNew : "+serverName);
 		String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
 		//"name="+serverName+"&op=REMOVE_SERVER";
 		String data = "{\"name\": \""+serverName+"\", \"op\": \"REMOVE_SERVER\"}";
 		String reqUrl = HttpReq.reqUrl(httpUrl, data);
 		return reqUrl;
 	}
+	
+   public String init_lab(String serverName){
+        String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+        //"name="+serverName+"&op=REMOVE_SERVER";
+        String data = "{\"name\": \""+serverName+"\", \"op\": \"INIT_LAB\"}";
+        String reqUrl = HttpReq.reqUrl(httpUrl, data);
+        return reqUrl;
+    }
+   
+   public String restart_client(String serverName){
+       String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+       //"name="+serverName+"&op=REMOVE_SERVER";
+       String data = "{\"name\": \""+serverName+"\", \"op\": \"RESTART_CLIENT\"}";
+       String reqUrl = HttpReq.reqUrl(httpUrl, data);
+       return reqUrl;
+   }
+   
+   public String restart_plat(String serverName){
+       String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+       //"name="+serverName+"&op=REMOVE_SERVER";
+       String data = "{\"name\": \""+serverName+"\", \"op\": \"RESTART_PLAT\"}";
+       String reqUrl = HttpReq.reqUrl(httpUrl, data);
+       return reqUrl;
+   }
+   
+   public String reinstall_lab(String serverName){
+       String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+       //"name="+serverName+"&op=REMOVE_SERVER";
+       String data = "{\"name\": \""+serverName+"\", \"op\": \"REINSTALL_LAB\"}";
+       String reqUrl = HttpReq.reqUrl(httpUrl, data);
+       return reqUrl;
+   }
+	   
 	public String removeServerInfo(String serverName){
 		try {
 		    JSONArray currKeyStatus = CaseConfigurationCache.readOrWriteSingletonCaseProperties(CaseConfigurationCache.lock,true,null);
@@ -500,6 +529,7 @@ public class ServerInfoService {
 		}*/
 		//String fdb = db.replace("\"", "").replace("[", "").replace("]", "");
 		//String fspa = spa.replace("\"", "").replace("[", "").replace("]", "");
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "insert into kaliey.n_add_lab_status(status,type,log,enwtpps,ss7,labname,db,free,ips,ptversion,spa,deptid,createid,createtime,modifytime,insflag) "
 				+ "values('"+status+"','"+type+"','"+log+"','"+enwtpps+"','"+ss7+"','"+labname+"','"+db+"','"+free+"','"+ips+"','"+ptversion+"','"+spa+"','"+deptid+"','"+createid+"','"+createtime+"','','"+ainsflag+"')";
 		try {
@@ -514,6 +544,7 @@ public class ServerInfoService {
 	public void editLabStatus(String status, String log,String labname,String stateflag,String createtime) throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql="";
 		if(stateflag!=null&&!"".equals(stateflag)) {
 			sql = "update kaliey.n_add_lab_status set status='"+status+"',log='"+log+"',stateflag='"+stateflag+"',modifytime=now() where stateflag=0 and labname ='"+labname+"' and createtime='"+createtime+"'";
@@ -528,7 +559,7 @@ public class ServerInfoService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String dept_ids = StringUtil.formatSplitList(deptids);
-		
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_add_lab_status "
 				+ "where 1=1 ";
 				if(!hasRole) {
@@ -551,6 +582,7 @@ public class ServerInfoService {
 		if(labname!=null && !"".equals(labname)) {
 			sql=sql+"and a.labname like '%"+labname+"%' ";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));
@@ -572,6 +604,7 @@ public class ServerInfoService {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		sql=sql+"order by endtime desc limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -588,6 +621,7 @@ public class ServerInfoService {
 			sql=sql+"and labname='"+serverName+"' ";
 		}
 		//sql=sql+"order by endtime desc limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = serverInfoDaoImpl.query(jdbc, sql);
 		if(query.size()>0) {
 			return Integer.parseInt((String)query.get(0).get("ccount"));

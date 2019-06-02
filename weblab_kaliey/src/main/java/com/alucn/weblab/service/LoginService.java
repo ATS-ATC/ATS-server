@@ -7,15 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.alucn.casemanager.server.common.LdapAuthentication;
 import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NUser;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 import com.alucn.weblab.utils.MD5Util;
-import com.alucn.casemanager.server.common.Ldap;
+import com.alucn.casemanager.server.common.util.Ldap;
 
 @Service("loginService")
 public class LoginService {
@@ -23,11 +20,10 @@ public class LoginService {
 	@Autowired(required=true)
 	private UserDaoImpl userDaoImpl;
 	
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
-	
 	public ArrayList<HashMap<String, Object>> findUrlPermissions() throws Exception {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_permission_url where stateflag=0 and type='menu'";
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
@@ -36,6 +32,7 @@ public class LoginService {
 	public ArrayList<HashMap<String, Object>> getRolesByName(String username) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_user a " + 
 				"left join kaliey.n_user_role b on a.id=b.user_id and b.stateflag=0 " + 
 				"left join kaliey.n_role c on b.role_id=c.id and c.stateflag=0 " + 
@@ -57,6 +54,7 @@ public class LoginService {
 				+ "and c.stateflag=0 "
 				+ "and d.stateflag=0 "
 				+ "and a.username='"+username.trim()+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = userDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -67,6 +65,7 @@ public class LoginService {
 		String password = MD5Util.md5(nuser.getPassword());
 		//String password = nuser.getPassword();
 		String fsql = "select id from kaliey.n_user where username='"+nuser.getUsername().trim()+"'";;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> flag = userDaoImpl.query(jdbc, fsql);
 		if(flag.size()>0) {
 			return;
@@ -89,6 +88,7 @@ public class LoginService {
     	/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select * from kaliey.n_user where username='"+nuser.getUsername().trim()+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
         return result;
 	}
@@ -98,6 +98,7 @@ public class LoginService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select * from kaliey.n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -107,6 +108,7 @@ public class LoginService {
     	/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "SELECT userName FROM AdminList where userName='"+user.getUsername()+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
         if(result!=null && result.size()!=0){
             return true;
@@ -114,22 +116,13 @@ public class LoginService {
         return false;
 	}
 	public boolean authUser(NUser user) throws Exception{
-	    Ldap ldapAuth = new com.alucn.casemanager.server.common.Ldap();
+	    Ldap ldapAuth = new Ldap();
         if(ldapAuth.getAuth(user.getUsername(),user.getPassword()).equals(Constant.AUTHSUCCESS))
         {
             return true;
         }
         return false;
-        /*
-	    LdapAuthentication ldapAuth = new LdapAuthentication(user.getUsername(),user.getPassword());
-        String authResult = ldapAuth.getAuth();
-        //String authResult = ldapAuth.getAuthTest();
-        if(authResult.equals(Constant.AUTHSUCCESS)){
-            return true;
-        }
         
-        return false;
-        */
 	}
 	public boolean authAdministrator(NUser user){
 		if(user.getUsername().equals("root") && MD5Util.md5(user.getPassword()).equals("0ab9965a1da1500c7a293652ba814c57")){
@@ -157,6 +150,7 @@ public class LoginService {
 		String sql = "select distinct dept_id from kaliey.n_user_dept "
 				+ "where stateflag=0 "
 				+ "and user_id in (select id from kaliey.n_user where stateflag=0 and username='"+username+"')";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -168,6 +162,7 @@ public class LoginService {
 				"left join kaliey.n_dept b on a.dept_id=b.id " + 
 				"where a.stateflag=0 " + 
 				"and a.user_id in (select id from kaliey.n_user where stateflag=0 and username='"+username+"')";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -176,6 +171,7 @@ public class LoginService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select id dept_id,dept_name from kaliey.n_dept where stateflag=0";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -192,6 +188,7 @@ public class LoginService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "select * from kaliey.n_dept where id='"+deptid+"'";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;
 	}

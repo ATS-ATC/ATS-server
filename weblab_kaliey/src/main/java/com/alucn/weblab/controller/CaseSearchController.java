@@ -394,6 +394,7 @@ public class CaseSearchController {
 		String schedule_date = request.getParameter("schedule_date")==null?"":request.getParameter("schedule_date").toString().trim();
 		String login = (String) session.getAttribute("login");
 		
+		logger.info("set ---- "+set);
 		if("".equals(set) && "".equals(flag)) {
 			returnMap.put("msg", "please import some case");
 			return returnMap;

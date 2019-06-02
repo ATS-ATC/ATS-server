@@ -8,11 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alucn.casemanager.server.common.ConfigProperites;
-import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ConfigOptDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 
 /**
  * @author haiqiw
@@ -25,12 +22,11 @@ public class ConfigOptService {
 	@Autowired(required=true)
 	private ConfigOptDaoImpl configOptDaoImpl;
 	
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
-	
 	public ArrayList<HashMap<String, Object>> getConfig() throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "SELECT * FROM cases_info_db.certify_server_config;";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = configOptDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -44,6 +40,7 @@ public class ConfigOptService {
 			String [] configValues = configValue.split(",");
 			for(int i=0; i<configKeys.length; i++){
 				String updateCon = "update cases_info_db.certify_server_config set con_value='"+configValues[i]+"' where con_key='"+configKeys[i]+"'";
+				JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 				configOptDaoImpl.update(jdbc, updateCon);
 				mapConfigs.put(configKeys[i], configValues[i]);
 			}

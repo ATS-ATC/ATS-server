@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alucn.casemanager.server.common.constant.Constant;
 import com.alucn.casemanager.server.common.util.DateUtil;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.ErrorCaseDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 /**
  * @author haiqiw
  * 2017年6月23日 下午2:02:28
@@ -25,9 +22,7 @@ public class ErrorCaseInfoService {
 	@Autowired(required=true)
 	private ErrorCaseDaoImpl errorCaseDaoImpl;
 	private Map<String, String> errroCases;
-//	private Map<String, String>failedReason;
-	@Autowired
-	private KalieyMysqlUtil jdbc;
+
 	 
 	public Map<String, String> getErrorCaseInfo(String userName, String auth) throws Exception{
 		errroCases = new HashMap<String, String>();
@@ -37,6 +32,7 @@ public class ErrorCaseInfoService {
 		if(!auth.equals(Constant.AUTH)){
 			getFeatureOfUser = getFeatureOfUser+" and owner='"+userName+"'";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getFeatureOfUser);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
@@ -82,6 +78,7 @@ public class ErrorCaseInfoService {
 		if(!checkAllCase){
 			getErrorCase = getErrorCase+" and owner='"+author+"'";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}
@@ -91,6 +88,7 @@ public class ErrorCaseInfoService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String getErrorType = "SELECT error_tpye, error_mark FROM cases_info_db.case_error_type;";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorType);
 //		for(int i=0; i<result.size();i++){
 //			Map<String, Object> obj = result.get(i);
@@ -106,6 +104,7 @@ public class ErrorCaseInfoService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String getErrorType = "select case_name, feature_number, err_reason, owner, insert_date, mark_date, email_date, server_name, err_desc,max(mark_date) from cases_info_db.error_case_info_his where mark_date != '' group by case_name";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorType);
 		return result;
 	}
@@ -113,6 +112,7 @@ public class ErrorCaseInfoService {
 	public void setMarkCase(String userName, String featureName, String errorcases, String failedreasons) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		for(String acase : errorcases.split(",")){
 //			String markCaseSql = "UPDATE  errorcaseinfo SET err_reason='"+failedreasons+"', mark_date='"+curDate+"' WHERE casename='"+ acase +"' AND owner='"+ userName + "' AND feature='"+featureName.trim()+"'";
 			String markCaseSql = "UPDATE  cases_info_db.error_case_info SET err_desc='"+failedreasons.split("@")[1]+"', err_reason='"+failedreasons.split("@")[0]+"', mark_date='"+DateUtil.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"' WHERE case_name='"+ acase +"' AND feature_number='"+featureName.trim()+"'";
@@ -122,6 +122,7 @@ public class ErrorCaseInfoService {
 	public void setMarkCaseInfo(String userName, String featureName, String caseList, String failType, String failDesc, String tagTime) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		for(String acase : caseList.split(",")){
 			String markCaseSql = 
 					"update  cases_info_db.error_case_info set "
@@ -182,6 +183,7 @@ public class ErrorCaseInfoService {
 			sql=sql+" order by ucount desc";
 		}
 		sql = sql+" limit "+offset+","+limit;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		return result;
 	}
@@ -196,6 +198,7 @@ public class ErrorCaseInfoService {
 		if(feature!=null && !"".equals(feature)) {
 			sql=sql+" and a.feature_number like '%"+feature+"%' ";
 		}
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, sql);
 		if(result.size()>0) {
 			return Integer.parseInt((String)result.get(0).get("ccount"));
@@ -217,6 +220,7 @@ public class ErrorCaseInfoService {
 			getErrorCase = getErrorCase+" and a.owner='"+userName+"'";
 		}
 		//getErrorCase = getErrorCase+" group by a.casename";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = errorCaseDaoImpl.query(jdbc, getErrorCase);
 		return result;
 	}

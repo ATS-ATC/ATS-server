@@ -32,11 +32,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.aspectj.apache.bcel.generic.ReturnaddressType;
 import org.springframework.http.StreamingHttpOutputMessage;
+import org.sqlite.JDBC;
 
 import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.casemanager.server.common.constant.Constant;
+import com.alucn.weblab.utils.JDBCHelper;
 import com.thoughtworks.selenium.condition.Not;
 
+import mx4j.tools.config.DefaultConfigurationBuilder.New;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -52,7 +55,6 @@ public class SendMail {
     private String[] recipients=null;
     private String subject=null;
     private String context=null;
-
     
 	public SendMail(String[] recipients, String subject, String context) {
 		this.recipients = recipients;
@@ -97,7 +99,6 @@ public class SendMail {
 	}
 
 	public static void Send(String title, String info, JSONArray to_mail_list, JSONArray cc_mail_list){
-        
 		if(to_mail_list.size() > 0){
             System.setProperty("java.net.preferIPv4Stack", "true");
             Properties prop = new Properties();
@@ -156,9 +157,9 @@ public class SendMail {
     }
 	
     
-    public static void genCertifyReport(JSONArray to_list, JSONArray cc_list, JSONArray report, boolean isRemind, boolean isExpired) {
+    public static void genCertifyReport(JSONArray to_list, JSONArray cc_list, ArrayList<HashMap<String, Object>> report, String type) {
         Calendar cal=Calendar.getInstance();
-        if(!isRemind && !isExpired)
+        if("normal".equals(type))
         {
             int DayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
             if(DayOfWeek == 6)
@@ -197,12 +198,12 @@ public class SendMail {
         sb.append("tbody tr.odd td {background:#bcd9e1;}");
         sb.append("</style></head>");
         sb.append("<body>");
-        if (isRemind)
+        if ("reminder".equals(type))
         {
             sb.append("<p><span style=\"background:#cccc33;color:red;font:16px\">Reminder!!</span></p>");
             sb.append("<p><span></span></p>");
         }
-        else if(isExpired)
+        else if("expired".equals(type))
         {
             sb.append("<p><span style=\"background:#cccc33;color:red;font:16px\">Expired!!</span></p>");
             sb.append("<p><span></span></p>");
@@ -211,11 +212,11 @@ public class SendMail {
         sb.append("<p><span></span></p>");
         sb.append("<p><span>Your submitted auto cases are certified fail (<span style='color:red'>but some features failure reason checking is Pending for a long time</span>).</span></p>");
         sb.append("<p><span></span></p>");
-        sb.append("<p><span>please login <a href=\"http://135.242.16.160:8080/weblab\">http://135.242.16.160:8080/weblab</a>  -> Bad Case Management (via Chrome & AD4) to get the detailed fail cases list & failure html report.</span></p>");
+        sb.append("<p><span>please login <a href=\"http://135.242.16.160:8080/weblab\">http://135.242.16.160:8080/weblab</a>  -> Bad Case Management (via FireFox & NSN-INTRA) to get the detailed fail cases list & failure html report.</span></p>");
         sb.append("<p><span></span></p>");
         
         sb.append("<p><span>please re-login above web link <span style=\"background:#cccc33;\"> before <span style='color:red'>COB of " + COBdate + "</span></span> to submit your checked " + 
-                "<span style='color:red'>‘Failed Reason’</span> & <span style='color:red'>‘Target Fix Date’</span> & necessary details in the <span style='color:red'>‘Failed Describe’</span></span></p>");
+                "<span style='color:red'>'Failed Reason'</span> & <span style='color:red'>'Target Fix Date'</span> & necessary details in the <span style='color:red'>'Failed Describe'</span></span></p>");
         sb.append("<p><span></span></p>");
         sb.append("<p><span></span></p>");
         sb.append("<div align=\"left\">");
@@ -228,22 +229,24 @@ public class SendMail {
 
         sb.append("<th>FeatureID</th>");
         sb.append("<th>FTC</th>");
+        sb.append("<th>TargetSub</th>");
         sb.append("<th>TotalSub</th>");
         sb.append("<th>TotalFailed</th>");
         sb.append("<th>FailNotChecked</th>");
-        sb.append("<th>FailedCaseOwner</th>");
+        sb.append("<th>Owner</th>");
         sb.append("</tr>");
         sb.append("</thead>");
         sb.append("<tbody>");
 
         for (int i = 0; i < report.size(); i++) {
             sb.append("<tr>");
-            sb.append("<td style=\"width:15%\">" + report.getJSONObject(i).getString("FeatureID") + "</td>");
-            sb.append("<td style=\"width:15%\">" + report.getJSONObject(i).getString("FTC") + "</td>");
-            sb.append("<td style=\"width:15%\"> " + report.getJSONObject(i).getString("TotalSub") + "</td>");
-            sb.append("<td style=\"width:15%\"> " + report.getJSONObject(i).getString("TotalFailed") + "</td>");
-            sb.append("<td style=\"background:#cccc33;width:15%\"> " + report.getJSONObject(i).getString("FailNotChecked") + "</td>");
-            sb.append("<td style=\"width:25%\"> " + report.getJSONObject(i).getString("FailedCaseOwner") + "</td>");
+            sb.append("<td style=\"width:15%\">" + report.get(i).get("feature_number").toString() + "</td>");
+            sb.append("<td style=\"width:15%\">" + report.get(i).get("ftc_date").toString() + "</td>");
+            sb.append("<td style=\"width:10%\"> " + report.get(i).get("case_num").toString() + "</td>");
+            sb.append("<td style=\"width:15%\"> " + report.get(i).get("dft") + "</td>");
+            sb.append("<td style=\"width:15%\"> " + report.get(i).get("fail") + "</td>");
+            sb.append("<td style=\"background:#cccc33;width:15%\"> " + report.get(i).get("uncheck") + "</td>");
+            sb.append("<td style=\"width:15%\"> " + report.get(i).get("user_name") + "</td>");
             sb.append("</tr>");
 
         }
@@ -265,14 +268,15 @@ public class SendMail {
         String dateTime = df.format(new Date());
 //      logger.info(sb.toString());
         String title = "Auto certify failed cases failure reason check " + dateTime;
-        if (isRemind)
+        if ("reminder".equals(type))
         {
             title = "Reminder!! " + title;
         }
-        else if(isExpired)
+        else if("expired".equals(type))
         {
             title = "Expired!! " + title;
         }
+        
         SendMail.Send(title, sb.toString(), to_list, cc_list);
     }
 	
@@ -301,7 +305,7 @@ public class SendMail {
 		sb.append("<body>");
 		sb.append("<p><span style=\"background:#cccc33;\">@All testers:</span></p>");
 		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Below cases are failed when auto tested by certified servers.</span></p>");
-		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log through the <a href=\"ftp://135.242.16.160/CertifyLog/\">logPath</a>, find out the failure reason and fill the reason through the "+buildInfo.get("webSite")+" (Please login with Google).</span></p>");
+		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log through the <a href=\"ftp://135.242.16.160/CertifyLog/\">logPath</a>, find out the failure reason and fill the reason through the "+buildInfo.get("webSite")+" (Please login with FireFox).</span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please double check the failure log , find out the failure reason and fill the reason through the <a href=\"" + buildInfo.get("webSite") + "\">website</a></span></p>");
 //		sb.append("<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source Path: </span>");
 //		sb.append("<span>" + "<a href=\"" + buildInfo.get("SrcPath") + "\">" + buildInfo.get("SrcPath") + "</a></span>");
@@ -414,167 +418,53 @@ public class SendMail {
 		}
 		sb.append("<br/><br/>");
 		sb.append("</body></html>");
+		
 		SendMail.Send("Uninstalled RTDB and SPA " + dateTime, sb.toString(), to_list, cc_list);
 	}
 	
 	
-	private static JSONObject getUserInfo(String author) throws IOException {
-        JSONObject userObj = new JSONObject();
-        URL url = new URL("http://dquery-qa.app.alcatel-lucent.com/ws/rest/json/search/"+author);
-        InputStream inputStream = null;
-        InputStreamReader inputStreamReader = null;
-        BufferedReader reader = null;
-        String tempLine, response = "";
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setDoOutput(true);
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            inputStream = connection.getInputStream();
-            inputStreamReader = new InputStreamReader(inputStream);
-            reader = new BufferedReader(inputStreamReader);
-
-            while ((tempLine = reader.readLine()) != null) {
-                response += tempLine;
-            }
-            if (!response.equals("\"noresults\"")) {
-                userObj = JSONObject.fromObject(response);
-            } else {
-                logger.error("[User: " + author + " is not found in DQuery!]");
-            }
-        }
-        return userObj;
-    }
-	private static JSONObject processCases(List<Map<String, Object>> list_dc, JdbcUtil jdbc_cf) throws Exception
+	
+	private static JSONArray processCases(ArrayList<HashMap<String, Object>> error_infos) throws Exception
 	{
-	    JSONObject result = new JSONObject();
-	    if (null != list_dc && list_dc.size() != 0) {
+	    String user_name, mail;
+	    JSONArray author_list = new JSONArray();
+	    JSONArray to_list = new JSONArray();
+	    if (null != error_infos && error_infos.size() != 0) {
 	        
-	        String uncheck_key = "";
-	        String old_feature = "-1";
-
-            String feature = "-1";
-            String author = "-1";
-            String uncheckedCaseNum = "-1";
-            String totalFailedNum = "-1";
-            String totalSubmitNum = "-1";
-            String ftcDate = "-1";
-            String email = "-1";
-            
-            JSONArray report = new JSONArray();
-            JSONArray to_list = new JSONArray();
-            JSONArray featureList = new JSONArray();
-            JSONArray author_list = new  JSONArray();
-            JSONObject unchecked = new JSONObject();
-            JSONObject ftcInfo = new JSONObject();
-     
-            for (int i = 0; i < list_dc.size(); i++) {
-                //feature = list_dc.get(i).get("feature").toString();
-				feature = list_dc.get(i).get("feature_number").toString();
-                author = list_dc.get(i).get("owner").toString();
-                uncheckedCaseNum = list_dc.get(i).get("case_num").toString();
-                
-                if(!feature.equals(old_feature))
-                {
-                    featureList.add(feature);
-                    old_feature = feature;
-                }
-                if(author_list.indexOf(author) == -1)
-                {
-                    author_list.add(author);
-                }
-                JSONObject uncheckInfo = new JSONObject();
-                uncheckInfo.put("FailNotChecked", uncheckedCaseNum);
-                uncheckInfo.put("FeatureID", feature);
-                uncheckInfo.put("FailedCaseOwner", author);
-                unchecked.put(feature + ":" + author, uncheckInfo);
-            }
-            //String errCaseListSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where feature in ("
-            //+ featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature,owner;";
-			String errCaseListSql = "select feature_number,owner,count(case_name) as case_num from error_case_info where feature_number in ("
-			+ featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature_number,owner;";
-            
-            List<Map<String, Object>> list_dc_errs = jdbc_cf.findModeResult(errCaseListSql, null);
-            for (int i = 0; i < list_dc_errs.size(); i++) {
-                
-                //feature = list_dc_errs.get(i).get("feature").toString();
-				feature = list_dc_errs.get(i).get("feature_number").toString();
-                author = list_dc_errs.get(i).get("owner").toString();
-                totalFailedNum = list_dc_errs.get(i).get("case_num").toString();
-                
-                uncheck_key = feature + ":" + author;
-                if(unchecked.containsKey(uncheck_key))
-                {
-                    JSONObject uncheckInfo = unchecked.getJSONObject(uncheck_key);
-                    uncheckInfo.put("TotalFailed", totalFailedNum);
-                    unchecked.put(uncheck_key, uncheckInfo);
-                }
-            }
-            //String dftSql = "select feature_number,author,count(case_name) as case_num from DftTag where feature_number in ("
-			String dftSql = "select feature_number,author,count(case_name) as case_num from case_tag where feature_number in ("
-                    + featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +") group by feature_number,author;";
-            JdbcUtil jdbc_dft = new JdbcUtil(Constant.DATASOURCE,
-                    ParamUtil.getUnableDynamicRefreshedConfigVal("DftCaseDB"));
-            List<Map<String, Object>> list_dft = jdbc_dft.findModeResult(dftSql, null);
-            for (int i = 0; i < list_dft.size(); i++) {
-                
-                feature = list_dft.get(i).get("feature_number").toString();
-                author = list_dft.get(i).get("author").toString();
-                totalSubmitNum = list_dft.get(i).get("case_num").toString();
-                
-                uncheck_key = feature + ":" + author;
-                if(unchecked.containsKey(uncheck_key))
-                {
-                    JSONObject uncheckInfo = unchecked.getJSONObject(uncheck_key);
-                    uncheckInfo.put("TotalSub", totalSubmitNum);
-                    unchecked.put(uncheck_key, uncheckInfo);
-                }
-            }
-            
-            String ftcSql = "select feature_id, user_name, ftc_date from FeatureInfo where feature_id in ("
-                    + featureList.toString().replace("[", "").replace("]", "").replace("\"", "'") +");";
-            JdbcUtil jdbc_ftc = new JdbcUtil(Constant.DATASOURCE,
-                    ParamUtil.getUnableDynamicRefreshedConfigVal("PermissionDB"));
-            List<Map<String, Object>> list_ftc = jdbc_ftc.findModeResult(ftcSql, null);
-            for (int i = 0; i < list_ftc.size(); i++) {
-                
-                feature = list_ftc.get(i).get("feature_id").toString();
-                author = list_ftc.get(i).get("user_name").toString();
-                ftcDate = list_ftc.get(i).get("ftc_date").toString();
-
-                ftcInfo.put(feature, ftcDate);
-                uncheck_key = feature + ":" + author;
-                if(unchecked.containsKey(uncheck_key))
-                {
-                    JSONObject uncheckInfo = unchecked.getJSONObject(uncheck_key);
-                    uncheckInfo.put("FTC", ftcDate);
-                    unchecked.put(uncheck_key, uncheckInfo);
-                }
-            }
-            
+	        for (int i = 0; i < error_infos.size(); i++)
+	        {
+	            user_name = error_infos.get(i).get("user_name").toString();
+	            author_list.add(user_name);
+	        }
+	        
+	        
             JSONArray users = new JSONArray();
-            String userSql = "select UserName, Email, ShowName from UserInfo where UserName in ("
+            String userSql = "select user_name, mail, show_name from cases_info_db.user_info where user_name in ("
                     + author_list.toString().replace("[", "").replace("]", "").replace("\"", "'") +");";
-            List<Map<String, Object>> list_user = jdbc_cf.findModeResult(userSql, null);
-            for (int i = 0; i < list_user.size(); i++) {
-                
-                author = list_user.get(i).get("UserName").toString();
-                email = list_user.get(i).get("Email").toString();
-                users.add(author);
-                to_list.add(email);              
-            }
             
+            logger.debug(userSql);
+            JDBCHelper mysql = JDBCHelper.getInstance("mysql-1");
+            ArrayList<HashMap<String, Object>> user_infos = mysql.query(userSql);
+            
+            for (int i = 0; i < user_infos.size(); i++)
+            {
+                user_name = user_infos.get(i).get("user_name").toString();
+                mail = user_infos.get(i).get("mail").toString();
+                users.add(user_name);
+                to_list.add(mail);
+            }
             
             //not exist user
-            JSONArray newUser = new JSONArray();
+            JSONArray not_exist_users = new JSONArray();
+           
             boolean isExist = false;
-            String userName, showName;
             for(int i = 0; i < author_list.size(); i++)
             {
                 isExist = false;
-                userName = author_list.getString(i);
+                user_name = author_list.getString(i);
                 for(int j = 0; j < users.size(); j++)
                 {
-                    if(userName.equals(users.getString(j)))
+                    if(user_name.equals(users.getString(j)))
                     {
                         isExist = true;
                         break;
@@ -582,188 +472,158 @@ public class SendMail {
                 }  
                 if( !isExist)
                 {
-                    try {
-                        JSONObject userObj = getUserInfo(userName);
-                        if(!"{}".equals(userObj.toString())){
-                            showName=userObj.getString("lastname") + " " + userObj.getString("firstname");
-                            email = userObj.getString("mail");
-                            JSONObject userInfo = new JSONObject();
-                            userInfo.put("UserName", userName);
-                            userInfo.put("Email", email);
-                            userInfo.put("ShowName", showName);
-                            newUser.add(userInfo);
-                            to_list.add(email);
-                        }
-                    } catch (Exception e) {
-                        logger.error("Failed to get User Info: " + e.toString());
-                    }
-                    
-                    
+                    not_exist_users.add(user_name);
                 }
+            }
+            JSONArray newUser = Ldap.search_users(not_exist_users);   
+            for(int j=0; j<newUser.size(); j++){
+                to_list.add(newUser.getJSONObject(j).get("mail").toString()); 
+            }
+                     
+        }
+	    return to_list;
+	}
+	
+	private static void GenCetifyReport(String type)
+	{
+	    String cc_mail_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccMailList");
+        String ccs[] = cc_mail_str.split(";");
+        JSONArray cc_list = new JSONArray();
+        for(int i = 0; i < ccs.length; i++)
+        {
+            cc_list.add(ccs[i]);
+        }
+        
+        String condition= "";
+        if ("normal".equals(type))
+        {
+            condition = "email_date='' and mark_date='' ";
+        }
+        else if ("reminder".equals(type)) {
+            Calendar cal=Calendar.getInstance();
+            int DayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            if(DayOfWeek == 2 || DayOfWeek == 3)
+            {
+                cal.add(Calendar.DAY_OF_YEAR,-4);
+            }
+            else{
+                cal.add(Calendar.DAY_OF_YEAR,-2);
+            }
+            Date dt1=cal.getTime();
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+            String newDate = sdf.format(dt1);
+            String emailDate = newDate + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
+            Calendar cal2=Calendar.getInstance();
+            int DayOfWeek2 = cal2.get(Calendar.DAY_OF_WEEK);
+            if(DayOfWeek2 == 2 || DayOfWeek2 == 3)
+            {
+                cal2.add(Calendar.DAY_OF_YEAR,-7);
+            }
+            else{
+                cal2.add(Calendar.DAY_OF_YEAR,-5);
+            }
+            Date dt2=cal2.getTime();
+            SimpleDateFormat sdf2=new SimpleDateFormat("yyyy-MM-dd");
+            String newDate2 = sdf2.format(dt2);
+            String emailDate2 = newDate2 + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
+            condition = " mark_date='' and email_date < '" 
+                        + emailDate + "' and email_date >= '" + emailDate2 + "' ";
+        }
+        else if ("expired".equals(type)) {
+            
+            String cc_boss_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccBossMailList");
+
+            String boss[] = cc_boss_str.split(";");
+            for(int i = 0; i < boss.length; i++)
+            {
+                cc_list.add(boss[i]);
+            }
+            
+            Calendar cal2=Calendar.getInstance();
+            int DayOfWeek2 = cal2.get(Calendar.DAY_OF_WEEK);
+            if(DayOfWeek2 == 2 || DayOfWeek2 == 3)
+            {
+                cal2.add(Calendar.DAY_OF_YEAR,-7);
+            }
+            else{
+                cal2.add(Calendar.DAY_OF_YEAR,-5);
+            }
+            Date dt2=cal2.getTime();
+            SimpleDateFormat sdf2=new SimpleDateFormat("yyyy-MM-dd");
+            String newDate2 = sdf2.format(dt2);
+            String emailDate2 = newDate2 + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
+            condition = " mark_date='' and email_date < '"  + emailDate2 + "' ";
+        }
+        String errorCaseSql = "select  " +
+                "a.feature_number," +
+                "a.user_name," +
+                "min(a.ftc_date)ftc_date, " +
+                "sum(a.case_num) case_num, " +
+                "sum(ifnull(b.dft,0)) dft, " +
+                "sum(ifnull(c.fail,0)) fail, " +
+                "sum(ifnull(d.uncheck,0)) uncheck, " +
+                "ifnull((sum(ifnull(b.dft,0))/sum(a.case_num))*100,0) submit_rate, " +
+                "ifnull((sum(ifnull(c.fail,0))/sum(ifnull(b.dft,0)))*100,0) fail_rate, " +
+                "to_reporter " +
+                "from " +
+                "( " +
+                "select feature_number,owner,count(1) uncheck, email_date  from cases_info_db.error_case_info where " +
+                condition +
+                " group by feature_number,owner " +
+                ") d left join" +
+                "( " +
+                "select feature_number,user_name,min(ftc_date) ftc_date,sum(case_num) case_num from cases_info_db.feature_permission group by feature_number,user_name " +
+                ")a on a.feature_number = d.feature_number and a.user_name= d.owner " +
+                "left join ( " +
+                "select feature_number,author,count(1) dft from cases_info_db.case_tag where type='dft' group by feature_number,author " +
+                ") b on a.feature_number = b.feature_number and a.user_name= b.author " +
+                "left join ( " +
+                "select feature_number,author,count(1) fail from cases_info_db.case_tag where case_status='F' group by feature_number,author " +
+                ") c on a.feature_number = c.feature_number and a.user_name= c.author " +
+                " " +
+                "left join ( " +
+                "select trim(user_name) user_name,trim(to_reporter) to_reporter from cases_info_db.user_info  " +
+                ")e on a.user_name= e.user_name " +
+                "where 1=1 " +
+                "and a.ftc_date != 0 and e.to_reporter is not null " +
+                "group by a.feature_number,a.user_name " +
+                "order by to_reporter asc, fail_rate desc,submit_rate asc"; 
+        try {
+            JDBCHelper mysql = JDBCHelper.getInstance("mysql-1");
+            ArrayList<HashMap<String, Object>> result =mysql.query(errorCaseSql);
+            if(result.size() > 0)
+            {
+                
+                    JSONArray to_list = processCases(result);
+                    genCertifyReport(to_list, cc_list, result, type);
+                    
+                    if ("normal".equals(type))
+                    {
+                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                        String dateTime = df.format(new Date());
+                        String emailDate = dateTime + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
+                        String updateEmailDate = "update cases_info_db.error_case_info set email_date ='" + emailDate + "' where " + condition;
+                        
+                        mysql.executeSql(updateEmailDate);
+                    }
                 
             }
-            
-            
-            //update UserInfo
-            if(newUser.size() > 0)
-            {
-                String replaceUserInfoTb = "replace into UserInfo (UserName, Email, ShowName) values (?, ?, ?);";
-                List<Object[]> paramsList = new ArrayList<Object[]>();
-                for(int j=0; j<newUser.size(); j++){
-                    Object [] paramsArray = new Object[3];
-                    paramsArray[0] = newUser.getJSONObject(j).get("UserName");
-                    paramsArray[1] = newUser.getJSONObject(j).get("Email");
-                    paramsArray[2] = newUser.getJSONObject(j).get("ShowName");
-                    paramsList.add(paramsArray);
-                }
-                jdbc_cf.executeBatch(replaceUserInfoTb, paramsList);
-            }
-            
-            
-            
-            Iterator<String> it = unchecked.keys(); 
-            while(it.hasNext()){
-        
-                String key = it.next(); 
-                JSONObject failInfo = unchecked.getJSONObject(key);
-                report.add(failInfo);
-            }
-            result.put("to_list", to_list);
-            result.put("report", report);
-            
-       
-               
-            
+        }catch (Exception e) {
+            logger.error("Failed to generate Certify " + type + " Report: " + e.toString());
         }
-	    return result;
+            
+        
 	}
-	private static void GenerateMailReport() throws Exception
+	public static void GenerateMailReport() throws Exception
 	{
 	    //generate new error cases
-	    //String errorCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo where email_date='' and mark_date='' group by feature,owner;";
-	    String errorCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info where email_date='' and mark_date='' group by feature_number,owner;";
-		JdbcUtil jdbc_cf = new JdbcUtil(Constant.DATASOURCE,
-                ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-        List<Map<String, Object>> list_dc = jdbc_cf.findModeResult(errorCaseSql, null);
-        if(list_dc.size() > 0)
-        {
-            try {
-                JSONObject re1 = processCases(list_dc, jdbc_cf);
-                String cc_mail_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccMailList");
-                String ccs[] = cc_mail_str.split(";");
-                JSONArray cc_list = new JSONArray();
-                for(int i = 0; i < ccs.length; i++)
-                {
-                    cc_list.add(ccs[i]);
-                }
-                genCertifyReport(re1.getJSONArray("to_list"), cc_list, re1.getJSONArray("report"), false, false);
-                //String caselistSql = "select casename from errorcaseinfo where email_date='' and mark_date=''";
-				String caselistSql = "select case_name from error_case_info where email_date='' and mark_date=''";
-                List<Map<String, Object>> list_cases = jdbc_cf.findModeResult(caselistSql, null);
-                String casename;
-                JSONArray newCaseList = new JSONArray();
-                for(int j=0; j<list_cases.size(); j++){
-                    //newCaseList.add(list_cases.get(j).get("casename").toString());
-					newCaseList.add(list_cases.get(j).get("case_name").toString());
-                }
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                String dateTime = df.format(new Date());
-                String emailDate = dateTime + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
-                //String updateEmailDate = "update errorcaseinfo set email_date ='" + emailDate + "' where casename in ("
-				String updateEmailDate = "update error_case_info set email_date ='" + emailDate + "' where case_name in ("
-                    + newCaseList.toString().replace("[", "").replace("]", "").replace("\"", "'") +");";
-                jdbc_cf.executeSql(updateEmailDate);
-                
-            } catch (Exception e) {
-                logger.error("Failed to generate Certify Report: " + e.toString());
-            }
-        }
+	    GenCetifyReport("normal");
         
         //generate reminder
-        Calendar cal=Calendar.getInstance();
-        int DayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-        if(DayOfWeek == 2 || DayOfWeek == 3)
-        {
-            cal.add(Calendar.DAY_OF_YEAR,-4);
-        }
-        else{
-            cal.add(Calendar.DAY_OF_YEAR,-2);
-        }
-        Date dt1=cal.getTime();
-        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
-        String newDate = sdf.format(dt1);
-        String emailDate = newDate + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
-        
-        Calendar cal2=Calendar.getInstance();
-        int DayOfWeek2 = cal2.get(Calendar.DAY_OF_WEEK);
-        if(DayOfWeek2 == 2 || DayOfWeek2 == 3)
-        {
-            cal2.add(Calendar.DAY_OF_YEAR,-7);
-        }
-        else{
-            cal2.add(Calendar.DAY_OF_YEAR,-5);
-        }
-        Date dt2=cal2.getTime();
-        SimpleDateFormat sdf2=new SimpleDateFormat("yyyy-MM-dd");
-        String newDate2 = sdf2.format(dt2);
-        String emailDate2 = newDate2 + " " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime") + ":00:00";
-        String RemindConditions = " where mark_date='' and email_date < '" 
-                    + emailDate + "' and email_date >= '" + emailDate2 + "' group by feature,owner;";
-        //String ReminderCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  RemindConditions;
-		String ReminderCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info" +  RemindConditions;
-      
-        List<Map<String, Object>> list_remind1 = jdbc_cf.findModeResult(ReminderCaseSql, null);
-        
-        if(list_remind1.size() > 0)
-        {
-            try {
-                JSONObject re1 = processCases(list_remind1, jdbc_cf);
-                String cc_mail_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccMailList");
-                String ccs[] = cc_mail_str.split(";");
-                JSONArray cc_list = new JSONArray();
-                for(int i = 0; i < ccs.length; i++)
-                {
-                    cc_list.add(ccs[i]);
-                }
-                genCertifyReport(re1.getJSONArray("to_list"), cc_list, re1.getJSONArray("report"), true, false);
-               
-            } catch (Exception e) {
-                logger.error("Failed to generate Certify Remind Report: " + e.toString());
-            }
-        }
-        
+	    GenCetifyReport("reminder");
         //generate expired 
-        String ExpiredConditions = " where mark_date='' and email_date < '" 
-                 //+ emailDate2 + "' group by feature,owner;";
-				 + emailDate2 + "' group by feature_number,owner;";
-        //String ExpiredCaseSql = "select feature,owner,count(casename) as case_num from errorcaseinfo" +  ExpiredConditions;
-		String ExpiredCaseSql = "select feature_number,owner,count(case_name) as case_num from error_case_info" +  ExpiredConditions;
-      
-        List<Map<String, Object>> list_expired = jdbc_cf.findModeResult(ExpiredCaseSql, null);
-        if(list_expired.size() > 0)
-        {
-            try {
-                JSONObject re1 = processCases(list_expired, jdbc_cf);
-                String cc_mail_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccMailList");
-                String cc_boss_str = ParamUtil.getUnableDynamicRefreshedConfigVal("ccBossMailList");
-                String ccs[] = cc_mail_str.split(";");
-                String boss[] = cc_boss_str.split(";");
-                JSONArray cc_list = new JSONArray();
-                for(int i = 0; i < ccs.length; i++)
-                {
-                    cc_list.add(ccs[i]);
-                }
-                for(int i = 0; i < boss.length; i++)
-                {
-                    cc_list.add(boss[i]);
-                }
-                
-                genCertifyReport(re1.getJSONArray("to_list"), cc_list, re1.getJSONArray("report"), false, true);
-               
-            } catch (Exception e) {
-                logger.error("Failed to generate Certify Expired Report: " + e.toString());
-            }
-        }
+	    GenCetifyReport("expired");
+        
 	}
 	
 	public static class GenerateMailReportThread extends Thread
@@ -809,8 +669,17 @@ public class SendMail {
     }
 
 	public static void main(String[] args) throws UnsupportedEncodingException, MessagingException {
-		String[] strings = { "Haiqi.Wang@alcatel-lucent.com" };
+	    
+	    try {
+            GenerateMailReport();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+	    /*
+		String[] strings = { "lei.k.huang@nokia-sbell..com" };
 		SendMail sendmail = new SendMail(strings, "For Test", "hello world");
 		sendmail.sendEmail();
+		*/
 	}
 }

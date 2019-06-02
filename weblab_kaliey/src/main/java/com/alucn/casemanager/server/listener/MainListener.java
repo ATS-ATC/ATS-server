@@ -22,8 +22,7 @@ import com.alucn.casemanager.server.common.exception.SysException;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.SendMail;
-import com.alucn.casemanager.server.process.DistributeCase;
-import com.alucn.casemanager.server.process.MarkCaseErr;
+import com.alucn.weblab.utils.JDBCHelper;;
 
 /**
  * Program start listener
@@ -49,11 +48,11 @@ public class MainListener implements ServletContextListener{
 				//log4j Initialization
 				PropertyConfigurator.configure(configFilesPath+File.separator+"log4j.properties");
 				//Init config
-				String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
-				JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);
+				
 				Map<String, String> mapConfigs = new HashMap<String, String>();
-				String queryConfigs = "select * from certify_server_config";
-				ArrayList<HashMap<String,Object>> configs = jdbc.query(queryConfigs);
+				String queryConfigs = "select * from cases_info_db.certify_server_config";
+				JDBCHelper mysql = JDBCHelper.getInstance("mysql-1");
+				ArrayList<HashMap<String,Object>> configs = mysql.query(queryConfigs);
 				for(int i=0; i<configs.size(); i++){
 					mapConfigs.put(configs.get(i).get("con_key").toString(), configs.get(i).get("con_value").toString());
 				}
@@ -77,12 +76,12 @@ public class MainListener implements ServletContextListener{
 					Thread.sleep(1000*5);
 
 					//start socket listener
-					SocketListener socketListener = new SocketListener();
-					socketListener.initialize();
+					//SocketListener socketListener = new SocketListener();
+					//socketListener.initialize();
 					
 					//start distribute case listener
-					new Thread(new DistributeCase()).start();
 					new Thread(new SendMail.GenerateMailReportThread()).start();
+
 					//start markCaseErr
 					//new MarkCaseErr(Integer.parseInt(ConfigProperites.getInstance().getCaseMcaseTimerDelay()),Integer.parseInt(ConfigProperites.getInstance().getCaseMcaseTimerPeriod()));
 					//start distribute command listener
@@ -91,12 +90,7 @@ public class MainListener implements ServletContextListener{
 					logger.error("[Incorrect parameter path "+configFilesPath+" Not a directory]");
 				}
 				
-			}catch (SysException e) {
-				logger.error("["+e.getMessage()+"]");
-				logger.error("[casemanager service startup failed]");
-				logger.error(ParamUtil.getErrMsgStrOfOriginalException(e.getCause()));
-				System.exit(1);
-			} catch (Exception e) {
+			}catch (Exception e) {
 				logger.error("[casemanager service startup failed]");
 				logger.error(ParamUtil.getErrMsgStrOfOriginalException(e));
 				System.exit(1);
@@ -105,6 +99,8 @@ public class MainListener implements ServletContextListener{
         }
 	}
 	public static void main(String[] args) {
+	    
+	    System.out.println("----------------------starting....................");
 		ServletContext servletContext = ContextLoader.getCurrentWebApplicationContext().getServletContext();
 		String configPath = System.getenv("WEBLAB_CONF");
 		String [] args1 = {servletContext.getRealPath("conf")};       //localhost server
@@ -116,6 +112,7 @@ public class MainListener implements ServletContextListener{
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		// TODO Auto-generated method stub
+	    System.out.println("----------------------starting....................");
 		ServletContext servletContext = sce.getServletContext();
 		String configPath = System.getenv("WEBLAB_CONF");
 		String [] args1 = {servletContext.getRealPath("conf")};       //localhost server

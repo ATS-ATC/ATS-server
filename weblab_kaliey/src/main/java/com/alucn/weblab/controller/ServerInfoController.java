@@ -39,7 +39,6 @@ import com.alucn.weblab.service.ServerInfoService;
 import com.alucn.weblab.service.SpaAndRtdbManService;
 import com.alucn.weblab.socket.TcpClient;
 import com.alucn.weblab.utils.LabStatusUtil;
-import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
 import com.alucn.weblab.utils.TimeUtil;
 
@@ -1073,6 +1072,26 @@ public class ServerInfoController {
 		// System.out.println("1111111111111111111"+condition);
 		out.write(serverInfoService.removeServerInfoNew(condition));
 	}
+	
+	@RequestMapping(path = "/init_lab")
+    public void init_lab(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+        out.write(serverInfoService.init_lab(condition));
+    }
+	
+	@RequestMapping(path = "/restart_client")
+    public void restart_client(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+        out.write(serverInfoService.restart_client(condition));
+    }
+	
+	@RequestMapping(path = "/restart_plat")
+    public void restart_plat(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+        out.write(serverInfoService.restart_plat(condition));
+    }
+	
+	@RequestMapping(path = "/reinstall_lab")
+    public void reinstall_lab(Model model, HttpSession session, String condition, PrintWriter out) throws Exception {
+        out.write(serverInfoService.reinstall_lab(condition));
+    }
 
 	@RequestMapping(path = "/removeServerDetails")
 	public void removeServerDetails(NServer server) throws Exception {

@@ -278,6 +278,7 @@ public class ConfigProperites {
 			
 			if(null==MainListener.configFilesPath){
 				//Configuration files in the project root directory
+			    logger.info("[local of conf.properties] >> "+File.separator+"dynamic-refresh-unable.properties");
 				in = getClass().getResourceAsStream(File.separator+"dynamic-refresh-unable.properties");
 				//File conf = new File("D:\\conf.properties");
 				//in = new FileInputStream(conf);

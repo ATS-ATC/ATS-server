@@ -20,7 +20,7 @@ import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.common.util.TelnetCla;
 import com.alucn.casemanager.server.process.GetTimeCase;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;;
 
 public class CaseConfigurationCache {
 	private static final Logger logger = Logger.getLogger(CaseConfigurationCache.class);
@@ -34,7 +34,6 @@ public class CaseConfigurationCache {
 	public static JSONObject singletonCaseCommand ;
 	public static List<Object[]> paramsList = new ArrayList<Object[]>();
 	public static List<Object> listParams = new ArrayList<Object>();
-	private static KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	static {
 		try {
@@ -81,12 +80,7 @@ public class CaseConfigurationCache {
 				boolean isExist = false;
 				String serverName = body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME);
 				String taskStatus = body.getJSONObject(Constant.TASKSTATUS).toString();
-				/*JdbcUtil jdbc_cf = null;
-				try {
-					jdbc_cf = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
-				}catch (Exception e) {
-					e.printStackTrace();
-				}*/
+				
 				if(singletonCaseProperties.size()==0){
 					//------------------------------20181115--------------------------------------------------
 					String laststatus = body.getJSONObject(Constant.TASKSTATUS).getString("status").toString();
@@ -147,7 +141,8 @@ public class CaseConfigurationCache {
 									String insertLog = "insert into kaliey.n_lab_status_time(labname,ip,release,protocol,spa,rtdb,servertype,matetype,mateserver,groupid,endstatus,endtime,startstatus,starttime)"
 											+" values('"+serverName+"','"+ip+"','"+serverRelease+"','"+serverProtocol+"','"+serverSPA+"','"+serverRTDB+"','"+serverType+"','"+mateServer+"','"+serverMate+"','"+deptid+"','"+status+"','"+nowtime+"','"+ulaststatus+"','"+ulasttime+"')";
 									logger.info(insertLog);
-									jdbc.executeSql(insertLog);
+									JDBCHelper mysql = JDBCHelper.getInstance("mysql-1");
+									mysql.executeSql(insertLog);
 									
 									String updateServerList = "update serverList set status='"+status+"',deptid='"+deptid+"' where serverName='"+serverName+"'";
 									// jdbc.executeSql(updateServerList);

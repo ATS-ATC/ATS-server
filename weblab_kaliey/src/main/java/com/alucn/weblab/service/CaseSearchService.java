@@ -39,12 +39,13 @@ import com.alucn.casemanager.server.common.util.Fiforeader;
 import com.alucn.casemanager.server.common.util.JdbcUtil;
 import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.casemanager.server.listener.MainListener;
+import com.alucn.weblab.controller.CaseSearchController;
 import com.alucn.weblab.dao.impl.CaseSearchDaoImpl;
 import com.alucn.weblab.socket.TcpClient;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 import com.alucn.weblab.utils.LabStatusUtil;
-import com.alucn.weblab.utils.SocketClientConn;
 import com.alucn.weblab.utils.StringUtil;
+import org.apache.log4j.Logger;
 import com.microsoft.schemas.office.visio.x2012.main.VisioDocumentDocument1;
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.mysql.fabric.xmlrpc.base.Data;
@@ -52,7 +53,6 @@ import com.mysql.jdbc.log.Log;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 /**
  * @author haiqiw
  * 2017年8月7日 上午10:58:41
@@ -60,7 +60,7 @@ import net.sf.json.JSONObject;
  */
 @Service("caseSearchService")
 public class CaseSearchService {
-	
+    private static Logger logger = Logger.getLogger(CaseSearchService.class);
 	@Autowired(required=true)
 	private CaseSearchDaoImpl caseSearchDaoImpl;
 	private Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
@@ -68,7 +68,6 @@ public class CaseSearchService {
 	//private Lock lock = new ReentrantLock(true);
 	@Autowired
 	private ServletContext servletContext;
-	private static KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
@@ -243,6 +242,7 @@ public class CaseSearchService {
 		
 		//query_sql:===select * from DailyCase where 1=1 and feature_number='731590' and case_name='null'  limit null,null
 		System.err.println("query_sql:==="+sql);
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 				//new ArrayList<HashMap<String, Object>>();
 		
@@ -425,6 +425,7 @@ public class CaseSearchService {
 				dataBase = "cases_info_db.case_tag";
 			}
 			String sql = "select * from "+dataBase+" where 1=1 and case_name in ("+substring+")";// and case_name not in ("+str+")";
+			JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 			ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 			if(query.size()==0) {
 				returnMap.put("result", false);
@@ -791,6 +792,7 @@ public class CaseSearchService {
 			}
 		}
 		//JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if(retrunType=="rows") {
 			return query;
@@ -803,6 +805,7 @@ public class CaseSearchService {
 	public ArrayList<HashMap<String, Object>> searchCaseRunLogInfoById(Map<String, Object> param) throws Exception {
 		String sql ="select *  from kaliey.n_rerunning_case_tbl where stateflag='0' and int_id= "+param.get("int_id");
 		//JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -817,6 +820,7 @@ public class CaseSearchService {
 		}
 		System.err.println(sql);
 		//JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		ArrayList<HashMap<String, Object>> arrayList = new ArrayList<HashMap<String, Object>>();
 		String case_str = "";
@@ -849,6 +853,7 @@ public class CaseSearchService {
 	public ArrayList<HashMap<String, Object>> searchCaseRunLogCaseServerById(Map<String, Object> param) throws Exception {
 		String sql ="select * from kaliey.n_case_server_tbl where stateflag='0' and rerunning_id= "+param.get("int_id");
 		//JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -884,7 +889,7 @@ public class CaseSearchService {
 				// 保存server和case信息
 				String[] split2 = servers.split(",");
 				JSONArray Servers = LabStatusUtil.getLabStatus();
-				List<List> serverParams = new ArrayList<>();
+				List<Object []> serverParams = new ArrayList<Object []>();
 				for (String str : split2) {
 					for (int i = 0; i < Servers.size(); i++) {
 						JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.BODY).getJSONObject(Constant.LAB);
@@ -900,19 +905,21 @@ public class CaseSearchService {
 						String serverRTDB = serverMem.getString(Constant.SERVERRTDB);
 						if(str.contains(serverName)){
 							//rerunning_id,serverName,serverIp,serverRelease,serverProtocol,serverType,serverMate,mateServer,setName,serverSPA,serverRTDB
-							List list = new ArrayList<>();
-							list.add(caseLogId);
-							list.add(serverName);
-							list.add(serverIp);
-							list.add(serverRelease);
-							list.add(serverProtocol);
-							list.add(serverType);
-							list.add(serverMate);
-							list.add(mateServer);
-							list.add(setName);
-							list.add(serverSPA);
-							list.add(serverRTDB);
-							serverParams.add(list);
+							
+							Object [] paramsArray = new Object[11];
+		                    
+		                    paramsArray[0] = caseLogId;
+		                    paramsArray[1] = serverName;
+		                    paramsArray[2] = serverIp;
+		                    paramsArray[3] = serverRelease;
+		                    paramsArray[4] = serverProtocol;
+		                    paramsArray[5] = serverType;
+		                    paramsArray[6] = serverMate;
+		                    paramsArray[7] = mateServer;
+		                    paramsArray[8] = setName;
+		                    paramsArray[9] = serverSPA;
+		                    paramsArray[10] = serverRTDB;
+							serverParams.add(paramsArray);
 						}
 					}	
 				}
@@ -921,6 +928,7 @@ public class CaseSearchService {
 				String sql = "insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide, complete_date, target_release, schedule_date) "
 						+ splitCondition(condition, "", "case_name,'Y','"+server+"','"+login+"',now(),"+caseLogId+",'"+hotslide+"'"+",'"+complete_date+"'"+",'"+target_release+"'"+",'"+schedule_date+"'");
 				System.out.println(sql);
+				JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 				caseSearchDaoImpl.insert(jdbc, sql);
 			}
 		}
@@ -942,7 +950,7 @@ public class CaseSearchService {
 					// 保存server和case信息
 					String[] split2 = servers.split(",");
 					JSONArray Servers = LabStatusUtil.getLabStatus();
-					List<List> serverParams = new ArrayList<>();
+					List<Object []> serverParams = new ArrayList<Object []>();
 					for (String str : split2) {
 						for (int i = 0; i < Servers.size(); i++) {
 							JSONObject serverMem = Servers.getJSONObject(i).getJSONObject(Constant.BODY).getJSONObject(Constant.LAB);
@@ -958,38 +966,39 @@ public class CaseSearchService {
 							String serverRTDB = serverMem.getString(Constant.SERVERRTDB);
 							if(str.contains(serverName)){
 								//rerunning_id,serverName,serverIp,serverRelease,serverProtocol,serverType,serverMate,mateServer,setName,serverSPA,serverRTDB
-								List list = new ArrayList<>();
-								list.add(caseLogId);
-								list.add(serverName);
-								list.add(serverIp);
-								list.add(serverRelease);
-								list.add(serverProtocol);
-								list.add(serverType);
-								list.add(serverMate);
-								list.add(mateServer);
-								list.add(setName);
-								list.add(serverSPA);
-								list.add(serverRTDB);
-								serverParams.add(list);
+							    Object [] paramsArray = new Object[11];
+	                            
+	                            paramsArray[0] = caseLogId;
+	                            paramsArray[1] = serverName;
+	                            paramsArray[2] = serverIp;
+	                            paramsArray[3] = serverRelease;
+	                            paramsArray[4] = serverProtocol;
+	                            paramsArray[5] = serverType;
+	                            paramsArray[6] = serverMate;
+	                            paramsArray[7] = mateServer;
+	                            paramsArray[8] = setName;
+	                            paramsArray[9] = serverSPA;
+	                            paramsArray[10] = serverRTDB;
+	                            serverParams.add(paramsArray);
 							}
 						}	
 					}
 					insertCaseServer(serverParams);
 					
-					List<List> params = new ArrayList<>();
+					List<Object []> params = new ArrayList<Object []>();
 					for (String casename : split) {
-						List list = new ArrayList<>();
-						list.add(casename);
-						list.add(only);
-						list.add(server);
-						list.add(login);
-						list.add(new Date().getTime());
-						list.add(caseLogId);
-						list.add(hotslide);
-						list.add(complete_date);
-						list.add(target_release);
-						list.add(schedule_date);
-						params.add(list);
+					    Object [] paramsArray = new Object[10];
+						paramsArray[0] = casename;
+						paramsArray[1] = only;
+						paramsArray[2] = server;
+						paramsArray[3] = login;
+						paramsArray[4] = new Date().getTime();
+						paramsArray[5] = caseLogId;
+						paramsArray[6] = hotslide;
+						paramsArray[7] = complete_date;
+						paramsArray[8] = target_release;
+						paramsArray[9] = schedule_date;
+						params.add(paramsArray);
 					}
 					// 第三步，将数据传入正式运行表中
 					InsertTempRunCase(params);
@@ -1003,6 +1012,8 @@ public class CaseSearchService {
 	public boolean checkCaseInfo(String set,int len) throws Exception {
 		boolean result = false;
 		String sql ="select * from cases_info_db.case_tag where case_name in ("+set+")";
+		logger.debug("checkCaseInfo sql: " + sql);
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if(query.size()==len) {
 			result = true;
@@ -1011,25 +1022,30 @@ public class CaseSearchService {
 	}
 	public int insertCaseLog(String title,String server,String login,String condition) throws Exception {
 		String isql ="insert into kaliey.n_rerunning_case_tbl(title,server_info,query_condition,author,create_time) values('"+title +"','"+server+"','"+condition+"','"+login+"',now())";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		int id = jdbc.executeSqlReturnId(isql);
 		return id;
 	}
-	public void insertCaseServer(List<List> params) throws SQLException {
+	public void insertCaseServer(List<Object []> params) throws SQLException {
 		String serverSql ="insert into kaliey.n_case_server_tbl(rerunning_id,serverName,serverIp,serverRelease,serverProtocol,serverType,serverMate,mateServer,setName,serverSPA,serverRTDB) "
 				+ "values(?,?,?,?,?,?,?,?,?,?,?) ";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		jdbc.executeBatch(serverSql,params);
 	}
-	public void insertCaseBak(List<List> params) throws SQLException {
+	public void insertCaseBak(List<Object []> params) throws SQLException {
 		String baksql="insert into kaliey.n_case_bak_tbl(case_name,case_status,case_server,spa,db,rerunning_id) values(?,?,?,?,?,?)";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		jdbc.executeBatch(baksql,params);
 	}
-	public void InsertTempRunCase(List<List> params) throws Exception {
+	public void InsertTempRunCase(List<Object []> params) throws Exception {
 		String isql ="insert into cases_info_db.temp_run_case(case_name,only_run_flag,target_labs,submit_owner,submit_date,batch_id,hotslide, complete_date, target_release, schedule_date) "
 				+ "values(?,?,?,?,?,?,?,?,?,?)";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		jdbc.executeBatch(isql,params);
 	}
 	public ArrayList<HashMap<String,Object>> getTempRunCaseResultByBatchId(String batchid) throws Exception {
 		String sql ="select * from cases_info_db.temp_run_case where batch_id="+batchid;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
@@ -1063,6 +1079,7 @@ public class CaseSearchService {
 		String sql = "select count(1) result_count from cases_info_db.temp_run_case where batch_id="+id
 				+" union all "+
 				"select count(1) result_count from cases_info_db.temp_run_case where run_result='' and batch_id="+id;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if (query.size()>0) {
 			int all_count = Integer.parseInt(String.valueOf(query.get(0).get("result_count")));
@@ -1090,6 +1107,7 @@ public class CaseSearchService {
 				"select count(1) result_count from cases_info_db.temp_run_case where run_result='S' and batch_id=" +int_id+ 
 				" union all " + 
 				"select count(1) result_count from cases_info_db.temp_run_case where run_result='F' and batch_id="+int_id;
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if (query.size()>0) {
 			runing_count = Integer.parseInt(String.valueOf(query.get(0).get("result_count")));

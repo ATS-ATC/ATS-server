@@ -203,6 +203,157 @@
 
 				}
 		
+				function confirm_init_lab(condition, info) {
+                    $("#reminder").dialog({
+                        modal : true,
+                        buttons : {
+                            "Confirm" : function() {
+                                //alert("condition");
+                                $.post("./init_lab.do", {
+                                    condition : condition,
+                                }, function(data) {
+                                    $("#reminder").dialog({
+                                        buttons : {
+                                            "Confirm" : function() {
+                                                $(this).dialog("close");
+                                                window.location.reload();
+                                            }
+                                        },
+                                        open : function(event, ui) {
+                                            $(this).html("");
+                                            $(this).append(data);
+                                        }
+                                    });
+
+                                });
+                                $(this).dialog("close");
+                                $("#check-spartdb").dialog("close");
+                            },
+                            "Cancel" : function() {
+                                $(this).dialog("close");
+                            }
+                        },
+                        open : function(event, ui) {
+                            $(this).html("");
+                            $(this).append("<p>" + info + "</p>");
+                        }
+                    });
+
+                }
+				
+				function confirm_restart_client(condition, info) {
+                    $("#reminder").dialog({
+                        modal : true,
+                        buttons : {
+                            "Confirm" : function() {
+                                //alert("condition");
+                                $.post("./restart_client.do", {
+                                    condition : condition,
+                                }, function(data) {
+                                    $("#reminder").dialog({
+                                        buttons : {
+                                            "Confirm" : function() {
+                                                $(this).dialog("close");
+                                                window.location.reload();
+                                            }
+                                        },
+                                        open : function(event, ui) {
+                                            $(this).html("");
+                                            $(this).append(data);
+                                        }
+                                    });
+
+                                });
+                                $(this).dialog("close");
+                                $("#check-spartdb").dialog("close");
+                            },
+                            "Cancel" : function() {
+                                $(this).dialog("close");
+                            }
+                        },
+                        open : function(event, ui) {
+                            $(this).html("");
+                            $(this).append("<p>" + info + "</p>");
+                        }
+                    });
+
+                }
+				
+				function confirm_restart_plat(condition, info) {
+                    $("#reminder").dialog({
+                        modal : true,
+                        buttons : {
+                            "Confirm" : function() {
+                                //alert("condition");
+                                $.post("./restart_plat.do", {
+                                    condition : condition,
+                                }, function(data) {
+                                    $("#reminder").dialog({
+                                        buttons : {
+                                            "Confirm" : function() {
+                                                $(this).dialog("close");
+                                                window.location.reload();
+                                            }
+                                        },
+                                        open : function(event, ui) {
+                                            $(this).html("");
+                                            $(this).append(data);
+                                        }
+                                    });
+
+                                });
+                                $(this).dialog("close");
+                                $("#check-spartdb").dialog("close");
+                            },
+                            "Cancel" : function() {
+                                $(this).dialog("close");
+                            }
+                        },
+                        open : function(event, ui) {
+                            $(this).html("");
+                            $(this).append("<p>" + info + "</p>");
+                        }
+                    });
+
+                }
+				
+				function confirm_reinstall_lab(condition, info) {
+                    $("#reminder").dialog({
+                        modal : true,
+                        buttons : {
+                            "Confirm" : function() {
+                                //alert("condition");
+                                $.post("./reinstall_lab.do", {
+                                    condition : condition,
+                                }, function(data) {
+                                    $("#reminder").dialog({
+                                        buttons : {
+                                            "Confirm" : function() {
+                                                $(this).dialog("close");
+                                                window.location.reload();
+                                            }
+                                        },
+                                        open : function(event, ui) {
+                                            $(this).html("");
+                                            $(this).append(data);
+                                        }
+                                    });
+
+                                });
+                                $(this).dialog("close");
+                                $("#check-spartdb").dialog("close");
+                            },
+                            "Cancel" : function() {
+                                $(this).dialog("close");
+                            }
+                        },
+                        open : function(event, ui) {
+                            $(this).html("");
+                            $(this).append("<p>" + info + "</p>");
+                        }
+                    });
+
+                }
 	
 		$("#back").click(function() {
 			location.href="./getServerInfo.do";
@@ -221,13 +372,33 @@
 		$("#removeServer").click(function() {
 			var serverName = document.getElementById("serverName").value;
 			//alert(serverName);
-			confirmRemoveServer(serverName, "Confirm to remove this server?");
+			confirmRemoveServer(serverName, "Confirm to remove this lab?");
 		});
 
 		$("#cancelAll").click(function() {
 			var serverName = document.getElementById("serverName").value;
 			confirmCancelAll(serverName, "Confirm to cancel all running cases?");
 		});
+		
+		$("#init_lab").click(function() {
+            var serverName = document.getElementById("serverName").value;
+            confirm_init_lab(serverName, "Confirm to init this lab?[Only valid when lab status is Idle or Complete]");
+        });
+		
+		$("#restart_client").click(function() {
+            var serverName = document.getElementById("serverName").value;
+            confirm_restart_client(serverName, "Confirm to restart the client of this lab?");
+        });
+		
+		$("#restart_plat").click(function() {
+            var serverName = document.getElementById("serverName").value;
+            confirm_restart_plat(serverName, "Confirm to restart the platform of this lab?[Only valid when lab status is Idle or Complete]");
+        });
+		
+		$("#reinstall_lab").click(function() {
+            var serverName = document.getElementById("serverName").value;
+            confirm_reinstall_lab(serverName, "Confirm to reinstall this lab?[Only valid when lab status is Idle or Complete]");
+        });
 
 	});
 </script>
@@ -277,14 +448,17 @@
 					<tr>
 						<td colspan="4" class="submit">
 							<button class="btn btn-default" name="back" id="back">back</button>
-							<button class="btn btn-default" name="cancelAll" id="cancelAll">Cancel
-								All</button>
+							<button class="btn btn-default" name="reinstall_lab" id="reinstall_lab">Reinstall Lab</button>
+							<button class="btn btn-default" name="restart_plat" id="restart_plat">Restart Plat</button>
+							<button class="btn btn-default" name="restart_client" id="restart_client">Restart Client</button>
+							<button class="btn btn-default" name="init_lab" id="init_lab">Init Lab</button>
+							<button class="btn btn-default" name="cancelAll" id="cancelAll">Cancel All</button>
 <!-- 							<button class="btn btn-default " name="updateBuild" -->
 <!-- 								id="updateBuild">Update Build</button> -->
 <!-- 							<button class="btn btn-default " name="removeBuild" -->
 <!-- 								id="removeBuild">Remove Build</button> -->
 							<button class="btn btn-default " name="removeServer"
-								id="removeServer">Remove Server</button>
+								id="removeServer">Remove Lab</button>
 						</td>
 					</tr>
 				</table>

@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.common.util.JdbcUtil;
-import com.alucn.casemanager.server.common.util.ParamUtil;
 import com.alucn.weblab.dao.impl.SpaAndRtdbDaoImpl;
-import com.alucn.weblab.utils.KalieyMysqlUtil;
+import com.alucn.weblab.utils.JDBCHelper;
 
 
 @Service("spaAndRtdbManService")
@@ -21,7 +18,6 @@ public class SpaAndRtdbManService {
 	private List<String> SPA = new ArrayList<>();
 	private List<String> RTDB = new ArrayList<>();
 	private Map<String, List<String>> spaAndRt = new HashMap<String, List<String>>();
-	private KalieyMysqlUtil jdbc = KalieyMysqlUtil.getInstance();
 
 	public Map<String, List<String>> getSpaAndRtdbInfo() throws Exception{
 		SPA.clear();
@@ -30,6 +26,7 @@ public class SpaAndRtdbManService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String getSpa = "SELECT spa_name FROM kaliey.spainfo order by spa_name";
+		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = spaAndRtdbDaoImpl.query(jdbc, getSpa);
 		for(int i=0; i<result.size();i++){
 			Map<String, Object> obj = result.get(i);
@@ -55,6 +52,7 @@ public class SpaAndRtdbManService {
 		try {
 			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 			String [] spaName = spa.split(",");
 			String [] rtdbName = rtdb.split(",");
 			for(int i=0; i<spaName.length; i++){
@@ -76,6 +74,7 @@ public class SpaAndRtdbManService {
 		try {
 			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
+		    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 			String [] spaName = spa.split(",");
 			String [] rtdbName = rtdb.split(",");
 			for(int i=0; i<spaName.length; i++){

@@ -22,6 +22,11 @@
 	    <artifactId>spring-data-redis</artifactId>
 	    <version>1.8.1.RELEASE</version>
 	</dependency>
+	<dependency>
+	   <groupId>com.alibaba</groupId>
+	   <artifactId>druid</artifactId>
+	   <version>1.1.10</version>
+	</dependency>
   
   <!-- Spring websocket and messaging -->
   <!-- <dependency>

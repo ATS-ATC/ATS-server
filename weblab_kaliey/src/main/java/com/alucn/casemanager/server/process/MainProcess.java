@@ -41,7 +41,7 @@ public class MainProcess {
 					rspJson=CaseCacheOpt.inOrUdatabase(reqBody);
 					break;
 				case Constant.CASELISTACK:
-					rspJson=CaseCacheOpt.caseListAck(reqBody);
+					
 					break;
 			}
 		}catch (SysException e) {

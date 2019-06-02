@@ -3,7 +3,6 @@ package com.alucn.casemanager.server.common;
 import net.sf.json.JSONObject;
 
 import com.alucn.casemanager.server.common.constant.Constant;
-import com.alucn.casemanager.server.process.DistributeCase;
 /**
  * case opt
  * @author wanghaiqi
@@ -28,10 +27,5 @@ public class CaseCacheOpt {
 	public static String inOrUdatabase(JSONObject body) throws Exception{
 		CaseConfigurationCache.inOrUcaseStatus(body);
 		return Constant.UPDATE;
-	}
-	//4.caselistack
-	public static String caseListAck(JSONObject body) throws Exception{
-		DistributeCase.clientACK.put(body.getJSONObject(Constant.LAB).getString(Constant.SERVERNAME), true);
-		return Constant.ACKUPDATE;
 	}
 }
