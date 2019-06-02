@@ -60,7 +60,6 @@ public class JDBCHelper {
 	}
 	
 	public static JDBCHelper getInstance(String dataSourceName) {
-	    logger.error("dataSourceName: "+dataSourceName);
 		if(StringUtils.isEmpty(dataSourceName)){
 		    logger.error("please specify the database name");
 		}
@@ -78,8 +77,6 @@ public class JDBCHelper {
 				}
 			}
 		}
-		logger.error("DataSourceName: "+DataSourceName);
-		logger.error("dataMap: "+dataMap);
 		return dataMap.get(DataSourceName.get());
 	}
 	
@@ -249,16 +246,16 @@ public class JDBCHelper {
 	 * @throws SQLException
 	 */
 	
-	public void executeSql(String sql) throws SQLException {
+	public int executeSql(String sql) throws SQLException {
         Connection conn = null;
         PreparedStatement ps = null;
-        
+        int count = 0;
         try {
             conn = getConnection();
             ps = conn.prepareStatement(sql);
             conn.setAutoCommit(false);
             ps.executeUpdate();
-            
+            count = ps.getUpdateCount();
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -266,6 +263,7 @@ public class JDBCHelper {
         } finally {
             closeConn(conn, ps, null);
         }
+        return count;
     }
     public int executeSqlReturnId(String sql) throws SQLException {
         Connection conn = null;

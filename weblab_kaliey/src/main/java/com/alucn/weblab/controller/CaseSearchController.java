@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.aspectj.apache.bcel.generic.ReturnaddressType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +35,7 @@ import com.alucn.weblab.service.CaseSearchService;
 import com.alucn.weblab.service.LoginService;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author haiqiw
@@ -109,7 +111,7 @@ public class CaseSearchController {
 		}
 		model.addAttribute("deptmap", deptmap);
 		
-		model.addAllAttributes(caseSearchService.getCaseSearch());
+		model.addAllAttributes(caseSearchService.getCaseSearchPara());
 		//model.addAllAttributes(caseSearchService.getCaseSearch(deptid,hasRole));
 		return "caseSearch";
 	}
@@ -135,19 +137,29 @@ public class CaseSearchController {
 		System.err.println(condition);
 		String limit = request.getParameter("limit")==null?"":request.getParameter("limit").toString().trim();
 		String offset = request.getParameter("offset")==null?"":request.getParameter("offset").toString().trim();
-		String caseName = request.getParameter("caseName")==null?"":request.getParameter("caseName").toString().trim();
 		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		Map<String,Object> paramMap = new HashMap<String,Object>();
 		paramMap.put("limit", limit);
 		paramMap.put("offset", offset);
-		paramMap.put("caseName", caseName);
-		System.out.println(condition);
+		logger.info(condition);
 		//logger.info(caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		returnMap.put("total",(String)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"total"));
 		returnMap.put("rows", (ArrayList<HashMap<String, Object>>)caseSearchService.searchCaseInfo(paramMap,condition, session.getAttribute("auth").toString(),"rows"));
 		return returnMap;
 	}
+	
+	/*
+	@RequestMapping(path = "/searchCaseParaAR")
+	@ResponseBody
+    public Map<String, List<String>> searchCaseParaAR(HttpSession session,HttpServletRequest request ) throws Exception{
+	    logger.error("searchCaseParaAR requested");
+        return CaseSearchService.getSearchParasAR();
+    }
+	*/
+	
+	
+	
 	@RequestMapping(path = "/searchCaseRunLog")
 	@ResponseBody
 	public Map<String,Object> searchCaseRunLog(HttpSession session,HttpServletRequest request ) throws Exception{
@@ -202,6 +214,18 @@ public class CaseSearchController {
 		returnMap.put("rows", searchCaseRunLogInfos);
 		return returnMap;
 	}
+	
+	@RequestMapping(path = "/cancelBatch")
+    @ResponseBody
+    public Map<String,Object> cancelBatch(HttpServletRequest request ) throws Exception{
+	    Map<String,Object> resultMap = new HashMap<String,Object>();
+        String batch_id = request.getParameter("batch_id")==null?"":request.getParameter("batch_id").toString().trim();
+        String result = caseSearchService.cancelBatch(batch_id);
+        resultMap.put("result", result);  
+        return resultMap;
+    }
+    
+	
 	@RequestMapping(path = "/searchCaseRunLogInfo")
 	public String searchCaseRunLogInfo(Model model,HttpServletRequest request ) throws Exception{
 		String int_id = request.getParameter("int_id")==null?"":request.getParameter("int_id").toString().trim();
@@ -216,6 +240,8 @@ public class CaseSearchController {
 		
 		for (HashMap<String, Object> hashMap : searchCaseRunLogInfoById) {
 			String condition = (String) hashMap.get("query_condition");
+			JSONObject CON_OBJ = caseSearchService.condition_to_jsonobject(condition);
+			/*
 			if(!"".equals(condition.trim())) {
 			    String [] conds = condition.split("&");
 		        for (int i = 0; i < conds.length; i++)
@@ -230,29 +256,15 @@ public class CaseSearchController {
 		                cMap.put(paras[0],"");
 		            }
 		        }
-		        /*
-				String[] split = condition.trim().split(";");
-				cMap.put("dataSource", split[0]);
-				cMap.put("release", split[1]);
-				cMap.put("customer", split[2]);
-				cMap.put("base_data", split[3]);
-				cMap.put("mate", split[4]);
-				cMap.put("lab_number", split[5]);
-				cMap.put("special_data", split[6]);
-				cMap.put("porting_release", split[7]);
-				cMap.put("case_status", split[8]);
-				cMap.put("feature_number", split[9]);
-				cMap.put("author", split[10]);
-				cMap.put("protocol", split[11]);
-				cMap.put("workable_release", split[12]);
-				cMap.put("server", split[13]);
-				*/
-			}
+		        
+			}*/
 			String server_info = (String) hashMap.get("server_info");
-			cMap.put("server", server_info);    
+			CON_OBJ.put("server", server_info);  
+			String condition_html = caseSearchService.convert_condition_to_html(CON_OBJ);
+			//cMap.put("server", server_info);    
 			//logger.info("12-->" + split[12]);
 			//ccMap.put("condition_info", cMap);
-			hashMap.put("condition", cMap);
+			hashMap.put("condition", condition_html);
 			
 			paramMap.put("case_status", true);
 			ArrayList<HashMap<String, Object>> case_bak = caseSearchService.searchCaseRunLogCaseInfoById(paramMap);
@@ -388,14 +400,18 @@ public class CaseSearchController {
 		String set = request.getParameter("set")==null?"":request.getParameter("set").toString().trim();
 		String server = request.getParameter("server")==null?"":request.getParameter("server").toString().trim();
 		String formtitle = request.getParameter("formtitle")==null?"":request.getParameter("formtitle").toString().trim();
-		String hotslide = request.getParameter("hotslide")==null?"":request.getParameter("hotslide").toString().trim();
-		String flag = request.getParameter("flag")==null?"":request.getParameter("flag").toString().trim();
+		String select_all_flag = request.getParameter("allselect")==null?"":request.getParameter("allselect").toString().trim();
 		String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
-		String schedule_date = request.getParameter("schedule_date")==null?"":request.getParameter("schedule_date").toString().trim();
+		String run_mode = request.getParameter("run_mode")==null?"":request.getParameter("run_mode").toString().trim();
 		String login = (String) session.getAttribute("login");
 		
+		if("sanity".equals(run_mode))
+		{
+		    set = "SPID-0/sp0001.json,SPID-0/sp0002.json";
+		}
+		
 		logger.info("set ---- "+set);
-		if("".equals(set) && "".equals(flag)) {
+		if("".equals(set) && "".equals(select_all_flag)) {
 			returnMap.put("msg", "please import some case");
 			return returnMap;
 		}
@@ -403,7 +419,8 @@ public class CaseSearchController {
 			returnMap.put("msg", "please checked some server to run case");
 			return returnMap;
 		}
-		Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition,hotslide, schedule_date);
+		//Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",flag,condition,hotslide, schedule_date);
+		Map<String, Object> onlyrun = caseSearchService.onlyrun(set,server,formtitle,login,"Y",select_all_flag,condition, run_mode);
 		if(onlyrun.get("msg")!=null) {
 			returnMap.put("msg", onlyrun.get("msg"));
 			return returnMap;

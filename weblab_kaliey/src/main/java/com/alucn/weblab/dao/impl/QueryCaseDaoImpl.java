@@ -19,15 +19,15 @@ public class QueryCaseDaoImpl implements KalieyDataAccessInterface{
 	}
 
 	@Override
-	public void update(JDBCHelper jdbc, String sql) throws Exception {
+	public int update(JDBCHelper jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		
+		return jdbc.executeSql(sql);
 	}
 
 	@Override
-	public void delete(JDBCHelper jdbc, String sql) throws Exception {
+	public int  delete(JDBCHelper jdbc, String sql) throws Exception {
 		// TODO Auto-generated method stub
-		
+	    return jdbc.executeSql(sql);
 	}
 
 	@Override

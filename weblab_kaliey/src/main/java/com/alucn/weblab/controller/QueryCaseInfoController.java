@@ -33,6 +33,7 @@ import com.alucn.weblab.utils.TimeUtil;
 import com.alucn.weblab.utils.jsonUtil;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 @Controller
@@ -67,13 +68,14 @@ public class QueryCaseInfoController {
 		//计算hodingduration
 		if(queryCaseInfoTable.size()>0) {
 			String warnning= "0";
-			ArrayList<HashMap<String,Object>> config = configOptService.getConfig();
+			JSONArray config = configOptService.getConfig();
 			if(config.size()>0) {
-				for (HashMap<String, Object> hashMap : config) {
-					Object con_key = hashMap.get("con_key");
-					Object con_value = hashMap.get("con_value");
+				for (int i = 0; i < config.size(); i++)
+				{
+				    JSONObject con_obj = config.getJSONObject(i);
+				    String con_key = con_obj.getString("con_key");
 					if("case.dashboard.warning".equals(con_key)) {
-						warnning=""+con_value;
+						warnning=con_obj.getString("con_value");
 					}
 				}
 			}

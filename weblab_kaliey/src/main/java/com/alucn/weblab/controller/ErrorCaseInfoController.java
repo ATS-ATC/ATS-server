@@ -2,6 +2,7 @@ package com.alucn.weblab.controller;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,12 +53,18 @@ public class ErrorCaseInfoController {
 		String userName = session.getAttribute("login").toString();
 		//String auth = session.getAttribute("auth").toString();
 		Subject subject = SecurityUtils.getSubject();  
-        boolean hasRole = subject.hasRole("admin");
-        boolean hasSRole = subject.hasRole("super");
+		
 		boolean checkAllCase = false;
-		if (hasRole || hasSRole) {
-			checkAllCase = true;
-		}
+        boolean hasRole[] = subject.hasRoles(Arrays.asList("admin", "boss", "leader"));
+        for(int i = 0; i < hasRole.length; i++)
+        {
+            if(hasRole[i])
+            {
+                checkAllCase = true;
+                break;
+            }
+        }
+		
 		ArrayList<HashMap<String, Object>> failCaseList = errorCaseInfoService.getErrorCaseInfoTable(userName,feature, checkAllCase,offset,limit,sort,sortOrder);
 		int errorCaseInfoTableCount = errorCaseInfoService.getErrorCaseInfoTableCount(userName,feature, checkAllCase);
 		returnMap.put("rows", failCaseList);
@@ -70,13 +77,16 @@ public class ErrorCaseInfoController {
 		
 		String userName = session.getAttribute("login").toString();
 		Subject subject = SecurityUtils.getSubject();  
-        boolean hasARole = subject.hasRole("admin");
-        boolean hasSRole = subject.hasRole("super");
 		boolean checkAllCase = false;
-		if (hasARole || hasSRole) {
-		//if (hasARole) {
-			checkAllCase = true;
-		}
+        boolean hasRole[] = subject.hasRoles(Arrays.asList("admin", "boss", "leader"));
+        for(int i = 0; i < hasRole.length; i++)
+        {
+            if(hasRole[i])
+            {
+                checkAllCase = true;
+                break;
+            }
+        }
         
 		//ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, session.getAttribute("login").toString(), session.getAttribute("auth").toString());
 		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo(featureName, userName, checkAllCase);
@@ -94,12 +104,16 @@ public class ErrorCaseInfoController {
 		
 		String userName = session.getAttribute("login").toString();
 		Subject subject = SecurityUtils.getSubject();  
-		boolean hasARole = subject.hasRole("admin");
-		boolean hasSRole = subject.hasRole("super");
 		boolean checkAllCase = false;
-		if (hasARole || hasSRole) {
-			checkAllCase = true;
-		}
+        boolean hasRole[] = subject.hasRoles(Arrays.asList("admin", "boss", "leader"));
+        for(int i = 0; i < hasRole.length; i++)
+        {
+            if(hasRole[i])
+            {
+                checkAllCase = true;
+                break;
+            }
+        }
 		ArrayList<HashMap<String, Object>> errorCaseList = errorCaseInfoService.getErrorCaseInfo4(featureName, userName, checkAllCase);
 		ArrayList<HashMap<String, Object>> errorReasonList = errorCaseInfoService.getErrorCaseReason();
 		model.addAttribute("featureName",featureName);

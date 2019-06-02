@@ -93,11 +93,18 @@ public class LoginService {
         return result;
 	}
 	//只取状态正常的账号
+    public ArrayList<HashMap<String, Object>> queryUserFromEmail(String email) throws Exception{
+        String sql = "select user_name from cases_info_db.user_info where to_reporter <> '' and mail = '"+email.trim()+"'";
+        JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
+        ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
+        return result;
+    }
+	
 	@Cacheable(value = "user")
 	public ArrayList<HashMap<String, Object>> queryNUser(NUser nuser) throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
-		String sql = "select * from kaliey.n_user where stateflag=0 and username='"+nuser.getUsername().trim()+"'";
+		String sql = "select U.id, U.username, U.`password`, U.stateflag,D.dept_id AS deptid from kaliey.n_user as U left join kaliey.n_user_dept as D on U.id = D.user_id where U.stateflag = 0 and U.username = '"+nuser.getUsername().trim()+"'";
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = userDaoImpl.query(jdbc, sql);
 		return result;

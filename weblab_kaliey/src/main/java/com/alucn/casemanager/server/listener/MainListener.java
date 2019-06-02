@@ -42,7 +42,7 @@ public class MainListener implements ServletContextListener{
 			System.out.println("[The number of arguments is incorrect, and there is only one parameter for the profile path]");
 		}else{
             configFilesPath = args[0];
-            
+            System.out.println(configFilesPath);
 			try {
 				
 				//log4j Initialization

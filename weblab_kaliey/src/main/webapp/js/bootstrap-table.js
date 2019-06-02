@@ -702,6 +702,7 @@
 
         this.$header = this.$el.find('>thead');
         if (!this.$header.length) {
+        	
             this.$header = $('<thead></thead>').appendTo(this.$el);
         }
         this.$header.find('tr').each(function () {

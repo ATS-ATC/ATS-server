@@ -5,16 +5,21 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<script src="./jquery/jquery-3.2.1.js"></script>
-<script src="./bootstrap/js/bootstrap.min.js"></script>
-<script src="./highcharts/highcharts.js"></script>
-<script src="./highcharts/modules/exporting.js"></script>
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<script src="${pageContext.request.contextPath}/highcharts/highcharts.js"></script>
+<script src="${pageContext.request.contextPath}/highcharts/modules/exporting.js"></script>
+
 <link href="${pageContext.request.contextPath}/css/font-awesome.min.css" rel="stylesheet">
+
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/csshake.min.css">
-<!-- <script src="./js/echarts.js"></script>
-<script src="./js/echarts-gl.js"></script> -->
-<!-- <meta http-equiv="refresh" content="5*60"> -->
+
 <title>Nokia Corporation</title>
 <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
 <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
@@ -263,6 +268,18 @@
 									</button>
 								</a>
 							</li>
+							
+							<li id="error-cases" role="presentation" onclick="menuClick('${pageContext.request.contextPath}/getSubmitPermission.do')" >
+                                <a href="#" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">
+                                    <button type="button" class="btn btn-link btn-default btn-block" style="color: white;text-decoration:none;border:none;outline:none;text-align: left;"><!-- padding-left:23px;padding-right:93px; -->
+                                        &nbsp;&nbsp;
+                                        <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<span >Submit Permission</span>
+                                    </button>
+                                </a>
+                            </li>
+							
+							 
 							
 							<li role="presentation" ><%-- onclick="menuClick('${pageContext.request.contextPath}/config.do')" --%>
 							  	<a id="config-manage" href="#config-info" class="nav-header menu-first collapsed" data-toggle="collapse" style="padding-top: 0px; padding-bottom: 0px;padding-left:0px;padding-right:0px;">

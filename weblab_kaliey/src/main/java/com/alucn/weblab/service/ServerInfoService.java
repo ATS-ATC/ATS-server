@@ -105,6 +105,7 @@ public class ServerInfoService {
 		JSONArray infos = null;
 		try {
 			infos = LabStatusUtil.getLabStatus();
+			logger.info(infos.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -272,6 +273,7 @@ public class ServerInfoService {
 		JSONArray infos = null;
 		try {
 			infos = LabStatusUtil.getLabStatus();
+			logger.info("infos: "+ infos.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -357,6 +359,7 @@ public class ServerInfoService {
 				}
 			}
 		}
+		logger.info(setMap.toString());
 		return setMap;
 	}
 	
@@ -424,6 +427,15 @@ public class ServerInfoService {
        String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
        //"name="+serverName+"&op=REMOVE_SERVER";
        String data = "{\"name\": \""+serverName+"\", \"op\": \"REINSTALL_LAB\"}";
+       String reqUrl = HttpReq.reqUrl(httpUrl, data);
+       return reqUrl;
+   }
+   
+   public String change_auto_update_flag(String serverName, String flag){
+       logger.info(serverName + "-------" + flag);
+       String httpUrl = "http://135.242.16.160:8000/auto-test/api/req_lab_op";
+       //"name="+serverName+"&op=REMOVE_SERVER";
+       String data = "{\"name\": \""+serverName+"\", \"op\": \"CHG_BUILD_UPDATE:"+ flag+"\"}";
        String reqUrl = HttpReq.reqUrl(httpUrl, data);
        return reqUrl;
    }
@@ -559,6 +571,7 @@ public class ServerInfoService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String dept_ids = StringUtil.formatSplitList(deptids);
+		logger.info(dept_ids);
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		String sql = "select * from kaliey.n_add_lab_status "
 				+ "where 1=1 ";

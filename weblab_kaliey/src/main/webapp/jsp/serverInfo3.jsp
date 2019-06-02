@@ -7,22 +7,25 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--<meta http-equiv="refresh" content="60">页面每60秒刷新一次 -->
-<script src="${pageContext.request.contextPath}/js/jquery.min.js"></script>
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
 
-<script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
-<link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
 
-<script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
-<link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.css">
+<script src="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.js"></script>
 
 <script src="${pageContext.request.contextPath}/js/jquery.treegrid.min.js"></script>
 <script src="${pageContext.request.contextPath}/js/bootstrap-table-treegrid.min.js"></script>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/jquery.treegrid.css">
 
 
+<link href="${pageContext.request.contextPath}/css/bootstrap-select.min.css" rel="stylesheet">
+<script src="${pageContext.request.contextPath}/js/bootstrap-select.min.js"></script>
 
-<script src="./js/bootstrap-select.min.js"></script>
-<link href="./css/bootstrap-select.min.css" rel="stylesheet">
 
 <style type='text/css'>
 .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn){
@@ -135,6 +138,15 @@
 							    <div class="col-sm-4">
 									<input type="text" class="form-control" id="arelease"  placeholder="release" style="display: inline;">
 							    </div>
+							    <label for="aupdate" class="col-sm-2 control-label" style="text-align: left;">auto update build</label>
+                                <div class="col-sm-4">
+                                    <!-- <input type="text" class="form-control" id="aupdate"  placeholder="auto_update_flag" style="display: inline;"> -->
+                                    <select class="form-control" name="aupdate" id="aupdate">
+                                        <option>Y</option>
+                                        <option>N</option>
+                                    </select>
+                                </div>
+							    
 							  </div>
 							  <div class="form-group">
 							    <label for="aprotocol" class="col-sm-2 control-label" style="text-align: left;">protocol</label>
@@ -275,48 +287,14 @@
         				<div class="col-md-12">
         					<form class="form-horizontal" role="form">
 								  <div class="form-group">
-								    <label for="aeservername" class="col-sm-2 control-label" style="text-align: left;">servername</label>
+								    <label for="aeservername" class="col-sm-4 control-label" style="text-align: left;">servername</label>
 								    <div class="col-sm-6" style="padding-right: 0px;">
 								      <input type="text" class="form-control" id="aeservername"  placeholder="servername" >
 								    </div>
-								    <!-- <div class="col-sm-4" style="padding-left: 0px;">
-								      <span id="aecompletion" class="glyphicon glyphicon-leaf btn" aria-hidden="true" style="display: inline;"></span>
-								    </div> -->
-								  </div>
-								  <!-- <input id="fgipflag" type="hidden" value='fgip2'/>
-								  <div class="form-group" id="fgip2">
-								  		<label for="aeip2" class="col-sm-2 control-label" style="text-align: left;">ip</label>
-									    <div class="col-sm-6" style="padding-right: 0px;">
-									      		<div id="ipList"></div>
-									    </div>
-									    <div class="col-sm-4" style="padding-left: 0px;">
-									      <span id="editipbtn" class="glyphicon glyphicon-cog btn" aria-hidden="true" style="display: inline;"></span>
-									    </div>
-								  </div>
-								  <div class="form-group" id="fgip" style="display:none">
-								  		<label for="aeip" class="col-sm-2 control-label" style="text-align: left;">ip</label>
-									    <div class="col-sm-6" style="padding-right: 0px;">
-									      	<input type="text" class="form-control" id="aeip"  placeholder="ip" >
-									      		<div id="ipList"></div>
-									    </div>
-									    <div class="col-sm-4" style="padding-left: 0px;">
-									      <span id="editipbtn2" class="glyphicon glyphicon-cog btn" aria-hidden="true" style="display: inline;"></span>
-									    </div>
-								  </div>
+								    
+								  </div>						
 								  <div class="form-group" >
-								  		<label for="aerelease" class="col-sm-2 control-label" style="text-align: left;">release</label>
-									    <div class="col-sm-6" style="padding-right: 0px;">
-									      <input type="text" class="form-control" id="aerelease"  placeholder="release" >
-									    </div>
-								  </div>
-								  <div class="form-group" >
-								  		<label for="aeprotocol" class="col-sm-2 control-label" style="text-align: left;">protocol</label>
-									    <div class="col-sm-6" style="padding-right: 0px;">
-									      <input type="text" class="form-control" id="aeprotocol"  placeholder="protocol" >
-									    </div>
-								  </div> -->
-								  <div class="form-group" >
-								  		<label for="aeprotocol" class="col-sm-2 control-label" style="text-align: left;">group</label>
+								  		<label for="aeprotocol" class="col-sm-4 control-label" style="text-align: left;">group</label>
 									    <div class="col-sm-6" style="padding-right: 0px;">
 									      <select id="ehdept" class="selectpicker"  data-live-search="true" data-max-options="1">
 											<c:forEach var="item" items="${deptmap}">   
@@ -327,7 +305,7 @@
 								  </div>
 								   
 								  <div class="form-group" >
-								  		<label id="laeset" for="aeset" class="col-sm-2 control-label" style="text-align: left;">set</label>
+								  		<label id="laeset" for="aeset" class="col-sm-4 control-label" style="text-align: left;">set</label>
 								  		<input id="lcreateflag" type="hidden" value="create"/>
 								  		<div class="col-sm-6" style="padding-right: 0px;">
 										    <div id="lcreatediv"><input id="lsset1" class="form-control"  type="text" placeholder="creaste set"/></div>
@@ -336,6 +314,18 @@
 										    </div>
 									    </div>
 								  </div>
+								  <div class="form-group" >							  
+								    <label for="eupdate" class="col-sm-4 control-label" style="text-align: left;">auto update build</label>
+								    <input id="lcreateflag" type="hidden" value="create"/>
+	                                <div class="col-sm-6" style="padding-right: 0px;">
+	                                    <!-- <input type="text" class="form-control" id="eupdate"  placeholder="auto_update_flag" style="display: inline;"> -->
+	                                    <select class="form-control" name="eupdate" id="eupdate">
+	                                        <option>Y</option>
+	                                        <option>N</option>
+	                                    </select>
+	                                </div>
+                                        
+                                  </div>
 								  <div id="completion"></div>
 								  <div id="msg"></div>
 							</form>
@@ -392,6 +382,7 @@ $("#csset").click(function(){
 
 $("#addExistSubmit").click(function(){
 	var aeservername = $("#aeservername").val().replace(" ","");
+	var eupdate = $("#eupdate").val().replace(" ","");
 	if(aeservername==""){
 		alert("please fill in servername.");
 		//$("#addExistSubmit").attr("disabled","disabled");
@@ -462,6 +453,7 @@ $("#addExistSubmit").click(function(){
 	}else {
 		sdata=sdata+"&ehdept="+ehdept
 	}
+	sdata=sdata+"&eupdate="+eupdate
 	//alert(sdata);
 	$.ajax({
 		url:"genClientNew.do",
@@ -553,6 +545,7 @@ $("#addSubmit").click(function(){
 	}else {
 		sdata=sdata+"&arelease="+arelease
 	}
+	var aupdate = $("#aupdate").val().replace(" ","");
 	var aprotocol = $("#aprotocol").val().replace(" ","");
 	/* var aservertype = $("#aservertype").val().replace(" ","");
 	var amatetype = $("#amatetype").val().replace(" ",""); */
@@ -567,7 +560,7 @@ $("#addSubmit").click(function(){
 	var ainsflag = $("input[name='optionsRadios']:checked").val().replace(" ","");
 	//alert(ainsflag);
 	//"&aservertype="+aservertype+"&amatetype="+amatetype+
-	sdata=sdata+"&aprotocol="+aprotocol+"&ainsflag="+ainsflag
+	sdata=sdata+"&aprotocol="+aprotocol+"&aupdate="+aupdate +"&ainsflag="+ainsflag
 	var sspa = $("#sspa").val();
 	if(sspa==null){
 		alert("spa is required");
@@ -648,6 +641,50 @@ $(function() {
 	var dbDefault = ${dbDefault};
 	$('#sdb').selectpicker('val', dbDefault);
 	
+	function mate_info_formatter(value, row, index) {
+	   if(row.serverMate == "" && row.mateServer == "")
+		   return "";
+	
+       return row.serverMate + " - " + row.mateServer;
+    } 
+	
+	function auto_update_formatter(value, row, index) {
+	   if(value == "")
+		   return "";
+       return [   
+       '<button id="chg_auto_update" type="button" class="btn btn-info">'+ row.auto_update_build + '</button>'
+       ].join('');
+    } 
+	window.auto_update_events = {
+        'click #chg_auto_update': function (e, value, row, index) {
+           var flag = 'Y';
+           if(value == 'Y')
+           {
+        	   flag = 'N';
+           }
+           else
+           {
+        	   flag = 'Y';
+           }
+           $.ajax({
+			    url:"change_auto_update_flag.do",
+			    data:"flag="+flag+ "&serverName=" + row.name,
+			    
+			    success:function(data){
+			        if(data.result =="SUCCESS"){
+			        	$('#table').bootstrapTable('updateCell', {
+			                index: index,       //行索引
+			                field: 'auto_update_build',       //列名
+			                value: flag        //cell值
+			            })
+			        }else  {
+			            alert("Change failed.");
+			        }
+			    }
+			});
+         }
+    };
+    
 	var $table = $('#table');
   	$table.bootstrapTable({
 	    url: 'getServerInfoJson.do',
@@ -655,13 +692,10 @@ $(function() {
 	    //height: $(window).height(),
 	    //striped: true,
 	    sidePagination: 'server',
+	    
 	    //这里是标志id  和 parentIdField有关系
 	    idField: 'id',
 	    columns: [
-	      {
-	        field: 'ck',
-	        checkbox: true
-	      },
 	      {
 	        field: 'name',
 	        title: 'Name',
@@ -705,10 +739,13 @@ $(function() {
 	      ,{
 		        field: 'serverMate',
 		        title: 'Mate Type',
+		        formatter: mate_info_formatter
 		    }
 	      ,{
-		        field: 'mateServer',
-		        title: 'Mate',
+		        field: 'auto_update_build',
+		        title: 'Auto Update',
+		        events: auto_update_events,
+		        formatter: auto_update_formatter
 		    }
 	      ,{
 		        field: 'deptname',

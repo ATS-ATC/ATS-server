@@ -3,12 +3,15 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <html>
 <head>
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
 <script src="${pageContext.request.contextPath}/js/sockjs-0.3.min.js"></script>
-<script src="${pageContext.request.contextPath}/jquery/jquery-3.2.1.js"></script>
-
-<script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
-<link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
 <link href="${pageContext.request.contextPath}/css/font-awesome.css" type="text/css" rel="stylesheet">
 <link href="${pageContext.request.contextPath}/css/chat.css" type="text/css" rel="stylesheet">
 <script type="text/javascript">

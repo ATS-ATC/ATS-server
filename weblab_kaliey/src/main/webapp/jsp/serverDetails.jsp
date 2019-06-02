@@ -5,14 +5,21 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<link href="./jquery-ui/jquery-ui.min.css" rel="stylesheet">
-<script src="./jquery/jquery-3.2.1.js"></script>
-<script src="./bootstrap/js/bootstrap.min.js"></script>
-<script src="./jquery-ui/jquery-ui.min.js"></script>
-<link href="./css/styleDetail.css" rel="stylesheet" type="text/css" />
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.css">
+<script src="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.js"></script>
+
+<link href="${pageContext.request.contextPath}/css/styleDetail.css" rel="stylesheet" type="text/css" />
 <title>Server Details</title>
 <script>
+    $.fn.bootstrapBtn = $.fn.button.noConflict();
 	$(function() {
 		var dialog;
 		function doCheck(command) {

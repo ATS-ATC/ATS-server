@@ -14,6 +14,7 @@ import java.nio.channels.ScatteringByteChannel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,6 +29,7 @@ import javax.swing.text.DefaultEditorKit.InsertBreakAction;
 
 import org.apache.catalina.tribes.transport.nio.ParallelNioSender;
 import org.junit.Test;
+import org.openqa.selenium.logging.NeedsLocalLogs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,11 +48,15 @@ import com.alucn.weblab.utils.JDBCHelper;
 import com.alucn.weblab.utils.LabStatusUtil;
 import com.alucn.weblab.utils.StringUtil;
 import org.apache.log4j.Logger;
+import org.apache.naming.java.javaURLContextFactory;
+import org.aspectj.apache.bcel.generic.ReturnaddressType;
+
 import com.microsoft.schemas.office.visio.x2012.main.VisioDocumentDocument1;
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.mysql.fabric.xmlrpc.base.Data;
 import com.mysql.jdbc.log.Log;
 
+import mx4j.tools.config.DefaultConfigurationBuilder.New;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 /**
@@ -63,7 +69,7 @@ public class CaseSearchService {
     private static Logger logger = Logger.getLogger(CaseSearchService.class);
 	@Autowired(required=true)
 	private CaseSearchDaoImpl caseSearchDaoImpl;
-	private Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
+	private Map<String, Object> caseSearchItemMap = new HashMap<String, Object>();
 	public static volatile String sqlAdmin = "";
 	//private Lock lock = new ReentrantLock(true);
 	@Autowired
@@ -71,7 +77,7 @@ public class CaseSearchService {
 	
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public Map<String, List<String>> getCaseSearch() throws NumberFormatException, InterruptedException, IOException{
-		
+	    Map<String, List<String>> caseSearchMap = new HashMap<String, List<String>>();
 		//ServletContext servletContext = ContextLoader.getCurrentWebApplicationContext().getServletContext();
 		String configPath = System.getenv("WEBLAB_CONF");
 		String [] args1 = {servletContext.getRealPath("conf")};       //localhost server
@@ -87,24 +93,322 @@ public class CaseSearchService {
 		JSONArray single = caseSearchItems.getJSONArray("single");
 		for(int i=0; i<single.size(); i++){
 			JSONObject caseSearchItem = single.getJSONObject(i);
-			caseSearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
+			caseSearchMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
 		}
-		caseSearchItems = getJsonFile();
+		caseSearchItems = getJsonFileFromWeb(false);
 		single = caseSearchItems.getJSONArray("single");
 		for(int i=0; i<single.size(); i++){
 			JSONObject caseSearchItem = single.getJSONObject(i);
-			caseSearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
+			caseSearchMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
 		}
 		
 		
 		JSONArray multiple = caseSearchItems.getJSONArray("multiple");
 		for(int i=0; i<multiple.size(); i++){
 			JSONObject caseSearchItem = multiple.getJSONObject(i);
-			caseSearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
+			caseSearchMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
 		}
 		
-		return caseSearchItemMap;
+		return caseSearchMap;
 	}
+	
+	
+	public JSONObject get_tag_editable(boolean isAR)
+	{
+	    JSONArray tag_items = new JSONArray();
+	    JSONArray do_checklist = new JSONArray();
+	    JSONArray do_select = new JSONArray();
+	    String key = "dft";
+	    String value = "";
+	    if(isAR)
+	    {
+	        key = "ar";
+	    }
+	    JSONArray dyamic_datas = new JSONArray();
+	    JSONObject caseSearchItems = getJsonFileFromWeb(isAR);
+	    
+        JSONArray single = caseSearchItems.getJSONArray("single");
+        for(int i=0; i<single.size(); i++){
+            JSONObject caseSearchItem = single.getJSONObject(i);
+            String key_name = caseSearchItem.getString("name");
+            
+            if("base_release".equals(key_name))
+            {             
+                JSONObject dyamic_data = new JSONObject();
+                String name = "workable_release";
+                dyamic_data.put("name", name);
+                String element_id = key + "-" + name;
+                JSONObject obj = new JSONObject();
+                obj.put("id", element_id);
+                JSONArray source = new JSONArray();
+                source.add("");          
+                JSONArray value_list = caseSearchItem.getJSONArray("value");
+                source.addAll(value_list);
+                obj.put("source", source);
+                obj.put("value", new JSONArray());
+                
+                do_select.add(obj);
+                value = "<a href=\"javascript:void(0)\" id=\"" + element_id + "\" data-name=\"" 
+                      + element_id + "\" data-type=\"select\" data-pk=\"undefined\"  data-title=\"" 
+                      + name + "\" data-value=\"\" class=\"editable editable-click editable-empty\">Empty</a>";
+                
+                dyamic_data.put("value", value);
+                dyamic_datas.add(dyamic_data);
+                break;
+            }
+        }
+        
+        for(int i=0; i<single.size(); i++){
+            JSONObject caseSearchItem = single.getJSONObject(i);
+            String name = caseSearchItem.getString("name");
+            JSONObject dyamic_data = new JSONObject();
+            dyamic_data.put("name", name);
+            String element_id = key + "-" + name;
+            JSONObject obj = new JSONObject();
+            obj.put("id", element_id);
+            obj.put("source", caseSearchItem.getJSONArray("value"));
+            obj.put("value", new JSONArray());
+            
+            do_checklist.add(obj);
+            value = "<a href=\"javascript:void(0)\" id=\"" + element_id + "\" data-name=\"" 
+                  + element_id + "\" data-type=\"checklist\" data-pk=\"undefined\"  data-title=\"" 
+                  + name + "\" data-value=\"\" class=\"editable editable-click editable-empty\">Empty</a>";
+            
+            dyamic_data.put("value", value);
+            dyamic_datas.add(dyamic_data);
+            
+        }
+        
+        
+        JSONArray multiple = caseSearchItems.getJSONArray("multiple");
+        for(int i=0; i<multiple.size(); i++){
+            JSONObject caseSearchItem = multiple.getJSONObject(i);
+            String name = caseSearchItem.getString("name");
+            JSONObject dyamic_data = new JSONObject();
+            dyamic_data.put("name", name);
+            String element_id = key + "-" + name;
+            JSONObject obj = new JSONObject();
+            obj.put("id", element_id);
+            obj.put("source", caseSearchItem.getJSONArray("value"));
+            obj.put("value", new JSONArray());
+            
+            do_checklist.add(obj);
+            value = "<a href=\"javascript:void(0)\" id=\"" + element_id + "\" data-name=\"" 
+                  + element_id + "\" data-type=\"checklist\" data-pk=\"undefined\"  data-title=\"" 
+                  + name + "\" data-value=\"\" class=\"editable editable-click editable-empty\">Empty</a>";
+            
+            dyamic_data.put("value", value);
+            dyamic_datas.add(dyamic_data);
+        }
+        
+        JSONObject result = new JSONObject();
+        result.put("do_select", do_select);
+        result.put("do_checklist", do_checklist);
+        result.put("datas", dyamic_datas);
+        return result;
+	}
+	
+	@SuppressWarnings({ "deprecation", "unchecked" })
+    public Map<String, Object> getCaseSearchPara() throws NumberFormatException, InterruptedException, IOException{
+        
+        String configPath = System.getenv("WEBLAB_CONF");
+        String [] args1 = {servletContext.getRealPath("conf")};       //localhost server
+        String [] args2 = { configPath };
+
+        String tagConfig = (args2[0]!=null?args2[0]:args1[0])+File.separator+"TagConfig.json";
+
+  
+        JSONObject do_edit = new JSONObject();
+        JSONArray do_checklist = new JSONArray();
+        JSONArray do_select = new JSONArray();
+        JSONArray do_text = new JSONArray();
+        JSONArray do_date = new JSONArray();
+        
+        JSONArray dynamic_columns = new JSONArray();
+        JSONObject dynamic_item = new JSONObject();
+        dynamic_item.put("title", "name");
+        dynamic_item.put("field", "name");
+        dynamic_columns.add(dynamic_item);
+        
+        dynamic_item = new JSONObject();
+        dynamic_item.put("title", "value");
+        dynamic_item.put("field", "value");
+        dynamic_columns.add(dynamic_item);
+        
+        JSONObject caseSearchItems = JSONObject.fromObject(Fiforeader.readCaseInfoFromChannel(tagConfig));
+        
+        for (Object str:caseSearchItems.keySet()) {
+            String key = (String)str;
+            JSONArray mypara_list = caseSearchItems.getJSONArray(key);
+            JSONObject dyamic_obj = new JSONObject();
+            dyamic_obj.put("columns", dynamic_columns);
+            JSONArray dyamic_datas = new JSONArray();
+            for(int i = 0; i < mypara_list.size(); i++)
+            {
+                JSONObject para = mypara_list.getJSONObject(i);
+                String type = para.getString("type");
+                String name = para.getString("name");
+                String value = "";
+                String element_id = key + "-" + name;
+                JSONObject dyamic_data = new JSONObject();
+                dyamic_data.put("name", name);
+                String classes = "editable editable-click editable-empty";
+                String display_value = "Empty";
+                String data_value = "";
+                if("checklist".equals(type))
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", element_id);
+                    obj.put("source", para.getJSONArray("source"));
+                    if(para.has("value"))
+                    {
+                        obj.put("value", para.getJSONArray("value"));
+                        display_value = "";
+                        for(int j = 0; j < para.getJSONArray("value").size(); j ++)
+                        {
+                            for(int k = 0; k < para.getJSONArray("source").size(); k ++)
+                            {
+                                if(para.getJSONArray("value").getString(j).equals(para.getJSONArray("source").getJSONObject(k).getString("value")))
+                                {
+                                    display_value += "<br>" + para.getJSONArray("source").getJSONObject(k).getString("text");
+                                    data_value += "," + para.getJSONArray("source").getJSONObject(k).getString("value");
+                                }
+                            }
+                            
+                        }
+                        if(!"".equals(display_value))
+                        {
+                            display_value = display_value.substring(4);
+                            data_value = data_value.substring(1);
+                        }
+                        else
+                        {
+                            display_value = "Empty";
+                        }
+                        
+                        classes = "editable editable-click";
+                    }
+                    else
+                    {
+                        obj.put("value", new JSONArray());
+                    }
+                    do_checklist.add(obj);
+                    
+                }
+                else if("text".equals(type))
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", element_id);                   
+                    do_text.add(obj);
+                  
+                }
+                else if("date".equals(type))
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", element_id);
+                    do_date.add(obj);
+                }
+                else if("select".equals(type))
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", element_id);
+                    obj.put("source", para.getJSONArray("source"));
+                    if(para.has("value"))
+                    {
+                        obj.put("value", para.getString("value"));
+                        
+                        for(int k = 0; k < para.getJSONArray("source").size(); k ++)
+                        {
+                            if(para.getString("value").equals(para.getJSONArray("source").getJSONObject(k).getString("value")))
+                            {
+                                display_value = para.getJSONArray("source").getJSONObject(k).getString("text");
+                                break;
+                            }
+                        }
+                                          
+                        data_value = para.getString("value");
+                        classes = "editable editable-click";
+                    }
+                    else
+                    {
+                        obj.put("value", "");
+                    }
+                    do_select.add(obj);
+                    
+                }
+                
+                value = "<a href=\"javascript:void(0)\" id=\"" + element_id + "\" data-name=\"" 
+                        + element_id + "\" data-type=\"" + type + "\" data-pk=\"undefined\"  data-title=\"" 
+                        + name + "\" data-value=\""+ data_value +"\" class=\"editable editable-click editable-empty\">" + display_value + "</a>";
+                dyamic_data.put("value", value);
+                dyamic_datas.add(dyamic_data);
+            }
+            dyamic_obj.put("datas", dyamic_datas);
+            logger.info("key: ------------------------------" + key);
+            logger.info("dyamic_obj: " + dyamic_obj.toString());
+
+            caseSearchItemMap.put(key, dyamic_obj);
+            
+        }
+        //dft
+        JSONObject dft_tags = get_tag_editable(false);
+        logger.info("dft_tags: " + dft_tags.toString());
+        do_checklist.addAll(dft_tags.getJSONArray("do_checklist"));
+        do_select.addAll(dft_tags.getJSONArray("do_select"));
+        caseSearchItemMap.put("dft", dft_tags.getJSONArray("datas"));
+      
+        //ar
+        JSONObject ar_tags = get_tag_editable(true);
+        logger.info("ar_tags: " + ar_tags.toString());
+        do_checklist.addAll(ar_tags.getJSONArray("do_checklist"));
+        do_select.addAll(ar_tags.getJSONArray("do_select"));
+        caseSearchItemMap.put("ar", ar_tags.getJSONArray("datas"));
+        
+        do_edit.put("select", do_select);
+        do_edit.put("text", do_text);
+        do_edit.put("date", do_date);
+        do_edit.put("checklist", do_checklist);
+        logger.info("do_edit: " + do_edit.toString());
+        caseSearchItemMap.put("editable_obj", do_edit);
+        
+        return caseSearchItemMap;
+    }
+	
+	@SuppressWarnings({ "deprecation", "unchecked" })
+    public  Map<String, List<String>> getSearchParasAR() throws NumberFormatException, InterruptedException, IOException{
+	    Map<String, List<String>> SearchItemMap = new HashMap<String, List<String>>();
+        
+        JSONObject caseSearchItems = getJsonFileFromWeb(true);
+        JSONArray single = caseSearchItems.getJSONArray("single");
+        for(int i=0; i<single.size(); i++){
+            JSONObject caseSearchItem = single.getJSONObject(i);
+            SearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
+        }
+        
+        
+        JSONArray multiple = caseSearchItems.getJSONArray("multiple");
+        for(int i=0; i<multiple.size(); i++){
+            JSONObject caseSearchItem = multiple.getJSONObject(i);
+            SearchItemMap.put(caseSearchItem.getString("name"), JSONArray.toList(caseSearchItem.getJSONArray("value")));
+        }
+        
+        return SearchItemMap;
+    }
+	
+	public String cancelBatch(String batch_id) throws Exception {
+	    String update_sql = "update cases_info_db.temp_run_case set run_result = 'C', complete_date = 'Cancel' where batch_id = '" + batch_id + "' and run_result = ''";
+	    logger.error("update_sql:==="+update_sql);
+        JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
+        int count = caseSearchDaoImpl.update(jdbc, update_sql);
+        if (count > 0)
+        {
+            return "SUCCESS";
+        }
+        
+        return "FAIL";
+    }
+	
+	
 	
 	public JSONArray getCaseServer(String deptid,boolean hasRole){
 		// Map<String, List<String>> caseSearchItemMap = new HashMap<String, List<String>>();
@@ -130,6 +434,16 @@ public class CaseSearchService {
 		}
 		// caseSearchItemMap.put("servers",serversName);
 		return result;
+	}
+	
+	public String convert_condition_to_html(JSONObject condition)
+	{
+	    String result= "";
+	    for (Object str:condition.keySet()) {
+            String key = (String)str;
+            result += "<strong>" + key + ": </strong>" + condition.get(key).toString() + "<br>";
+	    }
+	    return result;
 	}
 	
 	public String convert_condtion_to_sql(String condition)
@@ -160,20 +474,40 @@ public class CaseSearchService {
                     }
                 }
             }
+	        else if ("scenario".equals(paras[0])) 
+            {   if(paras.length == 2)
+                {
+                        sql += " and type = '" + paras[1] + "'"; 
+                }
+            }
 	        else if ("workable_release".equals(paras[0])) {
 	            if(paras.length == 2)
                 {
                     try {
-                        Map<String, List<String>> caseSearch = getCaseSearch();
-                        List<String> list = caseSearch.get("base_release");
-                        //System.err.println(caseSearch.get("release"));
+                        JSONObject tags = getJsonFileFromWeb(false);
+                        JSONArray single_list = tags.getJSONArray("single");
+                        List<String> release_list = new ArrayList<String>();
+                        for(int j = 0; j < single_list.size(); j++)
+                        {
+                            if("base_release".equals(single_list.getJSONObject(j).getString("name")))
+                            {
+                                for(int k = 0; k < single_list.getJSONObject(j).getJSONArray("value").size(); k++)
+                                {
+                                    release_list.add(single_list.getJSONObject(j).getJSONArray("value").getString(k));
+                                }
+                                break;
+                            }
+                        }
+                        
+                        logger.info("release_list: " + release_list.toString());
+
                         int indexOf = -1;
-                        if(list.contains(paras[1])) {
-                            indexOf = list.indexOf(paras[1]);
+                        if(release_list.contains(paras[1])) {
+                            indexOf = release_list.indexOf(paras[1]);
                         }
                         List<String> subList = new ArrayList<>();
                         if(indexOf != -1) {
-                            subList = list.subList(0, indexOf);
+                            subList = release_list.subList(0, indexOf+1);
                         }
                         if(subList.size()>0) {
                             sql += " and (";
@@ -185,12 +519,6 @@ public class CaseSearchService {
                                        +" or porting_release like '%" + paras[1] + "%')";
                         }
                     } catch (NumberFormatException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
@@ -241,7 +569,7 @@ public class CaseSearchService {
         }
 		
 		//query_sql:===select * from DailyCase where 1=1 and feature_number='731590' and case_name='null'  limit null,null
-		System.err.println("query_sql:==="+sql);
+		logger.error("query_sql:==="+sql);
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 				//new ArrayList<HashMap<String, Object>>();
@@ -297,11 +625,16 @@ public class CaseSearchService {
 		return "";//"Total record:"+query.size();
 	}
 	
-	public JSONObject getJsonFile() {
+	public static JSONObject getJsonFileFromWeb(boolean isAR) {
 		URL url;
 		JSONObject tagInfos = new JSONObject();
 		try {
-			url = new URL("http://135.251.249.250/hg/SurepayDraft/rawfile/tip/.info/TagConfig.json");
+		    String url_addr = "http://135.251.249.250/hg/SurepayDraft/rawfile/tip/.info/TagConfig.json";
+		    if(isAR)
+		    {
+		        url_addr = "http://135.251.249.250/hg/SurepayAR/rawfile/tip/.info/TagConfig.json";
+		    }
+			url = new URL(url_addr);
 			InputStream inputStream = null;
 			InputStreamReader inputStreamReader = null;
 			BufferedReader reader = null;
@@ -772,7 +1105,7 @@ public class CaseSearchService {
 		}else {
 			dept_ids = StringUtil.formatSplitList(deptids);
 		}*/
-		String sql ="select distinct a.int_id,a.title,a.server_info,a.query_condition,a.author,a.create_time,ifnull(d.result_count,0) running_count "+
+		String sql ="select distinct a.int_id,a.run_mode, a.title,a.server_info,a.query_condition,a.author,a.create_time,ifnull(d.result_count,0) running_count "+
 				"from kaliey.n_rerunning_case_tbl a " + 
 				"left join kaliey.n_user b on a.author=b.username and b.stateflag='0' " + 
 				"left join kaliey.n_user_dept c on b.id=c.user_id  and c.stateflag='0' " + 
@@ -857,34 +1190,64 @@ public class CaseSearchService {
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
+	
+	public JSONObject condition_to_jsonobject(String condition)
+	{
+	    JSONObject con = new JSONObject();
+	    String [] conds = condition.split("&");
+        for (int i = 0; i < conds.length; i++)
+        {
+            String [] paras = conds[i].split("=");
+            if(paras.length == 2)
+            {
+                con.put(paras[0], paras[1]);
+            }
+            
+        }
+	    return con;
+	}
+	
 	@Transactional
-	public Map<String,Object> onlyrun(String set, String servers,String title,String login,String only, String flag, String condition,String hotslide, String schedule_date) throws Exception {
+	public Map<String,Object> onlyrun(String set, String servers,String title,String login,String only, String select_all_flag, String condition, String run_mode) throws Exception {
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		String server = StringUtil.formatJsonString(servers);
 		// 第零步，判断是否是search传进来的case,如果是有一种特殊情况，全选flag选中后，直接使用关联insert
-		System.out.println(schedule_date);
+		
 		String complete_date = "";
         String target_release = "";
+        String work_type = "dft";
+        String schedule_date = "";
+        String hotslide = "";    
+        JSONObject con = condition_to_jsonobject(condition);
+        if(con.has("schedule_date"))
+        {
+            schedule_date = con.getString("schedule_date");
+        }
+        if(con.has("hotslide"))
+        {
+            hotslide = con.getString("hotslide");
+        }
         if(!"".equals(schedule_date))
         {
             complete_date = "WAIT";
-            //get workable_releas
-            String [] conds = condition.split("&");
-            for (int i = 0; i < conds.length; i++)
+            if(con.has("workable_release"))
             {
-                String [] paras = conds[i].split("=");
-                if ("workable_release".equals(paras[0]))
-                {
-                    if(paras.length == 2)
-                    {
-                        target_release = paras[1];
-                    }
-                }
+                target_release = con.getString("workable_release");
+            }
+            else
+            {
+                returnMap.put("msg", "When schedule_date set, workable_release must set!");
+                return returnMap;
             }
         }
-		if(flag!="" && "true".equals(flag)) {
+        if(con.has("scenario"))
+        {
+            work_type = con.getString("scenario");
+        }
+        
+		if(select_all_flag!="" && "true".equals(select_all_flag)) {
 		    System.out.println("select all");
-			int caseLogId = insertCaseLog(title,server,login,condition);
+			int caseLogId = insertCaseLog(title,server,login,condition,run_mode);
 			if(caseLogId!=-1) {
 				// 保存server和case信息
 				String[] split2 = servers.split(",");
@@ -937,15 +1300,22 @@ public class CaseSearchService {
 			String[] split = set.split(",");
 			String casesql = "";
 			for (String string : split) {
-				casesql = casesql +"'"+string+"',";
+				casesql = casesql +"'"+string.trim() +"',";
 			}
 			int len = split.length;
 			String cases = casesql.substring(0, casesql.length()-1);
-			boolean checkCaseInfo = checkCaseInfo(cases,len);
-			if(checkCaseInfo) {
-				// 第二步，将数据存入日志记录表
-				int caseLogId = insertCaseLog(title,server,login,condition);
-				
+			String type = work_type;
+			if("sanity".equals(run_mode))
+			{
+			    type = "sanity";
+			}
+			String checkCaseInfo = checkCaseInfo(cases,split, type);
+			if("".equals(checkCaseInfo)) {
+				int caseLogId = insertCaseLog(title,server,login,condition, run_mode);
+				if("sanity".equals(run_mode))
+	            {
+	                complete_date = String.valueOf(caseLogId);
+	            }
 				if (caseLogId!=-1) {
 					// 保存server和case信息
 					String[] split2 = servers.split(",");
@@ -1004,24 +1374,45 @@ public class CaseSearchService {
 					InsertTempRunCase(params);
 				}
 			}else {
-				returnMap.put("msg", "case not exist");
+				returnMap.put("msg", checkCaseInfo);
 			}
 		}
 		return returnMap;
 	}
-	public boolean checkCaseInfo(String set,int len) throws Exception {
-		boolean result = false;
-		String sql ="select * from cases_info_db.case_tag where case_name in ("+set+")";
+	public String checkCaseInfo(String set, String [] cases, String work_type) throws Exception {
+		
+		String sql ="select case_name from cases_info_db.case_tag where type = '" + work_type +"' and case_name in ("+set+")";
 		logger.debug("checkCaseInfo sql: " + sql);
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
-		if(query.size()==len) {
-			result = true;
+		if(query.size()==cases.length) {
+			return "";
 		}
-		return result;
+		else{
+		    logger.debug(cases.length);
+		    logger.debug(query.size());
+		    
+		    logger.debug(cases.toString());
+		    logger.debug(query.toString());
+		    List input_cases =new ArrayList();
+		    for(int i =0; i < cases.length; i++)
+		    {
+		        input_cases.add(cases[i]);
+		    }
+		    
+		    List get_cases =new ArrayList();
+		    for(int i = 0; i < query.size(); i++)
+		    {
+		        get_cases.add(query.get(i).get("case_name").toString());
+		    }
+		    
+		    input_cases.removeAll(get_cases);
+		    return "Below cases not exist: " + input_cases.toString();
+		}
+		
 	}
-	public int insertCaseLog(String title,String server,String login,String condition) throws Exception {
-		String isql ="insert into kaliey.n_rerunning_case_tbl(title,server_info,query_condition,author,create_time) values('"+title +"','"+server+"','"+condition+"','"+login+"',now())";
+	public int insertCaseLog(String title,String server,String login,String condition, String run_mode) throws Exception {
+		String isql ="insert into kaliey.n_rerunning_case_tbl(title,server_info,query_condition,author,create_time, run_mode) values('"+title +"','"+server+"','"+condition+"','"+login+"',now(),'" + run_mode + "')";
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		int id = jdbc.executeSqlReturnId(isql);
 		return id;
@@ -1052,7 +1443,7 @@ public class CaseSearchService {
 	@Test
 	public void test() throws Exception {
 		CaseSearchService cs = new CaseSearchService();
-		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","","","");
+		cs.onlyrun("72624/fn3916.json,72624/fn3917.json,72624/fn3918.json,72624/fn3919.json","testserver","testtitle","root","Y","","","");
 	}
 	public String splitCondition(String cond,String retrunType,String fields) throws NumberFormatException, InterruptedException, IOException {
 	    
@@ -1102,22 +1493,26 @@ public class CaseSearchService {
 		int runing_count = 0;
 		int success_count = 0;
 		int fail_count = 0;
+		int cancel_count = 0;
 		String sql ="select count(1) result_count from cases_info_db.temp_run_case where run_result='' and batch_id=" +int_id+ 
 				" union all " + 
 				"select count(1) result_count from cases_info_db.temp_run_case where run_result='S' and batch_id=" +int_id+ 
 				" union all " + 
-				"select count(1) result_count from cases_info_db.temp_run_case where run_result='F' and batch_id="+int_id;
+				"select count(1) result_count from cases_info_db.temp_run_case where run_result='F' and batch_id="+int_id +
+				" union all " + 
+                "select count(1) result_count from cases_info_db.temp_run_case where run_result='C' and batch_id="+int_id;
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		if (query.size()>0) {
 			runing_count = Integer.parseInt(String.valueOf(query.get(0).get("result_count")));
 			success_count = Integer.parseInt(String.valueOf(query.get(1).get("result_count")));
 			fail_count = Integer.parseInt(String.valueOf(query.get(2).get("result_count")));
+			cancel_count = Integer.parseInt(String.valueOf(query.get(3).get("result_count")));
 		}
 		result.put("runing_count", runing_count);
 		result.put("success_count", success_count);
 		result.put("fail_count", fail_count);
-		
+		result.put("cancel_count", cancel_count);
 		return result;
 	}
 

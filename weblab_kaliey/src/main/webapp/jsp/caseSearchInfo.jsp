@@ -5,21 +5,28 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<script src="./jquery/jquery-3.2.1.js"></script>
-<script src="./bootstrap/js/bootstrap.min.js"></script>
 
-<script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
-<script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
-<script src="${pageContext.request.contextPath}/js/bootstrap-tabdrop.js"></script>
-<link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.css">
+<script src="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.js"></script>
+
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
+<script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
+
 <link href="${pageContext.request.contextPath}/css/tabdrop.css" rel="stylesheet" />
+<script src="${pageContext.request.contextPath}/js/bootstrap-tabdrop.js"></script>
 
 <script src="${pageContext.request.contextPath}/google-code-prettify/prettify.js"></script>
 <link href="${pageContext.request.contextPath}/google-code-prettify/prettify.css" rel="stylesheet" />
 
-<script src="./js/echarts.js"></script>
+<script src="${pageContext.request.contextPath}/js/echarts.js"></script>
 
 <script>
 $(function(){
@@ -31,92 +38,110 @@ $(function(){
 	var fail_count = ${battchStatusCount.fail_count};
 	var success_count = ${battchStatusCount.success_count};
 	var runing_count = ${battchStatusCount.runing_count};
-	if(runing_count > 0) {
+	var cancel_count = ${battchStatusCount.cancel_count};
+	
+	var init_chart = function(fields, datas)
+	{
+		$('#main').removeAttr("hidden");
+        var myChart = echarts.init(document.getElementById('main'));
+        var option = {
+               title : {
+                    text: 'Running Case Rate',
+                    x:'center'
+                }, 
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataView: {show: true, readOnly: false},
+                        restore: {show: true},
+                        saveAsImage: {show: true}
+                    }
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'right',  
+                    x : 'right',  
+                    y : 'bottom',
+                    data: fields
+                }, 
+                series : [
+                    {
+                        name:'Case Status',
+                        type:'pie',
+                        avoidLabelOverlap: true,
+                        radius: [0, '65%'],
+                        label: {
+                            normal: {
+                                formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
+                                backgroundColor: '#eee',
+                                borderColor: '#aaa',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                rich: {
+                                    b: {
+                                        fontSize: 13,
+                                        lineHeight: 23
+                                    },
+                                    per: {
+                                        color: '#eee',
+                                        backgroundColor: '#334455',
+                                        padding: [2, 4],
+                                        borderRadius: 2
+                                    }
+                                }
+                            }
+                        },
+                        data:datas
+                    }
+                ]
+            };
+        myChart.setOption(option);
+	}
+	
+	if(success_count == 0 && fail_count == 0 && runing_count > 0) {
 		$('#running').removeAttr("hidden");
 	}
-	else if(success_count > 0 && fail_count == 0 && runing_count == 0){
-		$('#pass').removeAttr("hidden");
-		//$('#export').removeAttr("hidden");
+	else if(success_count > 0 || fail_count > 0 ) {
+		if(cancel_count > 0)
+		{
+			var fields = ['Failed','Successful', 'Cancel'];
+			
+			var datas = [{value:fail_count , name:'Failed'},
+                {value:success_count , name:'Successful'},
+                {value:cancel_count, name: 'Cancel'}];
+
+		}
+		else if(runing_count > 0)
+		{
+			var fields = ['Failed','Successful', 'Running'];
+            
+            var datas = [{value:fail_count , name:'Failed'},
+                {value:success_count , name:'Successful'},
+                {value:runing_count, name: 'Running'}];
+		}
+		else
+		{
+		    var fields = ['Failed','Successful'];
+            
+            var datas = [{value:fail_count , name:'Failed'},
+                {value:success_count , name:'Successful'}];
+		}
+		init_chart(fields, datas);
 	}
-	else if(success_count > 0 && fail_count > 0 && runing_count == 0) {
-		$('#main').removeAttr("hidden");
-		//$('#export').removeAttr("hidden");
-		var myChart = echarts.init(document.getElementById('main'));
-		var option = {
-			   title : {
-			        text: 'Running Case Rate',
-			       /*  subtext: Date(), */
-			        x:'center'
-			    }, 
-			    tooltip : {
-			        trigger: 'item',
-			        formatter: "{a} <br/>{b} : {c} ({d}%)"
-			    },
-			    toolbox: {
-	    	        show: true,
-	    	        feature: {
-	    	            dataView: {show: true, readOnly: false},
-	    	            restore: {show: true},
-	    	            saveAsImage: {show: true}
-	    	        }
-	    	    },
-			    legend: {
-			        orient: 'vertical',
-			        left: 'right',  
-	                x : 'right',  
-	                y : 'bottom',
-			        data: ['Failed','Successful']
-			    }, 
-			    series : [
-			    	{
-			            name:'Case Status',
-			            type:'pie',
-			            avoidLabelOverlap: true,
-			            radius: [0, '65%'],
-						/*radius: ['40%', '55%'], */
-			            label: {
-			                normal: {
-			                    formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
-			                    backgroundColor: '#eee',
-			                    borderColor: '#aaa',
-			                    borderWidth: 1,
-			                    borderRadius: 4,
-			                    rich: {
-			                        b: {
-			                            fontSize: 13,
-			                            lineHeight: 23
-			                        },
-			                        per: {
-			                            color: '#eee',
-			                            backgroundColor: '#334455',
-			                            padding: [2, 4],
-			                            borderRadius: 2
-			                        }
-			                    }
-			                }
-			            },
-			            data:[
-			                {value:fail_count , name:'Failed'},
-			                {value:success_count , name:'Successful'}
-			            ]
-			        }
-			    ]
-			};
-		myChart.setOption(option);
-	}
-	else if(fail_count > 0 && success_count == 0 && runing_count == 0){
-		$('#fail').removeAttr("hidden");
-		//$('#export').removeAttr("hidden");
-	}
-	else if(success_count == 0 && fail_count == 0 && runing_count == 0){
-		$('#error').removeAttr("hidden");
+	else if(success_count == 0 && fail_count == 0 && runing_count == 0 && cancel_count > 0){
+		$('#cancel').removeAttr("hidden");
 	}
 	
 	$('#export').click(function(){
 		$("#subExport").attr("disabled","disabled");
 		var exportForm = document.getElementById('exportForm');
 		exportForm.submit();
-	})
+	});
+	
 	
 });
 </script>
@@ -154,34 +179,15 @@ $(function(){
 	        		<br><br>
 	        		<div class="row">
 	        			<div class="col-md-5">
-			        		<strong>dataSource : </strong>${searchCaseRunLogInfoById[0].condition.data_source }<br>
-			        		<strong>base_release : </strong>${searchCaseRunLogInfoById[0].condition.base_release }<br>
-			        		<strong>customer : </strong>${searchCaseRunLogInfoById[0].condition.customer }<br>
-			        		<strong>base_data : </strong>${searchCaseRunLogInfoById[0].condition.base_data }<br>
-			        		<strong>mate : </strong>${searchCaseRunLogInfoById[0].condition.mate }<br>
-			        		<strong>lab_number : </strong>${searchCaseRunLogInfoById[0].condition.lab_number }<br>
-			        		<strong>special_data : </strong>${searchCaseRunLogInfoById[0].condition.special_data }<br>
-			        		<strong>porting_release : </strong>${searchCaseRunLogInfoById[0].condition.porting_release }<br>
-			        		<strong>case_status : </strong>${searchCaseRunLogInfoById[0].condition.case_status }<br>
-			        		<strong>feature_number : </strong>${searchCaseRunLogInfoById[0].condition.feature_number }<br>
-			        		<strong>author : </strong>${searchCaseRunLogInfoById[0].condition.author }<br>
-			        		<strong>server : </strong>${searchCaseRunLogInfoById[0].condition.server }<br>
-			        		<strong>protocol : </strong>${searchCaseRunLogInfoById[0].condition.protocol }<br>
-			        		<strong>workable_release : </strong>${searchCaseRunLogInfoById[0].condition.workable_release }<br>
+			        		${searchCaseRunLogInfoById[0].condition}
 		        		</div>
 		        		<div class="col-md-7">
 		        			<div id="main" style="width: 100%;height:280px;background-color:#FFFFFF" hidden></div>
-		        			<div id="fail" style="text-align: right;transform:rotate(-7deg);margin-right: 50px" hidden>
-		        				<img src="./images/allFail.png" style="height: 100px;width: 200px">
-		        			</div>
-		        			<div id="pass" style="text-align: right;transform:rotate(-7deg);margin-right: 50px" hidden>
-		        				<img src="./images/allPass.png" style="height: 100px;width: 200px">
+		        			<div id="cancel" style="text-align: right;transform:rotate(-7deg);margin-right: 50px" hidden>
+		        				<img src="./images/cancel.png" style="height: 100px;width: 200px">
 		        			</div>
 		        			<div id="running" style="text-align: right;transform:rotate(-7deg);margin-right: 50px" hidden>
 		        				<img src="./images/running.png" style="height: 100px;width: 200px">
-		        			</div>
-		        			<div id="error" style="text-align: right;transform:rotate(-7deg);margin-right: 50px" hidden>
-		        				<img src="./images/error.png" style="height: 100px;width: 200px">
 		        			</div>
 		        		</div>
 	        		</div>

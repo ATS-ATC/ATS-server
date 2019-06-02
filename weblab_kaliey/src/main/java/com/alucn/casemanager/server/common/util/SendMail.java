@@ -590,6 +590,7 @@ public class SendMail {
                 "order by to_reporter asc, fail_rate desc,submit_rate asc"; 
         try {
             JDBCHelper mysql = JDBCHelper.getInstance("mysql-1");
+            logger.info(errorCaseSql);
             ArrayList<HashMap<String, Object>> result =mysql.query(errorCaseSql);
             if(result.size() > 0)
             {
@@ -633,8 +634,10 @@ public class SendMail {
             boolean IsSend = false;
             while(true)
             {
-                
-                if(new SimpleDateFormat("HH").format(new Date()).equals(ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime")) )
+                logger.info("mail time: " + ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime"));
+                String time_now = new SimpleDateFormat("HH").format(new Date());
+                logger.info("time_now: " + time_now);
+                if(time_now.equals(ParamUtil.getUnableDynamicRefreshedConfigVal("certifyMailTime")) )
                 {
                     Calendar cal=Calendar.getInstance();
                     int DayOfWeek = cal.get(Calendar.DAY_OF_WEEK);

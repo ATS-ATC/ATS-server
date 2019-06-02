@@ -6,15 +6,21 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<script src="./jquery/jquery-3.2.1.js"></script>
-<script src="./bootstrap/js/bootstrap.min.js"></script>
-<script src="./js/echarts.js"></script>
-<script src="./js/dark.js"></script>
-<script src="./js/macarons.js"></script>
-<!-- <meta http-equiv="refresh" content="5*60"> -->
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<script src="${pageContext.request.contextPath}/js/echarts.js"></script>
+<script src="${pageContext.request.contextPath}/js/dark.js"></script>
+<script src="${pageContext.request.contextPath}/js/macarons.js"></script>
+
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-customer.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/echart-case-release.js"></script>
+
 <script type="text/javascript">
 	setTimeout("self.location.reload();",1000*60*10);
 	$(document).ready(function(){

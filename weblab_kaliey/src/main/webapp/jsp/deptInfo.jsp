@@ -8,13 +8,16 @@
 <%--
 <meta http-equiv="refresh" content="5*60">
  --%>
-<script src="${pageContext.request.contextPath}/jquery/jquery-3.2.1.js"></script>
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
 
-<script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
-<link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
 
-<script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
-<link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.css">
+<script src="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.js"></script>
 
 <script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
@@ -115,7 +118,7 @@
 					</div>
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">Clsoe</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	                <button type="button" class="btn btn-primary" id="addSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
@@ -178,7 +181,7 @@
 					</div>
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">Clsoe</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	                <button type="button" class="btn btn-primary" id="editSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->

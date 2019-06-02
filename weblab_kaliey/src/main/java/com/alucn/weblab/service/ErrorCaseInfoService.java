@@ -210,10 +210,17 @@ public class ErrorCaseInfoService {
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String getErrorCase = 
-				"select distinct a.case_name casename,a.err_reason,b.err_reason err_reason_his,a.err_desc,b.err_desc err_desc_his,a.report_path,a.tag_time,a.owner from cases_info_db.error_case_info a\n" +
-				"left join (\n" + 
-				"select case_name,err_reason,err_desc,max(mark_date) from cases_info_db.error_case_info_his where mark_date != '' group by  case_name,err_reason,err_desc\n" +
-				") b on a.case_name=b.case_name "+
+		        "select distinct a.case_name casename,a.err_reason,d.err_reason err_reason_his,a.err_desc,d.err_desc err_desc_his,a.report_path,a.tag_time,a.owner from cases_info_db.error_case_info a \n"+
+                "left join ( \n"+
+                "select case_name,err_reason,err_desc,mark_date from ( \n"+
+                "select b.case_name,b.err_reason,b.err_desc, b.mark_date, @rownum:=@rownum+1 , \n"+
+                "if(@pdept=b.case_name,@rank:=@rank+1,@rank:=1) as rank, \n"+
+                "@pdept:=b.case_name \n"+
+                "from ( \n"+
+                "select case_name,err_reason,err_desc,mark_date from cases_info_db.error_case_info_his where mark_date != '' order by case_name asc ,mark_date desc \n"+
+                ") b ,(select @rownum :=0 , @pdept := null ,@rank:=0) c ) result \n"+
+                "where rank = 1  \n"+
+                ") d on a.case_name=d.case_name  \n"+
 				"WHERE 1=1 and a.feature_number='"+featureName+"' ";
 		//if(!checkAllCase.equals(Constant.AUTH)){
 		if(!checkAllCase){

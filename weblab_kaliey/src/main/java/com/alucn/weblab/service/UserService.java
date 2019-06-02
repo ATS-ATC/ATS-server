@@ -51,7 +51,7 @@ public class UserService {
 		if(sort!=null && !"".equals(sort)) {
 			sql=sql+" order by "+sort+" "+sortOrder;
 		}else {
-			sql=sql+" order by deptid desc";
+			sql=sql+" order by roles";
 		}
 		sql=sql+" limit "+offset+","+limit;
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");

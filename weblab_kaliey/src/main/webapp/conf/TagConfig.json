@@ -1,7 +1,37 @@
 {
-    "single":[
-        {"name":"case_status","value":["Initial","Re-sub","Failed","Successful"]},
-        {"name":"data_source","value":["DailyCase","DftTag"]}
+    "base": [
+        {"name":"scenario", "type": "select", "value": "dft", "source": "[{'value':'dft', 'text':'DFT'}, {'value':'ut', 'text':'UT'},  {'value':'ar', 'text':'AR'}]"},
+        {"name":"data_source", "type": "select", "value": "DftTag", "source": "[{'value':'DftTag', 'text':'FullCases'}, {'value':'DailyCase', 'text':'ToCertifyCases'}]"},
+        {"name":"case_status", "type": "checklist", "source": "[{'value':'I', 'text':'Initial'}, {'value':'S', 'text':'Succeed'}, {'value':'F', 'text':'Failed'}, {'value':'R', 'text':'Re-sub'}, {'value':'PP', 'text':'Pre-Pending'}, {'value':'P', 'text':'Pending'}, {'value':'O', 'text':'Obsolete'}]"},
+        {"name":"protocol", "type": "select", "source": "[{'value':'', 'text':''},{'value':'ANSI', 'text':'ANSI'}, {'value':'ITU', 'text':'ITU'}]"},
+        {"name":"feature_number", "type": "text"},
+        {"name":"case_name", "type": "text"},
+        {"name":"author", "type": "text"}
     ],
-    "SourceServer": "ftp://135.251.249.250"
+    "weekly": [
+        {"name": "hotslide", "type": "text"},
+        {"name": "schedule_date", "type": "date"},
+        {"name": "sanity_id", "type": "text"}
+    ],
+    "sanity": [
+        {"name": "target_protocol", "type": "text"},
+        {"name": "target_release", "type": "text"},
+        {"name": "delivery_date", "type": "date"},
+        {"name": "delivery_type", "type": "text"},
+        {"name": "platform_version", "type": "text"},
+        {"name": "ndb_version", "type": "text"},
+        {"name": "spa_list", "type": "text"},
+        {"name": "db_list", "type": "text"}
+    ],
+    "permission_search": [
+        {"name": "feature_number", "type": "text"},
+        {"name": "user_name", "type": "text"}
+    ],
+    "permission_add": [
+        {"name": "feature_number", "type": "text"},
+        {"name": "user_name", "type": "text"},
+        {"name": "auto_case_num", "type": "text"},
+        {"name": "ftc_date", "type": "date"},
+        {"name":"scenario", "type": "select", "value": "dft", "source": "[{'value':'dft', 'text':'DFT'}, {'value':'ut', 'text':'UT'},  {'value':'ar', 'text':'AR'}]"}
+    ]
 }

@@ -11,6 +11,9 @@ import com.alucn.casemanager.server.common.ConfigProperites;
 import com.alucn.weblab.dao.impl.ConfigOptDaoImpl;
 import com.alucn.weblab.utils.JDBCHelper;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 /**
  * @author haiqiw
  * 2017年6月23日 下午1:53:25
@@ -22,13 +25,14 @@ public class ConfigOptService {
 	@Autowired(required=true)
 	private ConfigOptDaoImpl configOptDaoImpl;
 	
-	public ArrayList<HashMap<String, Object>> getConfig() throws Exception{
+	public JSONArray getConfig() throws Exception{
 		/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 		JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 		String sql = "SELECT * FROM cases_info_db.certify_server_config;";
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String, Object>> result = configOptDaoImpl.query(jdbc, sql);
-		return result;
+		JSONArray test = new JSONArray().fromObject(result);
+		return test;
 	}
 	
 	public String updateConfig(String userName, String configKey, String configValue) throws Exception{
@@ -46,9 +50,9 @@ public class ConfigOptService {
 			}
 			ConfigProperites.getInstance().refreshConfiguration(mapConfigs);
 		} catch (Exception e) {
-			return "Operations Failed!" ;
+		    return "FAIL"; 
 		}
-		return "Operations Succeed!";
+		return "SUCCESS";
 	}
 
 }

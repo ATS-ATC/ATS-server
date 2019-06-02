@@ -8,13 +8,16 @@
 <%--
 <meta http-equiv="refresh" content="5*60">
  --%>
-<script src="${pageContext.request.contextPath}/jquery/jquery-3.2.1.js"></script>
+<script src="${pageContext.request.contextPath}/jquery-3.4.1/jquery-3.4.1.js"></script>
 
-<script src="${pageContext.request.contextPath}/bootstrap/js/bootstrap.min.js"></script>
-<link href="${pageContext.request.contextPath}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.css" >
+<script src="${pageContext.request.contextPath}/jquery-ui-1.12.1/jquery-ui.js"></script>
 
-<script src="${pageContext.request.contextPath}/js/bootstrap-table.js"></script>
-<link href="${pageContext.request.contextPath}/css/bootstrap-table.css" rel="stylesheet" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/css/bootstrap.css">
+<script src="${pageContext.request.contextPath}/bootstrap-3.4.1/dist/js/bootstrap.js"></script>
+
+<link rel="stylesheet" href="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.css">
+<script src="${pageContext.request.contextPath}/bootstrap-table-v1.5.4/bootstrap-table.js"></script>
 
 <script src="${pageContext.request.contextPath}/js/bootstrap-tagsinput.js"></script>
 <link href="${pageContext.request.contextPath}/css/bootstrap-tagsinput.css" rel="stylesheet" />
@@ -58,11 +61,11 @@
             </div>
         </div> 
         <div id="toolbar" style="text-align:left;">
-        	<shiro:hasPermission name="user:edit">
+        	<!--  shiro:hasPermission name="user:edit"-->
 	        <button id="edit" class="btn btn-info">
 				<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>  Edit
 			</button>
-			</shiro:hasPermission>
+			<!--/shiro:hasPermission-->
 			
 	        <!-- 
 	        <button id="deleteUser" class="btn btn-danger">
@@ -110,6 +113,7 @@
 								      <input type="text" class="form-control" id="eusername"  placeholder="username" disabled="disabled">
 								    </div>
 								  </div>
+								  <shiro:hasPermission name="user:edit">
 								  <div class="form-group">
 								    <label for="eroles" class="col-sm-2 control-label" style="text-align: left;">roles</label>
 								    <div class="col-sm-6" id="eroles">
@@ -119,6 +123,7 @@
 								    	<span id="sroles" class="glyphicon glyphicon-edit btn" aria-hidden="true" style="display: inline;"></span>
 								    </div>
 								  </div>
+								  </shiro:hasPermission>
 								  <div class="form-group">
 								    <label for="edept" class="col-sm-2 control-label" style="text-align: left;">group</label>
 								    <div class="col-sm-6" id="sedept">
@@ -129,6 +134,7 @@
 								    	<span id="sdept" class="glyphicon glyphicon-edit btn" aria-hidden="true" style="display: inline;"></span>
 								    </div>
 								  </div>
+								  <shiro:hasPermission name="user:edit">
 								  <div class="form-group">
 								    <label for="estateflag" class="col-sm-2 control-label" style="text-align: left;">stateflag</label>
 								    <div class="col-sm-6">
@@ -144,6 +150,7 @@
 										</div>
 								  	</div>
 								  </div>
+								  </shiro:hasPermission>
 							</form>
         				</div>
 					</div>
@@ -151,8 +158,8 @@
 
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary" id="editSubmit">submit</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	                <button type="button" class="btn btn-primary" id="editSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -170,8 +177,8 @@
 	            <div class="modal-body" id="role_body">
 				</div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">clsoe</button>
-	                <button type="button" class="btn btn-primary" id="sRoleSubmit">submit</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	                <button type="button" class="btn btn-primary" id="sRoleSubmit">Submit</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->
@@ -317,7 +324,9 @@ function tagStyle(strs){
 	for (i=0;i<strs.length ;i++ ){ 
 		if(strs[i]=="admin"){
 			tag=tag+"<span class='label label-danger'>"+strs[i]+"</span> ";
-		}else if (strs[i]=="super") {
+		}else if (strs[i]=="boss") {
+            tag=tag+"<span class='label label-warning'>"+strs[i]+"</span> ";
+        }else if (strs[i]=="leader") {
 			tag=tag+"<span class='label label-primary'>"+strs[i]+"</span> ";
 		}else if (strs[i]=="user") {
 			tag=tag+"<span class='label label-info'>"+strs[i]+"</span> ";
@@ -336,7 +345,9 @@ $("#sRoleSubmit").click(function(){
         var crole= $(this).val();
         if(crole=="admin"){
 			tag=tag+"<span class='label label-danger'>"+crole+"</span> ";
-		}else if (crole=="super") {
+        }else if (crole=="boss") {
+            tag=tag+"<span class='label label-warning'>"+crole+"</span> ";
+        }else if (crole=="leader") {
 			tag=tag+"<span class='label label-primary'>"+crole+"</span> ";
 		}else if (crole=="user") {
 			tag=tag+"<span class='label label-info'>"+crole+"</span> ";
@@ -381,7 +392,9 @@ $("#sroles").click(function(){
 				if(data[i].role_name=="admin"){
 					sdisabled = "disabled";
 					slabel="danger";
-				}else if (data[i].role_name=="super") {
+				}else if (data[i].role_name=="boss") {
+                    slabel="warning";
+                }else if (data[i].role_name=="leader") {
 					slabel="primary";
 				}else if (data[i].role_name=="user") {
 					slabel="info";
@@ -493,6 +506,7 @@ var TableInit = function () {
     oTableInit.Init = function () {
         $('#tb_departments').bootstrapTable({
             url: 'getUserInfoJson.do',   //请求后台的URL（*）
+            theadClasses: 'thead-dark',
             method: 'get',                      //请求方式（*）
             toolbar: '#toolbar',                //工具按钮用哪个容器
             toolbarAlign:"left",
