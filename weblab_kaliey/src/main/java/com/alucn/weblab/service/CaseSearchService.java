@@ -29,9 +29,11 @@ import javax.swing.text.DefaultEditorKit.InsertBreakAction;
 
 import org.apache.catalina.tribes.transport.nio.ParallelNioSender;
 import org.junit.Test;
+import org.openqa.jetty.html.Select;
 import org.openqa.selenium.logging.NeedsLocalLogs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ContextLoader;
 
@@ -49,6 +51,13 @@ import com.alucn.weblab.utils.LabStatusUtil;
 import com.alucn.weblab.utils.StringUtil;
 import org.apache.log4j.Logger;
 import org.apache.naming.java.javaURLContextFactory;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFHyperlink;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.aspectj.apache.bcel.generic.ReturnaddressType;
 
 import com.microsoft.schemas.office.visio.x2012.main.VisioDocumentDocument1;
@@ -349,6 +358,44 @@ public class CaseSearchService {
 
             caseSearchItemMap.put(key, dyamic_obj);
             
+        }
+        
+        //for sanity release 
+        JSONObject tag_items = getJsonFileFromWeb(false);
+        
+        JSONArray single = tag_items.getJSONArray("single");
+        for(int i=0; i<single.size(); i++){
+            JSONObject singleItem = single.getJSONObject(i);
+            String key_name = singleItem.getString("name");
+            
+            if("base_release".equals(key_name))
+            {             
+                JSONObject dyamic_data = new JSONObject();
+                String name = "target_release";
+                dyamic_data.put("name", name);
+                String element_id =  "sanity-" + name;
+                JSONObject obj = new JSONObject();
+                obj.put("id", element_id);
+                JSONArray source = new JSONArray();
+                source.add("");          
+                JSONArray value_list = singleItem.getJSONArray("value");
+                source.addAll(value_list);
+                obj.put("source", source);
+                obj.put("value", new JSONArray());
+                
+                do_select.add(obj);
+                String value = "<a href=\"javascript:void(0)\" id=\"" + element_id + "\" data-name=\"" 
+                      + element_id + "\" data-type=\"select\" data-pk=\"undefined\"  data-title=\"" 
+                      + name + "\" data-value=\"\" class=\"editable editable-click editable-empty\">Empty</a>";
+                
+                dyamic_data.put("value", value);
+                JSONObject sanity_obj = (JSONObject)caseSearchItemMap.get("sanity");
+                JSONArray datas = sanity_obj.getJSONArray("datas");
+                datas.add(1,dyamic_data);
+                sanity_obj.put("datas", datas);
+                caseSearchItemMap.put("sanity", sanity_obj);
+                break;
+            }
         }
         //dft
         JSONObject dft_tags = get_tag_editable(false);
@@ -1183,6 +1230,21 @@ public class CaseSearchService {
 		}
 		return arrayList;
 	}
+	
+	public String searchSanityCases() throws Exception{
+	    String sql ="select * from cases_info_db.certify_server_config";
+	    JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
+	    ArrayList<HashMap<String, Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+	    for(int i = 0; i < query.size(); i++)
+	    {
+	        if(query.get(i).get("con_key").toString().equals("sanity_case_list"))
+	        {
+	            return query.get(i).get("con_value").toString();
+	        }
+	    }
+	    return "";
+	    
+	}
 	public ArrayList<HashMap<String, Object>> searchCaseRunLogCaseServerById(Map<String, Object> param) throws Exception {
 		String sql ="select * from kaliey.n_case_server_tbl where stateflag='0' and rerunning_id= "+param.get("int_id");
 		//JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE,ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB"));
@@ -1314,7 +1376,7 @@ public class CaseSearchService {
 				int caseLogId = insertCaseLog(title,server,login,condition, run_mode);
 				if("sanity".equals(run_mode))
 	            {
-	                complete_date = String.valueOf(caseLogId);
+	                complete_date = "WAIT_SANITY";
 	            }
 				if (caseLogId!=-1) {
 					// 保存server和case信息
@@ -1435,11 +1497,76 @@ public class CaseSearchService {
 		jdbc.executeBatch(isql,params);
 	}
 	public ArrayList<HashMap<String,Object>> getTempRunCaseResultByBatchId(String batchid) throws Exception {
-		String sql ="select * from cases_info_db.temp_run_case where batch_id="+batchid;
+		String sql ="select * from cases_info_db.temp_run_case where batch_id="+batchid + " order by html_path DESC";
 		JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
 		ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
 		return query;
 	}
+	
+	
+	public XSSFWorkbook getTempRunCaseResultByBatchIds(String condition) throws Exception {
+	    String tmp_sql = convert_condtion_to_sql(condition);
+	    System.out.println("tmp_sql: " + tmp_sql);
+	    String sql ="select case_name, count(case_name) as case_num from cases_info_db.temp_run_case " + 
+	            tmp_sql.substring(5) + " and run_result = 'F' group by case_name order by case_num DESC";
+        //String sql ="select * from cases_info_db.temp_run_case where batch_id="+batchid + " order by html_path DESC";
+        JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
+        ArrayList<HashMap<String,Object>> query = caseSearchDaoImpl.query(jdbc, sql);
+        sql = "select * from cases_info_db.temp_run_case " + tmp_sql.substring(5) + " and run_result = 'F'";
+        ArrayList<HashMap<String,Object>> cases = caseSearchDaoImpl.query(jdbc, sql);
+        
+        XSSFWorkbook wb = new XSSFWorkbook();
+        Sheet sh = wb.createSheet();
+        Row title = sh.createRow(0);
+        int k = 1;
+        for(int i = 0; i < query.size(); i ++)
+        {
+            String case_name = query.get(i).get("case_name").toString();
+            for(int j = 0; j <cases.size(); j ++ )
+            {
+                if( i == 0 && j == 0)
+                {
+                    int m = 0;
+                    HashMap<String,Object> hashMap = cases.get(0);
+                    for(String key :hashMap.keySet()) {
+                        Cell titleCell = title.createCell(m);
+                        titleCell.setCellValue(""+key);
+                        m++;
+                    }
+                    Cell titleCell = title.createCell(m);
+                    titleCell.setCellValue("case_num");
+                }
+                if(case_name.equals(cases.get(j).get("case_name").toString()))
+                {
+                    int m = 0;
+                    Row row = sh.createRow(k);
+                    k++;
+                    HashMap<String,Object> hashMap = cases.get(j);
+                    for(String key :hashMap.keySet()) {
+                        Cell cell = row.createCell(m);
+                        String value = hashMap.get(key)+"";
+                        if("html_path".equalsIgnoreCase(key) && !"".equals(String.valueOf(hashMap.get(key))))
+                        {
+                            CreationHelper createHelper = wb.getCreationHelper();
+                            XSSFHyperlink  link = (XSSFHyperlink) createHelper.createHyperlink(HyperlinkType.URL);
+                            link.setAddress(value);
+                            cell.setHyperlink(link);
+                            cell.setCellValue(value);
+                        }
+                        else
+                        {
+                            cell.setCellValue(value);
+                        }
+                        m++;
+                    }
+                    Cell cell = row.createCell(m);
+                    cell.setCellValue(query.get(i).get("case_num").toString());
+                }
+            }
+        }
+  
+        return wb;
+    }
 	@Test
 	public void test() throws Exception {
 		CaseSearchService cs = new CaseSearchService();

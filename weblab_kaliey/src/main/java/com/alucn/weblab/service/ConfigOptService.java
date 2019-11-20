@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.experimental.theories.FromDataPoints;
+import org.openqa.jetty.html.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,14 +42,17 @@ public class ConfigOptService {
 			/*String dbFile = ParamUtil.getUnableDynamicRefreshedConfigVal("CaseInfoDB");
 			JdbcUtil jdbc = new JdbcUtil(Constant.DATASOURCE, dbFile);*/
 			Map<String, String> mapConfigs = new HashMap<String, String>();
-			String [] configKeys = configKey.split(",");
-			String [] configValues = configValue.split(",");
-			for(int i=0; i<configKeys.length; i++){
-				String updateCon = "update cases_info_db.certify_server_config set con_value='"+configValues[i]+"' where con_key='"+configKeys[i]+"'";
-				JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
-				configOptDaoImpl.update(jdbc, updateCon);
-				mapConfigs.put(configKeys[i], configValues[i]);
+			String updateCon = "update cases_info_db.certify_server_config set con_value='"+configValue+"' where con_key='"+configKey+"'";
+            JDBCHelper jdbc = JDBCHelper.getInstance("mysql-1");
+            configOptDaoImpl.update(jdbc, updateCon);
+            String query_config = "select * from cases_info_db.certify_server_config";
+            ArrayList<HashMap<String, Object>> configs = configOptDaoImpl.query(jdbc, query_config);
+			for(int i=0; i<configs.size(); i++){
+				
+				mapConfigs.put(configs.get(i).get("con_key").toString(), configs.get(i).get("con_value").toString());
 			}
+			
+			
 			ConfigProperites.getInstance().refreshConfiguration(mapConfigs);
 		} catch (Exception e) {
 		    return "FAIL"; 

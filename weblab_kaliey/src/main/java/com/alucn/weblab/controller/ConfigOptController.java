@@ -32,9 +32,9 @@ public class ConfigOptController {
 		return "configMan";
 	}
 	
-	@RequestMapping(path = "/uodateConfig")
+	@RequestMapping(path = "/updateConfig")
     @ResponseBody
-    public Map<String,Object> uodateConfig(HttpSession session, HttpServletRequest request,Model model) throws Exception {
+    public Map<String,Object> updateConfig(HttpSession session, HttpServletRequest request,Model model) throws Exception {
         Map<String,Object> resultMap = new HashMap<String,Object>();
         String userName = session.getAttribute("login").toString();
         String con_key = request.getParameter("con_key")==null?"":request.getParameter("con_key").toString().trim();

@@ -333,6 +333,13 @@ height: 1px; border: none; display:none
 	    
 	    var weeklyParaTable = new ParaTableInit(weekly_table, weekly_columns, weekly_datas);
 	    weeklyParaTable.Init();
+	    
+	    var export_report_columns = ${export_report}['columns'];
+        var export_report_datas = ${export_report}['datas'];
+        var export_report_table = $('#export_para')
+        
+        var exportParaTable = new ParaTableInit(export_report_table, export_report_columns, export_report_datas);
+        exportParaTable.Init();
 		
 	    
 	    
@@ -675,6 +682,44 @@ height: 1px; border: none; display:none
 	        $('#myModal').modal('show');	
 			
 		})
+		
+		$("#export_report").click(function(){
+            $('#exportModal').modal('show');    
+            
+        })
+        
+        
+        $("#submit_export").click(function(){
+        	
+        	var condition = get_table_data(['export_para'], false);
+            var cons = condition.split('&');
+            var rows = $('#export_para').bootstrapTable('getData');
+         
+            if(rows.length != cons.length)
+            {
+                alert("All parameter for export are required!");
+                return false;
+            }
+        	
+        	var form = $("<form>");
+            form.attr('style', 'display:none');
+            form.attr('target', '');
+            form.attr('method', 'post');
+            form.attr('action', 'exportResult.do');
+
+            var input1 = $('<input>');
+            input1.attr('type', 'hidden');
+            input1.attr('name', 'condition');
+            input1.attr('value', condition); 
+             /* JSON.stringify($.serializeObject($('#searchForm'))) */
+
+            $('body').append(form);
+            form.append(input1);
+            
+            form.submit();
+            form.remove();    
+            $('#exportModal').modal('hide');
+        })
 		      
 		
 		function readFile(file) {
@@ -980,6 +1025,7 @@ height: 1px; border: none; display:none
 					
 					<div class="row">
 						<div class="col-md-12 column text-right">
+						    <button type="button" class="btn btn-primary" id="export_report" >&nbsp;&nbsp;&nbsp;Export Report&nbsp;&nbsp;&nbsp;</button>
 						    <button type="button" class="btn btn-primary" id="sanity_check" >&nbsp;&nbsp;&nbsp;Sanity Check&nbsp;&nbsp;&nbsp;</button>
 							<button type="button" class="btn btn-primary" id="import" >&nbsp;&nbsp;&nbsp;Import&nbsp;&nbsp;&nbsp;</button>
 							<button type="button" class="btn btn-primary" id="search" style="margin-right: 30px;">&nbsp;&nbsp;&nbsp;Search&nbsp;&nbsp;&nbsp;</button>
@@ -992,6 +1038,41 @@ height: 1px; border: none; display:none
             	</div>
             	<div class="row" style="margin-left: 10px;margin-right: 13px;margin-top: 10px;">
 					<table id="runLog"  class="text-nowrap" style="background-color: #FBFCFC"></table>
+				</div>
+				
+				<div id="exportModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog">
+				    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span>
+                                </button>
+                                 <h4 class="modal-title" style="display: inline;">Select Case   </h4><code id="importCount"></code>
+                            </div>
+                            <div class="modal-body">
+                                <div id="export_div" class="row" >
+                                    <div class="col-md-12 table-responsive" style="max-height:398px;overflow:scroll">
+                                        <table id="export_para"  class="table table-bordered table-striped text-nowrap" style="width:100%;height: 100%;background-color: #FBFCFC"></table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <div class="row">
+                                    <div class="col-md-8 column">
+                                    </div>
+                                
+                                    <div class="col-md-4 column text-right">
+                                         <button type="button" class="btn btn-default" data-dismiss="modal">&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                         <button type="button" class="btn btn-default" id="submit_export">&nbsp;&nbsp;&nbsp;&nbsp;Submit&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                </div>
+                <!-- /.modal -->
+
 				</div>
             	<div id="myModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog">
 				    <div class="modal-dialog modal-lg" role="document">

@@ -63,7 +63,7 @@
                     }],
                      onEditableSave: function (field, row, rowIndex, oldValue, $element) { 
                          $.ajax({
-                             url: "uodateConfig.do",
+                             url: "updateConfig.do",
                              data: row, 
                                
                              success: function (data) {

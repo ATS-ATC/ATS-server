@@ -1,7 +1,15 @@
 package com.alucn.weblab.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.swing.JOptionPane;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,6 +20,7 @@ import com.alucn.weblab.dao.impl.UserDaoImpl;
 import com.alucn.weblab.model.NUser;
 import com.alucn.weblab.utils.JDBCHelper;
 import com.alucn.weblab.utils.MD5Util;
+import com.alucn.casemanager.server.common.util.DeEncode;
 import com.alucn.casemanager.server.common.util.Ldap;
 
 @Service("loginService")
@@ -122,7 +131,75 @@ public class LoginService {
         }
         return false;
 	}
+	public boolean getAuthProxy(NUser user) {
+    	PrintWriter out = null;
+        BufferedReader in = null;
+        String result = "";
+        try {
+            URL realUrl = new URL("http://135.242.16.160:8990/auth.jsp");
+            // 锟津开猴拷URL之锟斤拷锟斤拷锟斤拷锟�
+            URLConnection conn = realUrl.openConnection();
+            // 锟斤拷锟斤拷通锟矫碉拷锟斤拷锟斤拷锟斤拷锟斤拷
+            conn.setRequestProperty("accept", "*/*");
+            conn.setRequestProperty("connection", "Keep-Alive");
+            conn.setRequestProperty("user-agent",
+                    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+            // 锟斤拷锟斤拷POST锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟�
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            // 锟斤拷取URLConnection锟斤拷锟斤拷锟接︼拷锟斤拷锟斤拷锟斤拷
+            out = new PrintWriter(conn.getOutputStream());
+            // 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟�
+            //out.print("userid=yefeng&password=123456&version=" + version + "&data={\"DELETE\":[],\"INSERT\":[],\"UPDATE\":[]}");
+            
+            //String encryptResult = DeEncode.getBase64(Passwd);
+            //String PassTemp = DeEncode.parseByte2HexStr(encryptResult);
+            
+            String encryptResult = DeEncode.getBase64(user.getPassword());
+            String PassTemp = DeEncode.parseByte2HexStr(encryptResult);
+            //out.print("user=lkhuang" + "&password=" + java.net.URLEncoder.encode(PassTemp,"UTF-8"));
+            String reqStr = "user=" + java.net.URLEncoder.encode(user.getUsername(),"UTF-8") + "&password="+ java.net.URLEncoder.encode(PassTemp,"UTF-8");
+            out.print(reqStr);
+            // flush锟斤拷锟斤拷锟斤拷幕锟斤拷锟�
+            out.flush();
+            
+            // 锟斤拷锟斤拷BufferedReader锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷取URL锟斤拷锟斤拷应
+            in = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                result += line;
+            }
+            
+            if(result.equals("login_true"))
+            {
+                return true;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,"Request Auth: " + e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+        }
+        //使锟斤拷finally锟斤拷锟斤拷锟截憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟�
+        finally{
+            try{
+                if(out!=null){
+                    out.close();
+                }
+                if(in!=null){
+                    in.close();
+                }
+            }
+            catch(IOException ex){
+            }
+        }
+        return false;
+    }
+
 	public boolean authUser(NUser user) throws Exception{
+	    String ldapProxy = System.getenv("LDAP_PROXY");
+	    if("Y".equalsIgnoreCase(ldapProxy))
+	    {
+	        return getAuthProxy(user);
+	    }
 	    Ldap ldapAuth = new Ldap();
         if(ldapAuth.getAuth(user.getUsername(),user.getPassword()).equals(Constant.AUTHSUCCESS))
         {

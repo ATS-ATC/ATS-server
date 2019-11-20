@@ -14,7 +14,7 @@
         {"name": "sanity_id", "type": "text"}
     ],
     "sanity": [
-        {"name": "target_protocol", "type": "text"},
+        {"name": "target_customer", "type": "text"},
         {"name": "target_release", "type": "text"},
         {"name": "delivery_date", "type": "date"},
         {"name": "delivery_type", "type": "text"},

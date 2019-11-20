@@ -17,8 +17,11 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFHyperlink;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
@@ -407,7 +410,7 @@ public class CaseSearchController {
 		
 		if("sanity".equals(run_mode))
 		{
-		    set = "SPID-0/sp0001.json,SPID-0/sp0002.json";
+		    set = caseSearchService.searchSanityCases();
 		}
 		
 		logger.info("set ---- "+set);
@@ -445,7 +448,18 @@ public class CaseSearchController {
         		}
         		Cell cell = row.createCell(j);
         		String value = hashMap.get(key)+"";
-        		cell.setCellValue(value);
+        		if("html_path".equalsIgnoreCase(key) && !"".equals(String.valueOf(hashMap.get(key))))
+        		{
+        		    CreationHelper createHelper = wb.getCreationHelper();
+        		    XSSFHyperlink  link = (XSSFHyperlink) createHelper.createHyperlink(HyperlinkType.URL);
+        		    link.setAddress(value);
+        		    cell.setHyperlink(link);
+        		    cell.setCellValue(value);
+        		}
+        		else
+        		{
+        		    cell.setCellValue(value);
+        		}
         		j++;
         	}
         }
@@ -453,7 +467,7 @@ public class CaseSearchController {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
         response.setCharacterEncoding("utf-8");
         response.setContentType("multipart/form-data");
-        response.setHeader("Content-Disposition", "attachment;fileName=RC_"+logID+"_"+df.format(day)+".csv");
+        response.setHeader("Content-Disposition", "attachment;fileName=RC_"+logID+"_"+df.format(day)+".xlsx");
         try {
             OutputStream out = response.getOutputStream();
             BufferedOutputStream bufout = new BufferedOutputStream(out);
@@ -464,5 +478,31 @@ public class CaseSearchController {
             e.printStackTrace();
         }
 	}
+	
+	@RequestMapping(path = "/exportResult")
+    public void exportResult(HttpSession session,HttpServletResponse response ,HttpServletRequest request ) throws Exception{
+        //String value = request.getParameter("value")==null?"":request.getParameter("value").toString().trim();
+        String condition = request.getParameter("condition")==null?"":request.getParameter("condition").toString().trim();
+        System.out.println(condition);
+        
+        XSSFWorkbook wb  = caseSearchService.getTempRunCaseResultByBatchIds(condition);
+        
+        Date day=new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss"); 
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("multipart/form-data");
+        response.setHeader("Content-Disposition", "attachment;fileName=RC_"+df.format(day)+".xlsx");
+        try {
+            OutputStream out = response.getOutputStream();
+            BufferedOutputStream bufout = new BufferedOutputStream(out);
+            bufout.flush();
+            wb.write(bufout);
+            bufout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+	
+	
 	
 }
